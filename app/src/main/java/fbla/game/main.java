@@ -1,278 +1,390 @@
 package fbla.game;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.Timer;
-import javax.swing.WindowConstants;
-
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import javax.swing.JLabel;
-import java.awt.*;
-import javax.swing.ImageIcon;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import java.io.File;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class main implements KeyListener {
-
-    JFrame frame;
-    JPanel panel;
-    BufferedImage image;
-    BufferedImage background;
-    BufferedImage npc;
-    int imageX = 50;
-    int imageY = 50;
-    int xVelocity = 0;
-    int yVelocity = 0;
-    double movingImageWidth;
-    double movingImageHeight;
-    boolean messageBoxBeingDisplayed = false;
-    List<Entity> entities = new ArrayList<>();
-    WavPlayer soundPlayer = new WavPlayer();
-
-    File movingImage = new File(
-            "game_resources\\textures\\ios_large_1662954661_image.jpg");
-    File backgroundImage = new File(
-            "game_resources\\textures\\background.jpg");
-    File messageBoxImage = new File(
-            "game_resources\\textures\\message_box_bg.jpg");
-    File npcImage = new File("game_resources\\textures\\npc.png");
-
-    String[] defaultNPCMessages = {
-            "Hello there!",
-            "Welcome to the game.",
-            "Press E to see a message box.",
-            "Use arrow keys to move around.",
-            "Press E to close message boxes.",
-            "I have nothing to say to you.",
-            "Go away.",
-            "It's a nice day, isn't it?",
-            "Did you know? The Earth revolves around the Sun.",
-            "Keep exploring!",
-            "I love FBLA!"
+    
+    // Constants
+    private static final int MOVE_AMOUNT = 5;
+    private static final int TIMER_DELAY = 16; // ~60 FPS
+    private static final int TYPEWRITER_DELAY = 75;
+    private static final double NPC_INTERACTION_DISTANCE = 500.0; // Reduced for better gameplay
+    private static final String RESOURCE_PATH = "C:\\Users\\Bentley\\Documents\\FBLA-game\\FBLA-Game\\game_resources";
+    
+    // UI Components
+    private JFrame frame;
+    private GamePanel panel;
+    private JLabel currentMessageBox;
+    private Timer gameTimer;
+    private Timer typewriterTimer;
+    
+    // Game Resources
+    private BufferedImage playerImage;
+    private BufferedImage backgroundImage;
+    private BufferedImage npcImage;
+    private BufferedImage messageBoxImage;
+    
+    // Game State
+    private final List<Entity> entities = new ArrayList<>();
+    private final WavPlayer soundPlayer = new WavPlayer();
+    private boolean messageBoxDisplayed = false;
+    private int playerX = 50;
+    private int playerY = 50;
+    private int xVelocity = 0;
+    private int yVelocity = 0;
+    
+    // NPC Messages
+    private static final String[] NPC_MESSAGES = {
+        "Hello there!",
+        "Welcome to the FBLA game!",
+        "Press E to interact with NPCs.",
+        "Use arrow keys to move around.",
+        "Press E to close message boxes.",
+        "I have nothing else to say.",
+        "Go explore the world!",
+        "It's a beautiful day, isn't it?",
+        "Did you know? FBLA teaches business skills!",
+        "Keep exploring and learning!",
+        "FBLA competitions are exciting!"
     };
-
-    public main() {
+    
+    public main() throws IOException {
+        loadResources();
+        initializeEntities();
+    }
+    
+    private void loadResources() throws IOException {
+        Path resourcesPath = Paths.get(RESOURCE_PATH);
+        
         try {
-            image = ImageIO.read(movingImage);
-            movingImageWidth = image.getWidth();
-            movingImageHeight = image.getHeight();
-            background = ImageIO.read(backgroundImage);
-            npc = ImageIO.read(npcImage);
+            playerImage = ImageIO.read(resourcesPath.resolve("textures/ios_large_1662954661_image.jpg").toFile());
+            backgroundImage = ImageIO.read(resourcesPath.resolve("textures/background.jpg").toFile());
+            npcImage = ImageIO.read(resourcesPath.resolve("textures/npc.png").toFile());
+            messageBoxImage = ImageIO.read(resourcesPath.resolve("textures/message_box_bg.jpg").toFile());
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Failed to load game resources: " + e.getMessage());
+            throw e;
         }
     }
-
-    public void displayMessageBoxWithMessage(String message) {
-        // the box should be added at the top layer of the JFrame
-        try {
-            messageBoxBeingDisplayed = true;
-            JLabel messageBox = new JLabel(new ImageIcon(ImageIO.read(messageBoxImage)));
-            messageBox.setLayout(new BorderLayout());
-            messageBox.setBounds(frame.getWidth() / 4, frame.getHeight() / 4, frame.getWidth() / 2,
-                    frame.getHeight() / 4);
-            JLabel messageLabel = new JLabel(message, SwingConstants.CENTER);
-            messageLabel.setForeground(Color.WHITE);
-            messageBox.add(messageLabel, BorderLayout.CENTER);
-            frame.add(messageBox);
-            frame.setComponentZOrder(messageBox, 0); // Bring to front
-            frame.revalidate();
-            frame.repaint();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    
+    private void initializeEntities() {
+        // Add player entity (always at index 0)
+        entities.add(new Entity(playerImage, playerX, playerY, 
+                               playerImage.getHeight(), playerImage.getHeight()));
+        
+        // Add NPC entities
+        entities.add(new Entity(npcImage, 200, 150, npcImage.getWidth(), npcImage.getHeight()));
+        //entities.add(new Entity(npcImage, 400, 300, npcImage.getWidth(), npcImage.getHeight()));
     }
-
-    public void closeAllMessageBoxes() {
-        messageBoxBeingDisplayed = false;
-        Component[] components = frame.getContentPane().getComponents();
-        for (Component component : components) {
-            if (component instanceof JLabel) {
-                frame.remove(component);
-            }
-        }
-        frame.revalidate();
-        frame.repaint();
+    
+    public void start() {
+        SwingUtilities.invokeLater(() -> {
+            createAndShowGUI();
+            startGameLoop();
+        });
     }
-
-    public void talkToClosestNPC() {
-        if (entities.size() < 2) {
-            System.out.println("No NPCs to talk to.");
-            return;
-        }
-
-        Entity player = entities.get(0);
-        Entity closestNPC = null;
-        double closestDistance = Double.MAX_VALUE;
-
-        for (int i = 1; i < entities.size(); i++) {
-            Entity npc = entities.get(i);
-            double distance = Math
-                    .sqrt(Math.pow(player.getX() - npc.getX(), 2) + Math.pow(player.getY() - npc.getY(), 2));
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestNPC = npc;
-            }
-        }
-
-        if (closestNPC != null && closestDistance < 500) { // arbitrary distance threshold
-            int randomIndex = (int) (Math.random() * defaultNPCMessages.length);
-            soundPlayer.play("game_resources\\audio\\talking.wav");
-            displayMessageBoxWithMessage(defaultNPCMessages[randomIndex]);
-        } else {
-            System.out.println("No NPCs nearby to talk to.");
-        }
-    }
-
-    // draws a grid on the background image for debugging purposes
-    // each entity can update its position in increments of 10
-    public void drawGrid() {
-        Graphics g = background.getGraphics();
-        g.setColor(Color.LIGHT_GRAY);
-        for (int x = 0; x < background.getWidth(); x += 10) {
-            g.drawLine(x, 0, x, background.getHeight());
-        }
-        for (int y = 0; y < background.getHeight(); y += 10) {
-            g.drawLine(0, y, background.getWidth(), y);
-        }
-        g.dispose();
-    }
-
-    public void addEntity(BufferedImage image, int x, int y, double width, double height) {
-        Entity entity = new Entity(image, x, y, width, height);
-        entities.add(entity);
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        int keyCode = e.getKeyCode();
-        int moveAmount = 5; // Reduced move amount for smoother animation
-
-        if (keyCode == KeyEvent.VK_UP && !messageBoxBeingDisplayed) {
-            yVelocity = -moveAmount;
-        } else if (keyCode == KeyEvent.VK_DOWN && !messageBoxBeingDisplayed) {
-            yVelocity = moveAmount;
-        } else if (keyCode == KeyEvent.VK_LEFT && !messageBoxBeingDisplayed) {
-            xVelocity = -moveAmount;
-        } else if (keyCode == KeyEvent.VK_RIGHT && !messageBoxBeingDisplayed) {
-            xVelocity = moveAmount;
-        } else if (keyCode == KeyEvent.VK_E && !messageBoxBeingDisplayed) {
-            talkToClosestNPC();
-        } else if (keyCode == KeyEvent.VK_E && messageBoxBeingDisplayed) {
-            closeAllMessageBoxes();
-            soundPlayer.stop();
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        int keyCode = e.getKeyCode();
-
-        if (keyCode == KeyEvent.VK_UP && yVelocity < 0 && !messageBoxBeingDisplayed) {
-            yVelocity = 0;
-        } else if (keyCode == KeyEvent.VK_DOWN && yVelocity > 0 && !messageBoxBeingDisplayed) {
-            yVelocity = 0;
-        } else if (keyCode == KeyEvent.VK_LEFT && xVelocity < 0 && !messageBoxBeingDisplayed) {
-            xVelocity = 0;
-        } else if (keyCode == KeyEvent.VK_RIGHT && xVelocity > 0 && !messageBoxBeingDisplayed) {
-            xVelocity = 0;
-        }
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-    }
-
-    public static void main(String[] args) throws IOException {
-        main example = new main();
-        example.start();
-    }
-
-    private void start() {
-        frame = buildFrame();
-        panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.drawImage(background, 0, 0, this.getWidth(), this.getHeight(), this); // Draw background
-                // g.drawImage(npc, 10, 10, (int)Math.round(npc.getWidth()),
-                // (int)Math.round(npc.getHeight()), null);
-                // g.drawImage(image, imageX, imageY, (int)Math.round(movingImageHeight),
-                // (int)Math.round(movingImageHeight), null);
-                for (Entity entity : entities) {
-                    entity.draw(g, this);
-                }
-            }
-        };
-
-        // the player entity should always be entity 0
-        addEntity(image, imageX, imageY, movingImageHeight, movingImageHeight);
-        addEntity(npc, 100, 100, npc.getWidth(), npc.getHeight());
-
+    
+    private void createAndShowGUI() {
+        frame = createMainFrame();
+        panel = new GamePanel();
+        
         frame.add(panel);
         panel.setFocusable(true);
         panel.requestFocusInWindow();
         panel.addKeyListener(this);
-
-        Timer timer = new Timer(20, e -> { // Adjust the delay (20 ms) for smoother animation
-            imageX += xVelocity;
-            imageY += yVelocity;
-            entities.get(0).setPosition(imageX, imageY);
-
-            // Keep image within bounds
-            if (imageX < 0) {
-                imageX = 0;
-                entities.get(0).setPosition(imageX, imageY);
-            }
-
-            if (imageY < 0) {
-                imageY = 0;
-                entities.get(0).setPosition(imageX, imageY);
-            }
-
-            if (imageX > panel.getWidth() - movingImageWidth) {
-                imageX = panel.getWidth() - (int) Math.round(movingImageWidth);
-                entities.get(0).setPosition(imageX, imageY);
-            }
-
-            if (imageY > panel.getHeight() - movingImageHeight) {
-                imageY = panel.getHeight() - (int) Math.round(movingImageHeight);
-                entities.get(0).setPosition(imageX, imageY);
-            }
-
-            if (!messageBoxBeingDisplayed) {
-                // don't repaint the panel if a message box is being displayed
-                panel.repaint();
-            }
-            //System.out.println("player position: (" + entities.get(0).getX() + ", " + entities.get(0).getY() + ")"); // Debugging
-                                                                                                                     // output
-            //System.out.println("x velocity: " + xVelocity + ", y velocity: " + yVelocity);
-        });
-        timer.start();
-        // drawGrid();
-
+        
         frame.setVisible(true);
     }
-
-    private JFrame buildFrame() {
-        JFrame frame = new JFrame("FBLA Game");
+    
+    private JFrame createMainFrame() {
+        JFrame frame = new JFrame("FBLA Educational Game");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        // frame.setSize(400, 400);
-        // frame.getContentPane().setPreferredSize(new Dimension(400, 400));
-        frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-        frame.pack();
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLocationRelativeTo(null);
         return frame;
+    }
+    
+    private void startGameLoop() {
+        gameTimer = new Timer(TIMER_DELAY, e -> updateGame());
+        gameTimer.start();
+    }
+    
+    private void updateGame() {
+        updatePlayerPosition();
+        if (!messageBoxDisplayed) {
+            panel.repaint();
+        }
+    }
+    
+    private void updatePlayerPosition() {
+        playerX = Math.max(0, Math.min(playerX + xVelocity, 
+                          panel.getWidth() - playerImage.getWidth()));
+        playerY = Math.max(0, Math.min(playerY + yVelocity, 
+                          panel.getHeight() - playerImage.getHeight()));
+        
+        entities.get(0).setPosition(playerX, playerY);
+    }
+    
+    public void displayMessage(String message) {
+        if (messageBoxDisplayed) return;
+        
+        messageBoxDisplayed = true;
+        
+        try {
+            currentMessageBox = createMessageBox();
+            JLabel messageLabel = createMessageLabel();
+            currentMessageBox.add(messageLabel, BorderLayout.CENTER);
+            
+            addMessageBoxToFrame();
+            startTypewriterEffect(messageLabel, message);
+            
+        } catch (Exception e) {
+            System.err.println("Error displaying message: " + e.getMessage());
+            messageBoxDisplayed = false;
+        }
+    }
+    
+    private JLabel createMessageBox() {
+        JLabel messageBox = new JLabel(new ImageIcon(messageBoxImage));
+        messageBox.setLayout(new BorderLayout());
+        
+        int boxWidth = frame.getWidth() / 2;
+        int boxHeight = frame.getHeight() / 4;
+        int boxX = (frame.getWidth() - boxWidth) / 2;
+        int boxY = (int) (frame.getHeight() * 0.75);
+        
+        messageBox.setBounds(boxX, boxY, boxWidth, boxHeight);
+        return messageBox;
+    }
+    
+    private JLabel createMessageLabel() {
+        JLabel messageLabel = new JLabel("", SwingConstants.CENTER);
+        messageLabel.setForeground(Color.WHITE);
+        messageLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        return messageLabel;
+    }
+    
+    private void addMessageBoxToFrame() {
+        frame.getLayeredPane().add(currentMessageBox, JLayeredPane.POPUP_LAYER);
+        frame.revalidate();
+        frame.repaint();
+    }
+    
+    private void startTypewriterEffect(JLabel messageLabel, String message) {
+        if (typewriterTimer != null && typewriterTimer.isRunning()) {
+            typewriterTimer.stop();
+        }
+        
+        final int[] charIndex = {0};
+        typewriterTimer = new Timer(TYPEWRITER_DELAY, null);
+        
+        typewriterTimer.addActionListener(e -> {
+            if (charIndex[0] <= message.length()) {
+                String displayText = message.substring(0, charIndex[0]);
+                messageLabel.setText("<html><div style='text-align: center; padding: 10px;'>" 
+                                   + displayText + "</div></html>");
+                charIndex[0]++;
+                
+                if (charIndex[0] > message.length()) {
+                    typewriterTimer.stop();
+                }
+            }
+        });
+        
+        typewriterTimer.start();
+    }
+    
+    public void closeMessage() {
+        if (!messageBoxDisplayed) return;
+        
+        messageBoxDisplayed = false;
+        
+        if (typewriterTimer != null && typewriterTimer.isRunning()) {
+            typewriterTimer.stop();
+        }
+        
+        if (currentMessageBox != null) {
+            frame.getLayeredPane().remove(currentMessageBox);
+            currentMessageBox = null;
+        }
+        
+        soundPlayer.stop();
+        frame.revalidate();
+        frame.repaint();
+    }
+    
+    private void interactWithNearestNPC() {
+        if (entities.size() < 2) return;
+        
+        Entity player = entities.get(0);
+        Entity nearestNPC = findNearestNPC(player);
+        
+        if (nearestNPC != null) {
+            String randomMessage = getRandomNPCMessage();
+            playTalkingSound();
+            displayMessage(randomMessage);
+        }
+    }
+    
+    private Entity findNearestNPC(Entity player) {
+        Entity nearest = null;
+        double minDistance = NPC_INTERACTION_DISTANCE;
+        
+        for (int i = 1; i < entities.size(); i++) {
+            Entity npc = entities.get(i);
+            double distance = calculateDistance(player, npc);
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearest = npc;
+            }
+        }
+        
+        return nearest;
+    }
+    
+    private double calculateDistance(Entity a, Entity b) {
+        double dx = a.getX() - b.getX();
+        double dy = a.getY() - b.getY();
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    private String getRandomNPCMessage() {
+        int index = ThreadLocalRandom.current().nextInt(NPC_MESSAGES.length);
+        return NPC_MESSAGES[index];
+    }
+    
+    private void playTalkingSound() {
+        try {
+            Path soundPath = Paths.get(RESOURCE_PATH, "audio", "talking.wav");
+            soundPlayer.play(soundPath.toString());
+        } catch (Exception e) {
+            System.err.println("Could not play talking sound: " + e.getMessage());
+        }
+    }
+    
+    // Custom JPanel for game rendering
+    private class GamePanel extends JPanel {
+        
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            
+            // Enable antialiasing for smoother graphics
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            // Draw background
+            g2d.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            
+            // Draw all entities
+            for (Entity entity : entities) {
+                entity.draw(g2d, this);
+            }
+        }
+        
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(800, 600);
+        }
+    }
+    
+    // KeyListener implementations
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (messageBoxDisplayed) {
+            if (e.getKeyCode() == KeyEvent.VK_E) {
+                closeMessage();
+            }
+            return;
+        }
+        
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_UP:
+                yVelocity = -MOVE_AMOUNT;
+                break;
+            case KeyEvent.VK_DOWN:
+                yVelocity = MOVE_AMOUNT;
+                break;
+            case KeyEvent.VK_LEFT:
+                xVelocity = -MOVE_AMOUNT;
+                break;
+            case KeyEvent.VK_RIGHT:
+                xVelocity = MOVE_AMOUNT;
+                break;
+            case KeyEvent.VK_E:
+                interactWithNearestNPC();
+                break;
+        }
+    }
+    
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (messageBoxDisplayed) return;
+        
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+                if ((e.getKeyCode() == KeyEvent.VK_UP && yVelocity < 0) ||
+                    (e.getKeyCode() == KeyEvent.VK_DOWN && yVelocity > 0)) {
+                    yVelocity = 0;
+                }
+                break;
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+                if ((e.getKeyCode() == KeyEvent.VK_LEFT && xVelocity < 0) ||
+                    (e.getKeyCode() == KeyEvent.VK_RIGHT && xVelocity > 0)) {
+                    xVelocity = 0;
+                }
+                break;
+        }
+    }
+    
+    @Override
+    public void keyTyped(KeyEvent e) {
+        // Not used
+    }
+    
+    // Resource cleanup
+    public void dispose() {
+        if (gameTimer != null) {
+            gameTimer.stop();
+        }
+        if (typewriterTimer != null) {
+            typewriterTimer.stop();
+        }
+        soundPlayer.stop();
+        
+        if (frame != null) {
+            frame.dispose();
+        }
+    }
+    
+    public static void main(String[] args) {
+        try {
+            // Set system look and feel
+            UIManager.setLookAndFeel(UIManager.getLookAndFeel());
+            
+            // Show title screen first
+            titleScreen titleScreen = new titleScreen();
+            titleScreen.showTitleScreen();
+            
+            // Game will be started from title screen
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Failed to start game: " + e.getMessage());
+        }
     }
 }
