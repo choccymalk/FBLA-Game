@@ -46,7 +46,7 @@ public class main implements KeyListener {
             "game_resources\\textures\\background.jpg");
     File messageBoxImage = new File(
             "game_resources\\textures\\message_box_bg.jpg");
-    File npcImage = new File("C:\\Users\\Bentley\\Documents\\FBLA-game\\game_resources\\textures\\npc.png");
+    File npcImage = new File("game_resources\\textures\\npc.png");
 
     String[] defaultNPCMessages = {
             "Hello there!",
