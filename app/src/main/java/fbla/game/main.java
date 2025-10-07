@@ -39,14 +39,16 @@ public class main implements KeyListener {
     boolean messageBoxBeingDisplayed = false;
     List<Entity> entities = new ArrayList<>();
     WavPlayer soundPlayer = new WavPlayer();
+    List<Level> levels = new ArrayList<>();
+    int currentLevelIndex = 0;
 
     File movingImage = new File(
-            "game_resources\\textures\\ios_large_1662954661_image.jpg");
+            System.getenv("LOCALAPPDATA")+"\\FBLA-Game\\game_resources\\textures\\ios_large_1662954661_image.jpg");
     File backgroundImage = new File(
-            "game_resources\\textures\\background.jpg");
+            System.getenv("LOCALAPPDATA")+"\\FBLA-Game\\game_resources\\textures\\background.jpg");
     File messageBoxImage = new File(
-            "game_resources\\textures\\message_box_bg.jpg");
-    File npcImage = new File("game_resources\\textures\\npc.png");
+            System.getenv("LOCALAPPDATA")+"\\FBLA-Game\\game_resources\\textures\\message_box_bg.jpg");
+    File npcImage = new File(System.getenv("LOCALAPPDATA")+"\\FBLA-Game\\game_resources\\textures\\npc.png");
 
     String[] defaultNPCMessages = {
             "Hello there!",
@@ -128,7 +130,7 @@ public class main implements KeyListener {
 
         if (closestNPC != null && closestDistance < 500) { // arbitrary distance threshold
             int randomIndex = (int) (Math.random() * defaultNPCMessages.length);
-            soundPlayer.play("game_resources\\audio\\talking.wav");
+            soundPlayer.play(System.getenv("LOCALAPPDATA")+"\\FBLA-Game\\game_resources\\audio\\talking.wav");
             displayMessageBoxWithMessage(defaultNPCMessages[randomIndex]);
         } else {
             System.out.println("No NPCs nearby to talk to.");
@@ -150,7 +152,7 @@ public class main implements KeyListener {
     }
 
     public void addEntity(BufferedImage image, int x, int y, double width, double height) {
-        Entity entity = new Entity(image, x, y, width, height);
+        Entity entity = new Entity(image, x, y, width, height, null);
         entities.add(entity);
     }
 

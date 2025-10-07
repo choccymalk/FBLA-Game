@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import java.awt.*;
 import javax.swing.ImageIcon;
 
+import fbla.game.*;
 
 class Entity {
         BufferedImage image;
@@ -23,13 +24,15 @@ class Entity {
         int y;
         double width;
         double height;
+        String[] dialouge;
 
-        public Entity(BufferedImage image, int x, int y, double width, double height) {
+        public Entity(BufferedImage image, int x, int y, double width, double height, String[] dialouge) {
             this.image = image;
             this.x = x;
             this.y = y;
             this.width = width;
             this.height = height;
+            this.dialouge = dialouge;
         }
 
         public void draw(Graphics g, JPanel panel) {
