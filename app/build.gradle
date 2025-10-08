@@ -10,6 +10,9 @@ plugins {
     id 'application'
 }
 
+project.ext.lwjglVersion = "3.3.6"
+project.ext.lwjglNatives = "natives-windows"
+
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
@@ -23,18 +26,33 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // https://mvnrepository.com/artifact/org.lwjgl/lwjgl
-    implementation("org.lwjgl:lwjgl:3.1.0")
+    // implementation("org.lwjgl:lwjgl:3.1.0")
 
-    // https://mvnrepository.com/artifact/org.lwjgl/lwjgl-opengl
-    implementation("org.lwjgl:lwjgl-opengl:3.3.6")
+    // // https://mvnrepository.com/artifact/org.lwjgl/lwjgl-opengl
+    // implementation("org.lwjgl:lwjgl-opengl:3.3.6")
 
     // https://mvnrepository.com/artifact/org.joml/joml
     implementation("org.joml:joml:1.10.8")
 
-    implementation("com.google.code.gson:gson:2.13.2")
+    implementation 'com.google.code.gson:gson:2.12.1'
 
     // This dependency is used by the application.
     implementation libs.guava
+
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+	implementation "org.lwjgl:lwjgl"
+	implementation "org.lwjgl:lwjgl-assimp"
+	implementation "org.lwjgl:lwjgl-glfw"
+	implementation "org.lwjgl:lwjgl-openal"
+	implementation "org.lwjgl:lwjgl-opengl"
+	implementation "org.lwjgl:lwjgl-stb"
+	implementation "org.lwjgl:lwjgl::$lwjglNatives"
+	implementation "org.lwjgl:lwjgl-assimp::$lwjglNatives"
+	implementation "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+	implementation "org.lwjgl:lwjgl-openal::$lwjglNatives"
+	implementation "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+	implementation "org.lwjgl:lwjgl-stb::$lwjglNatives"
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

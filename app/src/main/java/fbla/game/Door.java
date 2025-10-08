@@ -1,37 +1,40 @@
 package fbla.game;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Door {
-    int level;
-    int x;
-    int y;
-    int targetLevel;
-    int targetX;
-    int targetY;
+    @SerializedName("x")
+    private int x;
 
-    public Door(int level, int x, int y, int targetLevel, int targetX, int targetY) {
-        this.level = level;
-        this.x = x;
-        this.y = y;
-        this.targetLevel = targetLevel;
-        this.targetX = targetX;
-        this.targetY = targetY;
-    }
+    @SerializedName("y")
+    private int y;
 
-    public int getLevel() {
-        return level;
-    }
+    @SerializedName("target_level")
+    private int targetLevel;
+
+    @SerializedName("target_x")
+    private int targetX;
+
+    @SerializedName("target_y")
+    private int targetY;
+
+    // Getters:
     public int getX() {
         return x;
     }
+
     public int getY() {
         return y;
     }
+
     public int getTargetLevel() {
         return targetLevel;
     }
+
     public int getTargetX() {
         return targetX;
     }
+
     public int getTargetY() {
         return targetY;
     }

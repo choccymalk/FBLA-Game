@@ -1,46 +1,37 @@
 package fbla.game;
 
-import java.util.Arrays;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
-import fbla.game.*;
-
 public class Level {
-    int[][] grid;
-    List<Entity> entities;
-    String background_image;
-    List<Door> doors;
+    @SerializedName("collision_grid")
+    private int[][] collisionGrid;
 
-    public int[][] getGrid() {
-        return grid;
+    @SerializedName("entities")
+    private List<Entity> entities;
+
+    @SerializedName("background_image")
+    private String backgroundImage;
+
+    @SerializedName("doors")
+    private List<Door> doors;
+
+    // Gson requires a no-arg constructor or it will use reflection; leaving none is fine.
+    // Provide getters:
+    public int[][] getCollisionGrid() {
+        return collisionGrid;
     }
 
     public List<Entity> getEntities() {
         return entities;
     }
 
-    public String getBackground_image() {
-        return background_image;
+    public String getBackgroundImage() {
+        return backgroundImage;
     }
 
     public List<Door> getDoors() {
         return doors;
-    }
-
-    public Level(int[][] grid, List<Entity> entities, String background_image, List<Door> doors) {
-        this.grid = grid;
-        this.entities = entities;
-        this.background_image = background_image;
-        this.doors = doors;
-    }
-
-    @Override
-    public String toString() {
-        return "Level{" +
-                "grid=" + Arrays.deepToString(grid) +
-                ", entities=" + entities +
-                ", background_image='" + background_image + '\'' +
-                ", doors=" + doors +
-                '}';
     }
 }
