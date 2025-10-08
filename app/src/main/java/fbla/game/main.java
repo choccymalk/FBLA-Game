@@ -315,7 +315,7 @@ public class main {
     private static final int WINDOW_W = 1272;
     private static final int WINDOW_H = 720;
     private static final int MOVE_AMOUNT = 24;
-    public static final int MOVEMENT_DELAY_MS = 100; // seconds between moves
+    public static final int MOVEMENT_DELAY_MS = 75; // seconds between moves
     private static final int TYPEWRITER_DELAY_MS = 75;
     private static final double NPC_INTERACTION_DISTANCE = 500.0;
     private static final String RESOURCE_PATH = System.getenv("LOCALAPPDATA")+"\\FBLA-Game\\game_resources";
@@ -341,6 +341,13 @@ public class main {
     private boolean messageBoxDisplayed = false;
 
     private final WavPlayer soundPlayer = new WavPlayer();
+
+    private int cursorXPosition;
+    private int cursorYPosition;
+    private boolean leftMouseButtonPressed = false;
+
+    private int[][] responsePositions;
+    private boolean messageBoxOptionsDisplayed = false;
 
     jsonParser parser = new jsonParser(new File(RESOURCE_PATH+"\\levels.json"));
 
@@ -393,6 +400,14 @@ public class main {
         glfwSetKeyCallback(window, (win, key, scancode, action, mods) -> {
             if (action == GLFW_PRESS) keyPressed(key);
             if (action == GLFW_RELEASE) keyReleased(key);
+        });
+
+        glfwSetCursorPosCallback(window, (win, xpos, ypos) -> {
+            cursorCallback(window, xpos, ypos);            
+        });
+
+        glfwSetMouseButtonCallback(window, (win, button, action, mods) -> {
+            mouseClickCallback(window, button, action, mods);
         });
 
         // Center window
@@ -532,15 +547,29 @@ public class main {
         entities.add(player);
         parser.parse();
         player.setPosition(level.getEntities().get(0).getX(), level.getEntities().get(0).getY());
-
+        
         // add NPCs and other entities
         for(Entity e : level.getEntities()){
             if(!e.getType().equals("player")){
+                System.out.println("Adding entity of type " + e.getType() + " at (" + e.getX() + ", " + e.getY() + ")");
                 e.setTextureId(npcTex); // for now, all non-player entities use npc texture
                 e.setWidth(ENTITY_WIDTH_CELLS * GRID_CELL_SIZE);
                 e.setHeight(ENTITY_HEIGHT_CELLS * GRID_CELL_SIZE);
                 e.setPosition(e.getX(), e.getY());
                 entities.add(e);
+                // update the collision grid with the entitys position
+                for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
+                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                        collisionGrid[(e.getY() / GRID_CELL_SIZE) + j][(e.getX() / GRID_CELL_SIZE) + i] = 1;
+                    }
+                }
+                // print the new collision grid
+                for(int[] row : collisionGrid){
+                    for(int cell : row){
+                        System.out.print(cell + " ");
+                    }
+                    System.out.println();
+                }
             }
         }
         // add doors
@@ -568,7 +597,6 @@ public class main {
                 updateGame((now - lastTime) / 1_000_000.0); // delta in ms
                 lastTime = now;
             }
-
             render();
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -645,6 +673,13 @@ public class main {
                     }
                 }
                 npc.setPosition(npc.getX() + 25, npc.getY() + 0);
+                // update the collision grid with the npcs new position
+                for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
+                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                        collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
+                    }
+                }
+                //collisionGrid[npc.getY() / GRID_CELL_SIZE][(npc.getX() + ENTITY_WIDTH_CELLS * GRID_CELL_SIZE - 1) / GRID_CELL_SIZE] = 1;
             }
         } else if (Math.random() < 0.01) {
             for (int i = 1; i < entities.size(); i++) {
@@ -660,6 +695,11 @@ public class main {
                             collision = true;
                             return; // don't move if collision detected
                         }
+                    }
+                }
+                for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
+                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                        collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
                     }
                 }
                 npc.setPosition(npc.getX() + 0, npc.getY() + 25);
@@ -680,6 +720,11 @@ public class main {
                         }
                     }
                 }
+                for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
+                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                        collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
+                    }
+                }
                 npc.setPosition(npc.getX() - 25, npc.getY() + 0);
             }
         } else if (Math.random() < 0.01) {
@@ -698,17 +743,37 @@ public class main {
                         }
                     }
                 }
-                npc.setPosition(npc.getX() + 0, npc.getY() - 25);
+                for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
+                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                        collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
+                    }
+                }
             }
         }
 
         // Typewriter update if message is shown
-        if (messageBoxDisplayed && typeIndex <= currentFullMessage.length()) {
-            long now = System.currentTimeMillis();
-            if (now - lastTypeTime >= TYPEWRITER_DELAY_MS) {
-                typeIndex++;
-                lastTypeTime = now;
-                updateMessageTexture();
+        //if (messageBoxDisplayed ){//&& typeIndex <= currentFullMessage.length()) {
+            //long now = System.currentTimeMillis();
+            //if (now - lastTypeTime >= TYPEWRITER_DELAY_MS) {
+                //typeIndex++;
+                //lastTypeTime = now;
+        //        displayMessageWithResponses(currentFullMessage, new String[]{"test 1", "test 2", "test 3"});
+            //}
+        //}
+        if(messageBoxOptionsDisplayed){
+            if(leftMouseButtonPressed){
+                for(int i = 0; i < responsePositions.length; i++){
+                    int[] pos = responsePositions[i];
+                    if(cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
+                    cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]){
+                        System.out.println("Player clicked on response: " + (i + 1));
+                        // close message box after clicking a response
+                        closeMessage();
+                        leftMouseButtonPressed = false;
+                        return;
+                    }
+                }
+                leftMouseButtonPressed = false;
             }
         }
     }
@@ -749,7 +814,7 @@ public class main {
         // Draw background to cover the entire window
         drawTexturedQuad(backgroundTex, 0, 0, winW, winH, backgroundBI.getWidth(), backgroundBI.getHeight());
         // draw grid overlay for debugging
-        //drawTexturedQuad(gridTex, 0, 0, winW, winH, gridBI.getWidth(), gridBI.getHeight());
+        drawTexturedQuad(gridTex, 0, 0, winW, winH, gridBI.getWidth(), gridBI.getHeight());
 
         // Draw entities
         for (Entity e : entities) {
@@ -795,6 +860,8 @@ public class main {
         if (messageBoxDisplayed) {
             if (key == GLFW_KEY_E) {
                 closeMessage();
+                messageBoxOptionsDisplayed = false;
+                responsePositions = null;
             }
             return;
         }
@@ -826,7 +893,11 @@ public class main {
                 // debug: print player position
                 System.out.println("Player position in window: (" + playerX + ", " + playerY + ")" + " " + "Player position in grid: (" + playerPositionInWindowToPositionInGridX(playerX, playerY) + ", " + playerPositionInWindowToPositionInGridY(playerX, playerY) + ")");
                 break;
-            
+            case GLFW_KEY_I:
+                // debug: display message box with test responses
+                //displayMessage("This is a test message. Choose an option below:");
+                drawResponseTextOnMessageBox(new String[]{"Option 1", "Option 2", "Option 3"});
+                break;
         }
         // prevent movement in both x and y at the same time
         if (xVelocity != 0 && yVelocity != 0) {
@@ -858,25 +929,114 @@ public class main {
         }
     }
 
+    private void cursorCallback(long window, double xpos, double ypos) {
+        System.out.println("Cursor moved to: (" + xpos + ", " + ypos + ")");
+        cursorXPosition = (int)xpos;
+        cursorYPosition = (int)ypos;
+        
+    }
+
+    private void mouseClickCallback(long window, int button, int action, int mods) {
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+            System.out.println("Left mouse button clicked");
+            leftMouseButtonPressed = true;
+        }
+    }
+
     // === Message box handling ===
     public void displayMessage(String message) {
         if (messageBoxDisplayed) return;
+        System.out.println("Displaying message: " + message);
         yVelocity = 0;
         xVelocity = 0;
         messageBoxDisplayed = true;
         currentFullMessage = message;
         typeIndex = 0;
         lastTypeTime = System.currentTimeMillis();
-        updateMessageTexture();
+        updateMessageTexture(message);
         playTalkingSound();
     }
 
-    public void displayMessageConversation(String[] messages) {
-        for(int i=0; i < messages.length; i++){
-            displayMessage(messages[i]);
-            // wait until message is fully displayed and user clicks the text box
-            
+    public void displayMessageWithResponses(String message, String[] responses) {
+        if (messageBoxDisplayed) return;
+        System.out.println("Displaying message with responses: " + message);
+        yVelocity = 0;
+        xVelocity = 0;
+        messageBoxOptionsDisplayed = true;
+        messageBoxDisplayed = true;
+        currentFullMessage = message;
+        //typeIndex = 0;
+        //lastTypeTime = System.currentTimeMillis();
+        updateMessageTexture(message);
+        drawResponseTextOnMessageBox(responses);
+        playTalkingSound();
+    }
+
+    public void drawResponseTextOnMessageBox(String[] responses){
+        // draws text at the bottom of the message box for player responses and uses the cursor position to select a response
+        // reuse code from updateMessageTexture to draw the text
+        //if (messageBoxDisplayed) return;
+        yVelocity = 0;
+        xVelocity = 0;
+        messageBoxOptionsDisplayed = true;
+        messageBoxDisplayed = true;
+        currentFullMessage = "test"; // dummy message to show the box
+        int numberOfResponses = responses.length;
+        responsePositions = new int[numberOfResponses][4]; // x, y, w, h for each response
+        for(int i = 0; i < numberOfResponses; i++){
+            Graphics2D g = messageTextureImage.createGraphics();
+            g.setColor(Color.YELLOW);
+            g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+            //g.drawImage(messageBoxBI, 0, 0, messageTextureImage.getWidth(), messageTextureImage.getHeight(), null);
+            int padding = 12;
+            int maxWidth = messageTextureImage.getWidth() - padding * 2;
+            int lineHeight = 22;
+            int startY = messageTextureImage.getHeight() - (numberOfResponses * lineHeight) - padding;
+            g.drawString(responses[i], padding, startY + (i * lineHeight) + g.getFontMetrics().getAscent());
+            // add response to responsePositions
+            int textWidth = g.getFontMetrics().stringWidth(responses[i]);
+            responsePositions[i][0] = padding; // x
+            responsePositions[i][1] = startY + (i * lineHeight); // y
+            responsePositions[i][2] = textWidth; // w
+            responsePositions[i][3] = lineHeight; // h
+            g.dispose();
         }
+        // upload to GL texture
+        int w = messageTextureImage.getWidth();
+        int h = messageTextureImage.getHeight();
+        int[] pixels = new int[w * h];
+        messageTextureImage.getRGB(0, 0, w, h, pixels, 0, w);
+        
+        ByteBuffer buf = BufferUtils.createByteBuffer(w * h * 4);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int pixel = pixels[y * w + x];
+                buf.put((byte) ((pixel >> 16) & 0xFF)); // R
+                buf.put((byte) ((pixel >> 8) & 0xFF));  // G
+                buf.put((byte) (pixel & 0xFF));         // B
+                buf.put((byte) ((pixel >> 24) & 0xFF)); // A
+            }
+        }
+            
+        buf.flip();
+
+        glBindTexture(GL_TEXTURE_2D, messageTextureGL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+
+        System.out.println("Response positions: " + java.util.Arrays.deepToString(responsePositions));
+            // since the options positions are relative to the message box, we need to offset them by the message box position in the window
+            for(int i = 0; i < responsePositions.length; i++){
+                responsePositions[i][0] += (winW - (winW / 2)) / 2; // boxX
+                responsePositions[i][1] += (int) (winH * 0.75); // boxY
+                // also shift the y position down by 22 pixels to account for the text ascent
+                responsePositions[i][1] += 22;
+                // and add some padding to the width and height
+                responsePositions[i][2] += 10;
+                responsePositions[i][3] += 10;
+            }
+            // specifically add extra padding to the last option to make it easier to click
+            responsePositions[responsePositions.length - 1][3] += 10;
+            System.out.println("Response positions in window: " + java.util.Arrays.deepToString(responsePositions));
     }
 
     public void closeMessage() {
@@ -887,9 +1047,10 @@ public class main {
         soundPlayer.stop();
     }
 
-    private void updateMessageTexture() {
+    private void updateMessageTexture(String currentFullMessage) {
+        System.out.println("Updating message texture: " + currentFullMessage);
         // Compose message box image with current substring text
-        String text = currentFullMessage.substring(0, Math.min(typeIndex, currentFullMessage.length()));
+        String text = currentFullMessage;//.substring(0, Math.min(typeIndex, currentFullMessage.length()));
 
         Graphics2D g = messageTextureImage.createGraphics();
         // draw background image as base
@@ -926,6 +1087,7 @@ public class main {
 
         glBindTexture(GL_TEXTURE_2D, messageTextureGL);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+        
     }
 
     private void drawStringWrapped(Graphics2D g, String text, int x, int y, int maxWidth, int lineHeight) {
@@ -951,6 +1113,26 @@ public class main {
         }
     }
 
+    private void checkIfPlayerClickedResponses(int[][] responsePositions) {
+        // check if the player clicked on one of the response options in the message box
+        // use responsePositions to check if cursorXPosition and cursorYPosition are within any of the response boxes
+        // responsePotions is an array of [x, y, w, h] for each response
+        if(leftMouseButtonPressed){
+            for(int i = 0; i < responsePositions.length; i++){
+                int[] pos = responsePositions[i];
+                if(cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
+                   cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]){
+                    System.out.println("Player clicked on response: " + (i + 1));
+                    // close message box after clicking a response
+                    closeMessage();
+                    leftMouseButtonPressed = false;
+                    return;
+                }
+            }
+            leftMouseButtonPressed = false;
+        }
+    }
+
     private void interactWithNearestNPC() {
         if (entities.size() < 2) return;
         Entity player = entities.get(0);
@@ -967,14 +1149,18 @@ public class main {
             }
         }
         // if the nearest npc is a door, run the build level function with the door's target level
-        if(nearest.getType().equals("door")){
+        if(nearest != null && nearest.getType().equals("door")){
             buildLevel(nearest.getTargetLevel());
             return;
         }
         // display npc conversation if npc has one defined
         if(nearest != null && nearest.getDialogueSequential().size() > 0) {
             String[] conversation = nearest.getDialogueSequential().toArray(new String[0]);
-            displayMessageConversation(conversation);
+            //displayMessage(conversation[0]);
+            //messageBoxDisplayed = true;
+            //currentFullMessage = conversation[0];
+            displayMessageWithResponses(conversation[0], nearest.getDialogueResponses().toArray(new String[0]));
+            System.out.println(conversation[0]);
             return;
         }
 
