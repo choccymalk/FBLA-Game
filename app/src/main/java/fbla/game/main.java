@@ -366,6 +366,7 @@ public class main {
     private static final int ENTITY_HEIGHT_CELLS = 5;
     private static final int DOOR_WIDTH = 96;
     private static final int DOOR_HEIGHT = 144;
+    private static final boolean DRAW_DEBUG_GRID = false;
 
     // === Game state ===
     private long window;
@@ -392,6 +393,8 @@ public class main {
     private Entity currentNPC = null;
 
     private int currentLevelIndex;
+
+    private String playerImagePath;
 
     jsonParser parser = new jsonParser(new File(RESOURCE_PATH+"\\levels.json"));
 
@@ -588,6 +591,13 @@ public class main {
         if(player == null){
             throw new IllegalStateException("Level " + levelIndex + " has no player entity defined.");
         }
+        try {
+            playerBI = ImageIO.read(new File(RESOURCE_PATH+"\\textures\\" + player.getImagePath()));
+        } catch (IOException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        playerTex = createTextureFromBufferedImage(playerBI);
         player.setTextureId(playerTex);
         player.setWidth(ENTITY_WIDTH_CELLS * GRID_CELL_SIZE);
         player.setHeight(ENTITY_HEIGHT_CELLS * GRID_CELL_SIZE);
@@ -601,7 +611,12 @@ public class main {
         for(Entity e : level.getEntities()){
             if(!e.getType().equals("player")){
                 System.out.println("Adding entity of type " + e.getType() + " at (" + e.getX() + ", " + e.getY() + ")");
-                e.setTextureId(npcTex); // for now, all non-player entities use npc texture
+                try {
+                    e.setTextureId(createTextureFromBufferedImage(ImageIO.read(new File(RESOURCE_PATH+"\\textures\\" + e.getImagePath()))));
+                } catch (IOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
                 e.setWidth(ENTITY_WIDTH_CELLS * GRID_CELL_SIZE);
                 e.setHeight(ENTITY_HEIGHT_CELLS * GRID_CELL_SIZE);
                 e.setPosition(e.getX(), e.getY());
@@ -679,15 +694,6 @@ public class main {
                 // since the player is 3x5 cells, check all 15 cells
                 int newPlayerX = Math.max(0, Math.min(playerX + xVelocity, winW - playerBI.getWidth()));
                 int newPlayerY = Math.max(0, Math.min(playerY + yVelocity, winH - playerBI.getHeight()));
-                // clear old position
-                // first check to see if player is actually moving, as this is relatively expensive to be doing multiple times per second
-                if(xVelocity > 0 && yVelocity > 0){
-                    for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
-                        for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                            collisionGrid[(playerPositionInWindowToPositionInGridX(playerX, playerY) / GRID_CELL_SIZE) + j][(playerPositionInWindowToPositionInGridY(playerX, playerY) / GRID_CELL_SIZE) + i] = 0;
-                        }
-                    }
-                }
                 boolean collision = false;
                 for(int px = 0; px < 3; px++){
                     for(int py = 0; py < 5; py++){
@@ -697,12 +703,6 @@ public class main {
                             collision = true;
                             return; // don't move if collision detected
                         }
-                    }
-                }
-                // update collision grid with players new position
-                for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
-                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                        collisionGrid[(playerPositionInWindowToPositionInGridX(playerX, playerY) / GRID_CELL_SIZE) + j][(playerPositionInWindowToPositionInGridY(playerX, playerY) / GRID_CELL_SIZE) + i] = 1;
                     }
                 }
                 playerX = Math.max(0, Math.min(playerX + xVelocity, winW - playerBI.getWidth()));
@@ -876,7 +876,9 @@ public class main {
         // Draw background to cover the entire window
         drawTexturedQuad(backgroundTex, 0, 0, winW, winH, backgroundBI.getWidth(), backgroundBI.getHeight());
         // draw grid overlay for debugging
-        drawTexturedQuad(gridTex, 0, 0, winW, winH, gridBI.getWidth(), gridBI.getHeight());
+        if(DRAW_DEBUG_GRID){
+            drawTexturedQuad(gridTex, 0, 0, winW, winH, gridBI.getWidth(), gridBI.getHeight());
+        }
 
         // Draw entities
         for (Entity e : entities) {
@@ -960,6 +962,15 @@ public class main {
                 //displayMessage("This is a test message. Choose an option below:");
                 drawResponseTextOnMessageBox(new String[]{"Option 1", "Option 2", "Option 3"});
                 break;
+            case GLFW_KEY_G:
+                for(int[] row : collisionGrid){
+                    for(int cell : row){
+                        System.out.print(cell + " ");
+                    }
+                    System.out.println();
+                }
+                break;
+
         }
         // prevent movement in both x and y at the same time
         if (xVelocity != 0 && yVelocity != 0) {
@@ -1212,8 +1223,8 @@ public class main {
         }
         for(int i = 0; i < wayPoints.size(); i++){
             try {
-                Thread.sleep(20);
-                npc.setPosition(gridCoordinatesToWindowCoordinatesX((int)wayPoints.get(i).getX(), (int)wayPoints.get(i).getY()), gridCoordinatesToWindowCoordinatesY((int)wayPoints.get(i).getX(), (int)wayPoints.get(i).getY()));
+                Thread.sleep(200);
+                npc.setPosition(gridCoordinatesToWindowCoordinatesX((int)wayPoints.get(i).getX(), (int)wayPoints.get(i).getY()), gridCoordinatesToWindowCoordinatesX((int)wayPoints.get(i).getX(), (int)wayPoints.get(i).getY()));
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -1235,11 +1246,18 @@ public class main {
             try {
                 int targetX = Integer.parseInt(parts[0].trim()) * GRID_CELL_SIZE;
                 int targetY = Integer.parseInt(parts[1].trim()) * GRID_CELL_SIZE;
+                int oldPositionX = npc.getX();
+                int oldPositionY = npc.getY();
                 // move the npc to the target cell
                 System.out.println("Start position: " + playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()) + ", " +  playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()) + " Target position: " + targetX / GRID_CELL_SIZE + ", " + targetY / GRID_CELL_SIZE);
-                NPCPathfindToPoint(collisionGrid, playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), targetX / GRID_CELL_SIZE, targetY / GRID_CELL_SIZE, npc);
+                //NPCPathfindToPoint(collisionGrid, playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), targetX / GRID_CELL_SIZE, targetY / GRID_CELL_SIZE, npc);
                 // clear old position
-                collisionGrid = parser.getCollisionGrid(currentLevelIndex);
+                for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
+                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                        collisionGrid[(oldPositionX / GRID_CELL_SIZE) + j][(oldPositionY / GRID_CELL_SIZE) + i] = 0;
+                    }
+                }
+                npc.setPosition(targetX, targetY);
                 // update collision grid with entitys new position
                 for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
                     for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){

@@ -19,6 +19,9 @@ public class Entity {
     @SerializedName("dialogue_tree")
     private dialogueTree dialogueTree;
 
+    @SerializedName("image")
+    private String imagePath;
+
     // Fields you want to set at runtime (JSON doesn't contain them).
     // Mark transient if you do NOT want Gson to attempt to read/write them.
     private transient int textureId;
@@ -68,6 +71,8 @@ public class Entity {
 
     public int getHeight() { return height; }
     public void setHeight(int height) { this.height = height; }
+
+    public String getImagePath() { return imagePath; }
 
     // only used if the entity is a door
     public int getTargetLevel(){
