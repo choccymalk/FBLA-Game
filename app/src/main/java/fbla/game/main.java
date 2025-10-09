@@ -282,33 +282,72 @@ public class main implements KeyListener {
 // Single-file migration of your JFrame game to LWJGL (GLFW + OpenGL).
 // Note: requires LWJGL (glfw, opengl, stb) on the classpath with natives.
 
-import org.lwjgl.*;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
-import org.lwjgl.system.*;
-import org.lwjgl.stb.STBImage;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_LINEAR;
+import static org.lwjgl.opengl.GL11.GL_LINES;
+import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.GL_QUADS;
+import static org.lwjgl.opengl.GL11.GL_RGBA;
+import static org.lwjgl.opengl.GL11.GL_RGBA8;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11.glBegin;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glColor3f;
+import static org.lwjgl.opengl.GL11.glDeleteTextures;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glEnd;
+import static org.lwjgl.opengl.GL11.glGenTextures;
+import static org.lwjgl.opengl.GL11.glLoadIdentity;
+import static org.lwjgl.opengl.GL11.glMatrixMode;
+import static org.lwjgl.opengl.GL11.glOrtho;
+import static org.lwjgl.opengl.GL11.glPopMatrix;
+import static org.lwjgl.opengl.GL11.glPushMatrix;
+import static org.lwjgl.opengl.GL11.glTexCoord2f;
+import static org.lwjgl.opengl.GL11.glTexImage2D;
+import static org.lwjgl.opengl.GL11.glTexParameteri;
+import static org.lwjgl.opengl.GL11.glTranslatef;
+import static org.lwjgl.opengl.GL11.glVertex2f;
+import static org.lwjgl.opengl.GL11.glVertex3f;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.system.MemoryUtil.memAlloc;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
-import javax.imageio.ImageIO;
-import javax.sound.sampled.*;
-import javax.swing.Timer;
-
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.nio.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryStack.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import javax.imageio.ImageIO;
 
-import fbla.game.*;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.system.MemoryStack;
+
+import java.awt.Point;
 
 public class main {
     // === Config ===
@@ -348,6 +387,11 @@ public class main {
 
     private int[][] responsePositions;
     private boolean messageBoxOptionsDisplayed = false;
+
+    private dialogueTree currentTree = null;
+    private Entity currentNPC = null;
+
+    private int currentLevelIndex;
 
     jsonParser parser = new jsonParser(new File(RESOURCE_PATH+"\\levels.json"));
 
@@ -486,6 +530,10 @@ public class main {
         }
     }
 
+    public void setCollisionGrid(int[][] grid){
+        collisionGrid = grid;
+    }
+
     private int createTextureFromBufferedImage(BufferedImage img) {
         int[] pixels = new int[img.getWidth() * img.getHeight()];
         img.getRGB(0, 0, img.getWidth(), img.getHeight(), pixels, 0, img.getWidth());
@@ -514,6 +562,7 @@ public class main {
     }
 
     private void buildLevel(int levelIndex){
+        currentLevelIndex = levelIndex;
         // clear existing entities
         entities.clear();
 
@@ -630,6 +679,15 @@ public class main {
                 // since the player is 3x5 cells, check all 15 cells
                 int newPlayerX = Math.max(0, Math.min(playerX + xVelocity, winW - playerBI.getWidth()));
                 int newPlayerY = Math.max(0, Math.min(playerY + yVelocity, winH - playerBI.getHeight()));
+                // clear old position
+                // first check to see if player is actually moving, as this is relatively expensive to be doing multiple times per second
+                if(xVelocity > 0 && yVelocity > 0){
+                    for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
+                        for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                            collisionGrid[(playerPositionInWindowToPositionInGridX(playerX, playerY) / GRID_CELL_SIZE) + j][(playerPositionInWindowToPositionInGridY(playerX, playerY) / GRID_CELL_SIZE) + i] = 0;
+                        }
+                    }
+                }
                 boolean collision = false;
                 for(int px = 0; px < 3; px++){
                     for(int py = 0; py < 5; py++){
@@ -641,7 +699,12 @@ public class main {
                         }
                     }
                 }
-                
+                // update collision grid with players new position
+                for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
+                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                        collisionGrid[(playerPositionInWindowToPositionInGridX(playerX, playerY) / GRID_CELL_SIZE) + j][(playerPositionInWindowToPositionInGridY(playerX, playerY) / GRID_CELL_SIZE) + i] = 1;
+                    }
+                }
                 playerX = Math.max(0, Math.min(playerX + xVelocity, winW - playerBI.getWidth()));
                 playerY = Math.max(0, Math.min(playerY + yVelocity, winH - playerBI.getHeight()));
                 movementLastTime = now;
@@ -767,8 +830,7 @@ public class main {
                     if(cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
                     cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]){
                         System.out.println("Player clicked on response: " + (i + 1));
-                        // close message box after clicking a response
-                        closeMessage();
+                        dialogueHandler(currentTree, (i + 1), currentNPC);
                         leftMouseButtonPressed = false;
                         return;
                     }
@@ -959,6 +1021,8 @@ public class main {
 
     public void displayMessageWithResponses(String message, String[] responses) {
         if (messageBoxDisplayed) return;
+        // close old message
+        closeMessage();
         System.out.println("Displaying message with responses: " + message);
         yVelocity = 0;
         xVelocity = 0;
@@ -1133,6 +1197,112 @@ public class main {
         }
     }
 
+    private int gridCoordinatesToWindowCoordinatesX(int coordx, int coordy){
+        return coordx * GRID_CELL_SIZE;
+    }
+
+    private int gridCoordinatesToWindowCoordinatesY(int coordx, int coordy){
+        return coordy * GRID_CELL_SIZE;
+    }
+
+    private void NPCPathfindToPoint(int[][] grid, int startX, int startY, int goalX, int goalY, Entity npc){
+        List<Point> wayPoints = AStar.findPath(grid, startX, startY, goalX, goalY, ENTITY_WIDTH_CELLS, ENTITY_HEIGHT_CELLS);
+        for(int i = 0; i < wayPoints.size(); i++){
+            System.out.println("Waypoints: " + wayPoints.get(i).getX() + ", " + wayPoints.get(i).getY());
+        }
+        for(int i = 0; i < wayPoints.size(); i++){
+            try {
+                Thread.sleep(20);
+                npc.setPosition(gridCoordinatesToWindowCoordinatesX((int)wayPoints.get(i).getX(), (int)wayPoints.get(i).getY()), gridCoordinatesToWindowCoordinatesY((int)wayPoints.get(i).getX(), (int)wayPoints.get(i).getY()));
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void handleNPCActions(String action, Entity npc){
+        // this method is primarily meant to handle NPC actions that are triggered from dialogue trees
+        // right now, the only action that an NPC will do is to move to a new cell.
+        // here is what the action looks like: move_to(11,2)
+        if(action.startsWith("move_to")){
+            // parse the action to get the target cell
+            int start = action.indexOf('(');
+            int end = action.indexOf(')');
+            if(start == -1 || end == -1 || end <= start + 1) return;
+            String[] parts = action.substring(start + 1, end).split(",");
+            if(parts.length != 2) return;
+            try {
+                int targetX = Integer.parseInt(parts[0].trim()) * GRID_CELL_SIZE;
+                int targetY = Integer.parseInt(parts[1].trim()) * GRID_CELL_SIZE;
+                // move the npc to the target cell
+                System.out.println("Start position: " + playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()) + ", " +  playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()) + " Target position: " + targetX / GRID_CELL_SIZE + ", " + targetY / GRID_CELL_SIZE);
+                NPCPathfindToPoint(collisionGrid, playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), targetX / GRID_CELL_SIZE, targetY / GRID_CELL_SIZE, npc);
+                // clear old position
+                collisionGrid = parser.getCollisionGrid(currentLevelIndex);
+                // update collision grid with entitys new position
+                for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
+                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                        collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + i] = 1;
+                    }
+                }
+                System.out.println("Moved NPC to (" + targetX + ", " + targetY + ")");
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid move_to action format: " + action);
+            }
+        }
+    }
+
+    private void dialogueHandler(dialogueTree tree, int selectedResponse, Entity npc) {
+        // handle dialogue tree traversal
+        // if selected response is zero, assume we are at the top level of the tree
+        // close old message box
+        closeMessage();
+        String npcText = tree.getNpcText();
+        List<Response> playerResponses = tree.getResponses();
+        String[] responses = new String[playerResponses.size()];
+        for(int i = 0; i < playerResponses.size(); i++){
+            responses[i] = playerResponses.get(i).getResponseText();
+        }
+        if(selectedResponse == 0){
+            // display top level npc text and responses
+            displayMessageWithResponses(npcText, responses);
+            return;
+        }
+        // print all responses for debugging
+        for(int i = 0; i < responses.length; i++){
+            System.out.println((i + 1) + ": " + responses[i]);
+        }
+        // enumerate through the responses to find the selected one
+        for(int i = 0; i < playerResponses.size(); i++){
+            // check to ensure that there are actually responses to select from
+            if(i == selectedResponse - 1 && responses.length > 0){
+                // remember that a selectedresponse of 0 is the top level, so subtract 1 from the index
+                Response r = playerResponses.get(i);
+                // if there are no responses, just display the npc text, this is the end of the conversation
+                if(currentTree.getResponses().isEmpty()){
+                    displayMessage(currentTree.getNpcText());
+                    messageBoxOptionsDisplayed = false;
+                    responsePositions = null;
+                } else if(r.getNextNode() != null && r.getNextNode().getResponses().size() > 0){
+                    // display the npc text for the selected response
+                    dialogueHandler(r.getNextNode(), 0, npc);
+                    // refresh playerresponses and responses array for the new node
+                    currentTree = r.getNextNode();
+                } else if(r.getNextNode() != null && r.getNextNode().getResponses().size() == 0) {
+                    closeMessage();
+                    currentTree = r.getNextNode();
+                    displayMessage(r.getNextNode().getNpcText());
+                    // run an npc action if it has one, these should always be at the end of the tree
+                    if(r.getNextNode().getNpcAction() != null){
+                        handleNPCActions(r.getNextNode().getNpcAction(), npc);
+                    }
+                }
+                return;
+            }
+        }
+    }
+
     private void interactWithNearestNPC() {
         if (entities.size() < 2) return;
         Entity player = entities.get(0);
@@ -1154,13 +1324,11 @@ public class main {
             return;
         }
         // display npc conversation if npc has one defined
-        if(nearest != null && nearest.getDialogueSequential().size() > 0) {
-            String[] conversation = nearest.getDialogueSequential().toArray(new String[0]);
-            //displayMessage(conversation[0]);
-            //messageBoxDisplayed = true;
-            //currentFullMessage = conversation[0];
-            displayMessageWithResponses(conversation[0], nearest.getDialogueResponses().toArray(new String[0]));
-            System.out.println(conversation[0]);
+        if(nearest != null && !nearest.getDialogueTree().isTreeEmpty()) {
+            // start dialogue tree, the 0 means the top level of the tree
+            currentTree = nearest.getDialogueTree();
+            currentNPC = nearest;
+            dialogueHandler(nearest.getDialogueTree(), 0, nearest);
             return;
         }
 

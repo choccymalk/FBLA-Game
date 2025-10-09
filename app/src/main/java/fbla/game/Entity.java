@@ -17,10 +17,7 @@ public class Entity {
     private int y;
 
     @SerializedName("dialogue_tree")
-    private List<String> dialogueTree;
-
-    @SerializedName("dialogue_responses")
-    private List<String> dialogueResponses;
+    private dialogueTree dialogueTree;
 
     // Fields you want to set at runtime (JSON doesn't contain them).
     // Mark transient if you do NOT want Gson to attempt to read/write them.
@@ -61,8 +58,7 @@ public class Entity {
     public String getType() { return type; }
     public int getX() { return x; }
     public int getY() { return y; }
-    public List<String> getDialogueSequential() { return dialogueTree; }
-    public List<String> getDialogueResponses() { return dialogueResponses; }
+    public dialogueTree getDialogueTree() { return dialogueTree; }
     // Getters/setters for runtime fields
     public int getTextureId() { return textureId; }
     public void setTextureId(int textureId) { this.textureId = textureId; }
