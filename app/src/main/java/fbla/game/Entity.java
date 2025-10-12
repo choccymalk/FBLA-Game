@@ -22,6 +22,9 @@ public class Entity {
     @SerializedName("image")
     private String imagePath;
 
+    @SerializedName("animation_states")
+    private animationStates animationStates;
+
     // Fields you want to set at runtime (JSON doesn't contain them).
     // Mark transient if you do NOT want Gson to attempt to read/write them.
     private transient int textureId;
@@ -73,6 +76,8 @@ public class Entity {
     public void setHeight(int height) { this.height = height; }
 
     public String getImagePath() { return imagePath; }
+
+    public animationStates getAnimationStates() { return animationStates; }
 
     // only used if the entity is a door
     public int getTargetLevel(){

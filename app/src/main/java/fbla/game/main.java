@@ -342,6 +342,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import javax.imageio.ImageIO;
 
+import org.checkerframework.checker.units.qual.s;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
@@ -367,6 +368,7 @@ public class main {
     private static final int DOOR_WIDTH = 96;
     private static final int DOOR_HEIGHT = 144;
     private static final boolean DRAW_DEBUG_GRID = false;
+    private static final boolean RANDOM_NPC_MOVEMENT = false;
 
     // === Game state ===
     private long window;
@@ -501,8 +503,8 @@ public class main {
         doorTex = createTextureFromBufferedImage(doorBI);
 
         // Entities: index 0 is player
-        entities.add(new Entity(null, playerTex, playerX, playerY, playerBI.getWidth(), playerBI.getHeight()));
-        entities.add(new Entity(null, npcTex, 200, 150, npcBI.getWidth(), npcBI.getHeight()));
+        //entities.add(new Entity(null, playerTex, playerX, playerY, playerBI.getWidth(), playerBI.getHeight()));
+        //entities.add(new Entity(null, npcTex, 200, 150, npcBI.getWidth(), npcBI.getHeight()));
 
         // Prepare message overlay buffer image (same size as message box) but will update later
         messageTextureImage = new BufferedImage(messageBoxBI.getWidth(), messageBoxBI.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -716,99 +718,101 @@ public class main {
         entities.get(0).setPosition(playerX, playerY);
 
         // NPC random movement
-        if (Math.random() < 0.01) {
-            for (int i = 1; i < entities.size(); i++) {
-                Entity npc = entities.get(i);
-                // check to see if npc will move into a collision tile, reuse the player collision code
-                // check to see if npc will move into a collision tile
-                // since the npc is 3x5 cells, check all 15 cells
-                int newX = npc.getX() + 25;
-                int newY = npc.getY() + 0;
-                boolean collision = false;
-                for(int px = 0; px < 3; px++){
-                    for(int py = 0; py < 5; py++){
-                        int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
-                        int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
-                        if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
-                            collision = true;
-                            return; // don't move if collision detected
+        if(RANDOM_NPC_MOVEMENT){
+            if (Math.random() < 0.01) {
+                for (int i = 1; i < entities.size(); i++) {
+                    Entity npc = entities.get(i);
+                    // check to see if npc will move into a collision tile, reuse the player collision code
+                    // check to see if npc will move into a collision tile
+                    // since the npc is 3x5 cells, check all 15 cells
+                    int newX = npc.getX() + 25;
+                    int newY = npc.getY() + 0;
+                    boolean collision = false;
+                    for(int px = 0; px < 3; px++){
+                        for(int py = 0; py < 5; py++){
+                            int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
+                            int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
+                            if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
+                                collision = true;
+                                return; // don't move if collision detected
+                            }
                         }
                     }
-                }
-                npc.setPosition(npc.getX() + 25, npc.getY() + 0);
-                // update the collision grid with the npcs new position
-                for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
-                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                        collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
-                    }
-                }
-                //collisionGrid[npc.getY() / GRID_CELL_SIZE][(npc.getX() + ENTITY_WIDTH_CELLS * GRID_CELL_SIZE - 1) / GRID_CELL_SIZE] = 1;
-            }
-        } else if (Math.random() < 0.01) {
-            for (int i = 1; i < entities.size(); i++) {
-                Entity npc = entities.get(i);
-                int newX = npc.getX() + 0;
-                int newY = npc.getY() + 25;
-                boolean collision = false;
-                for(int px = 0; px < 3; px++){
-                    for(int py = 0; py < 5; py++){
-                        int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
-                        int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
-                        if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
-                            collision = true;
-                            return; // don't move if collision detected
+                    npc.setPosition(npc.getX() + 25, npc.getY() + 0);
+                    // update the collision grid with the npcs new position
+                    for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
+                        for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                            collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
                         }
                     }
+                    //collisionGrid[npc.getY() / GRID_CELL_SIZE][(npc.getX() + ENTITY_WIDTH_CELLS * GRID_CELL_SIZE - 1) / GRID_CELL_SIZE] = 1;
                 }
-                for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
-                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                        collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
-                    }
-                }
-                npc.setPosition(npc.getX() + 0, npc.getY() + 25);
-            }
-        } else if (Math.random() < 0.01) {
-            for (int i = 1; i < entities.size(); i++) {
-                Entity npc = entities.get(i);
-                int newX = npc.getX() - 25;
-                int newY = npc.getY() + 0;
-                boolean collision = false;
-                for(int px = 0; px < 3; px++){
-                    for(int py = 0; py < 5; py++){
-                        int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
-                        int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
-                        if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
-                            collision = true;
-                            return; // don't move if collision detected
+            } else if (Math.random() < 0.01) {
+                for (int i = 1; i < entities.size(); i++) {
+                    Entity npc = entities.get(i);
+                    int newX = npc.getX() + 0;
+                    int newY = npc.getY() + 25;
+                    boolean collision = false;
+                    for(int px = 0; px < 3; px++){
+                        for(int py = 0; py < 5; py++){
+                            int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
+                            int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
+                            if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
+                                collision = true;
+                                return; // don't move if collision detected
+                            }
                         }
                     }
-                }
-                for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
-                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                        collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
-                    }
-                }
-                npc.setPosition(npc.getX() - 25, npc.getY() + 0);
-            }
-        } else if (Math.random() < 0.01) {
-            for (int i = 1; i < entities.size(); i++) {
-                Entity npc = entities.get(i);
-                int newX = npc.getX() + 0;
-                int newY = npc.getY() - 25;
-                boolean collision = false;
-                for(int px = 0; px < 3; px++){
-                    for(int py = 0; py < 5; py++){
-                        int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
-                        int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
-                        if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
-                            collision = true;
-                            return; // don't move if collision detected
+                    for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
+                        for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                            collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
                         }
                     }
+                    npc.setPosition(npc.getX() + 0, npc.getY() + 25);
                 }
-                for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
-                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                        collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
+            } else if (Math.random() < 0.01) {
+                for (int i = 1; i < entities.size(); i++) {
+                    Entity npc = entities.get(i);
+                    int newX = npc.getX() - 25;
+                    int newY = npc.getY() + 0;
+                    boolean collision = false;
+                    for(int px = 0; px < 3; px++){
+                        for(int py = 0; py < 5; py++){
+                            int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
+                            int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
+                            if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
+                                collision = true;
+                                return; // don't move if collision detected
+                            }
+                        }
+                    }
+                    for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
+                        for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                            collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
+                        }
+                    }
+                    npc.setPosition(npc.getX() - 25, npc.getY() + 0);
+                }
+            } else if (Math.random() < 0.01) {
+                for (int i = 1; i < entities.size(); i++) {
+                    Entity npc = entities.get(i);
+                    int newX = npc.getX() + 0;
+                    int newY = npc.getY() - 25;
+                    boolean collision = false;
+                    for(int px = 0; px < 3; px++){
+                        for(int py = 0; py < 5; py++){
+                            int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
+                            int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
+                            if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
+                                collision = true;
+                                return; // don't move if collision detected
+                            }
+                        }
+                    }
+                    for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
+                        for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                            collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
+                        }
                     }
                 }
             }
@@ -917,6 +921,31 @@ public class main {
         glVertex2f(x, y + h);
         glEnd();
         glPopMatrix();
+    }
+
+    private void entityAnimation(Entity entity, String currentEntityState){
+        List<String> imagePaths;
+        if(currentEntityState.equals("idle")){
+            imagePaths = entity.getAnimationStates().getIdleImagesPaths();
+        } else if(currentEntityState.equals("walkingUp")){
+            imagePaths = entity.getAnimationStates().getWalkingUpImagesPaths();
+        } else if(currentEntityState.equals("walkingDown")){
+            imagePaths = entity.getAnimationStates().getWalkingDownImagesPaths();
+        } else if(currentEntityState.equals("walkingLeft")){
+            imagePaths = entity.getAnimationStates().getWalkingLeftImagesPaths();
+        } else if(currentEntityState.equals("walkingRight")){
+            imagePaths = entity.getAnimationStates().getWalkingRightImagesPaths();
+        } else {
+            imagePaths = entity.getAnimationStates().getIdleImagesPaths();
+        }
+        for(int i = 0; i < imagePaths.size(); i++){
+            try {
+                entity.setTextureId(createTextureFromBufferedImage(ImageIO.read(new File(RESOURCE_PATH + "\\textures\\" + imagePaths.get(i)))));
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
 
     // === Input handling (GLFW key codes) ===

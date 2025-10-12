@@ -18,6 +18,11 @@ public class Door {
     @SerializedName("target_y")
     private int targetY;
 
+    @SerializedName("image")
+    private String imagePath;
+
+    private transient int textureId;
+
     // Getters:
     public int getX() {
         return x;
@@ -37,5 +42,17 @@ public class Door {
 
     public int getTargetY() {
         return targetY;
+    }
+
+    public void setTextureId(int id){
+        this.textureId = id;
+    }
+    
+    public int getTextureId(){
+        return textureId;
+    }
+
+    public String getImagePath(){
+        return imagePath;
     }
 }
