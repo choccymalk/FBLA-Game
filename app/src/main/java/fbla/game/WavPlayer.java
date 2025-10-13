@@ -5,9 +5,9 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import java.io.File;
 
-public class WavPlayer {
+public class WavPlayer extends Thread{
     private Clip clip;
-
+    private String path;
     public void play(String filePath) {
         try {
             File audioFile = new File(filePath);
@@ -20,10 +20,24 @@ public class WavPlayer {
         }
     }
 
-    public void stop() {
+    public void stopAudio() {
         if (clip != null && clip.isRunning()) {
             clip.stop();
             clip.close();
         }
+    }
+    
+    @Override
+    public void run(){
+        System.out.println("running wavplayer");
+        play(path);
+    }
+
+    public void setPath(String path){
+        this.path = path;
+    }
+
+    public WavPlayer(String audioFilePath){
+        this.path = audioFilePath;
     }
 }

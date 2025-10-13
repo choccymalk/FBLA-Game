@@ -102,8 +102,6 @@ public class main {
     private int xVelocity = 0, yVelocity = 0;
     private boolean messageBoxDisplayed = false;
 
-    private final WavPlayer soundPlayer = new WavPlayer();
-
     private int cursorXPosition;
     private int cursorYPosition;
     private boolean leftMouseButtonPressed = false;
@@ -882,7 +880,7 @@ public class main {
         messageBoxDisplayed = false;
         currentFullMessage = "";
         typeIndex = 0;
-        soundPlayer.stop();
+        //soundPlayer.stopAudio();
     }
 
     private void updateMessageTexture(String currentFullMessage) {
@@ -1015,11 +1013,13 @@ public class main {
                 System.out.println("Start position: " + playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()) + ", " +  playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()) + " Target position: " + targetX / GRID_CELL_SIZE + ", " + targetY / GRID_CELL_SIZE);
                 //NPCPathfindToPoint(collisionGrid, playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), targetX / GRID_CELL_SIZE, targetY / GRID_CELL_SIZE, npc);
                 // clear old position
-                for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
-                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                        collisionGrid[(oldPositionX / GRID_CELL_SIZE) + j][(oldPositionY / GRID_CELL_SIZE) + i] = 0;
-                    }
-                }
+                // for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
+                //     for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
+                //         collisionGrid[(oldPositionX / GRID_CELL_SIZE) + j][(oldPositionY / GRID_CELL_SIZE) + i] = 0;
+                //     }
+                // }
+                // just rebuild the collision from the json
+                collisionGrid = parser.getLevel(currentLevelIndex).getCollisionGrid();
                 npc.setPosition(targetX, targetY);
                 // update collision grid with entitys new position
                 for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
@@ -1126,8 +1126,10 @@ public class main {
 
     private void playTalkingSound() {
         try {
-            Path soundPath = Paths.get(RESOURCE_PATH, "audio", "talking.wav");
-            soundPlayer.play(soundPath.toString());
+            WavPlayer soundPlayer = new WavPlayer(RESOURCE_PATH + "\\audio\\talking.wav");
+            soundPlayer.setName("soundPlayerThread");
+            soundPlayer.setPriority(Thread.MAX_PRIORITY);
+            soundPlayer.start();
         } catch (Exception e) {
             System.err.println("Could not play talking sound: " + e.getMessage());
         }
@@ -1146,6 +1148,6 @@ public class main {
         //glfwDestroyWindow(window);
         //glfwTerminate();
         //glfwSetErrorCallback(null).free();
-        soundPlayer.stop();
+        //soundPlayer.stopAudio();
     }
 }
