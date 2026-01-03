@@ -25,6 +25,9 @@ public class Entity {
     @SerializedName("animation_states")
     private animationStates animationStates;
 
+    @SerializedName("ai_abilities")
+    private AIAbilities AIAbilities;
+
     // Fields you want to set at runtime (JSON doesn't contain them).
     // Mark transient if you do NOT want Gson to attempt to read/write them.
     private transient int textureId;
@@ -62,9 +65,12 @@ public class Entity {
 
     // Getters for JSON fields
     public String getType() { return type; }
+    // window space, must be converted to grid space for pathfinding, divide by GRID_CELL_SIZE
     public int getX() { return x; }
+    // window space, must be converted to grid space for pathfinding, divide by GRID_CELL_SIZE
     public int getY() { return y; }
     public dialogueTree getDialogueTree() { return dialogueTree; }
+    public AIAbilities getAIAbilities() { return AIAbilities; }
     // Getters/setters for runtime fields
     public int getTextureId() { return textureId; }
     public void setTextureId(int textureId) { this.textureId = textureId; }

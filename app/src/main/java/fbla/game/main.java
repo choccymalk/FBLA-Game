@@ -1,42 +1,6 @@
 package fbla.game;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.GL_BLEND;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_LINEAR;
-import static org.lwjgl.opengl.GL11.GL_LINES;
-import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_PROJECTION;
-import static org.lwjgl.opengl.GL11.GL_QUADS;
-import static org.lwjgl.opengl.GL11.GL_RGBA;
-import static org.lwjgl.opengl.GL11.GL_RGBA8;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
-import static org.lwjgl.opengl.GL11.glBegin;
-import static org.lwjgl.opengl.GL11.glBindTexture;
-import static org.lwjgl.opengl.GL11.glBlendFunc;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glClearColor;
-import static org.lwjgl.opengl.GL11.glColor3f;
-import static org.lwjgl.opengl.GL11.glDeleteTextures;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glEnd;
-import static org.lwjgl.opengl.GL11.glGenTextures;
-import static org.lwjgl.opengl.GL11.glLoadIdentity;
-import static org.lwjgl.opengl.GL11.glMatrixMode;
-import static org.lwjgl.opengl.GL11.glOrtho;
-import static org.lwjgl.opengl.GL11.glPopMatrix;
-import static org.lwjgl.opengl.GL11.glPushMatrix;
-import static org.lwjgl.opengl.GL11.glTexCoord2f;
-import static org.lwjgl.opengl.GL11.glTexImage2D;
-import static org.lwjgl.opengl.GL11.glTexParameteri;
-import static org.lwjgl.opengl.GL11.glTranslatef;
-import static org.lwjgl.opengl.GL11.glVertex2f;
-import static org.lwjgl.opengl.GL11.glVertex3f;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -57,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
@@ -78,8 +43,8 @@ public class main {
     public static final int MOVEMENT_DELAY_MS = 75; // seconds between moves
     private static final int TYPEWRITER_DELAY_MS = 75;
     private static final double NPC_INTERACTION_DISTANCE = 500.0;
-    private static final String RESOURCE_PATH = /*System.getenv("LOCALAPPDATA")*/System.getProperty("user.home")+"\\Desktop\\FBLA-Game\\game_resources";
-    private double FRAMERATE = 24.0;
+    private static final String RESOURCE_PATH = /*System.getenv("LOCALAPPDATA")*/System.getProperty("user.home")+"\\Desktop\\FBLA-Game\\game_resources"; // TODO: don't use hardcoded path
+    private double FRAMERATE = 12.0;
     private static final int GRID_CELL_SIZE = 24; // each cell in the grid is 24x24 pixels
     private static final int GRID_WIDTH = 53; // number of cells in the grid horizontally
     private static final int GRID_HEIGHT = 30; // number of cells in the grid vertically 
@@ -88,15 +53,16 @@ public class main {
     private static final int DOOR_WIDTH = 96;
     private static final int DOOR_HEIGHT = 144;
     private static final boolean DRAW_DEBUG_GRID = false;
-    private static final boolean RANDOM_NPC_MOVEMENT = false;
-
     // === Game state ===
     private long window;
     private int winW = WINDOW_W, winH = WINDOW_H;
 
     private final List<Entity> entities = new ArrayList<>();
+    private List<EntityAI> entityAIs = new ArrayList<>(); // maps to the indices of entities list
     private BufferedImage playerBI, backgroundBI, npcBI, messageBoxBI, gridBI, doorBI;
     private int playerTex, backgroundTex, npcTex, messageBoxTex, gridTex, doorTex;
+
+    private HashMap<Integer, entityAnimation> entityIndexToAnimationObjects = new HashMap<>();
 
     private int playerX = 0, playerY = 600;
     private int xVelocity = 0, yVelocity = 0;
@@ -108,13 +74,16 @@ public class main {
 
     private int[][] responsePositions;
     private boolean messageBoxOptionsDisplayed = false;
+    private String[] currentResponseOptions;
 
     private dialogueTree currentTree = null;
     private Entity currentNPC = null;
 
     private int currentLevelIndex;
 
-    private String playerImagePath;
+    private int[][] entityMovement; // stores movement for npcs, used to animate them. Format: entityMovement[entityIndex][0] = +x movement, entityMovement[entityIndex][1] = +y movement, entityMovement[entityIndex][2] = -x movement, entityMovement[entityIndex][3] = -y movement
+
+    private int[] pressedKey = new int[2]; // store up to 2 pressed keys for smooth movement transitions, last index is the most recent key, first index is the previous key
 
     jsonParser parser = new jsonParser(new File(RESOURCE_PATH+"\\levels.json"));
 
@@ -128,7 +97,7 @@ public class main {
     private BufferedImage messageTextureImage; // combined BG + text
     private int messageTextureGL = -1;
 
-    private static final String[] NPC_MESSAGES = {
+    private static final String[] NPC_MESSAGES = { // does nothing (i think) but breaks when removed
             "I have nothing to say to you."
     };
 
@@ -257,7 +226,7 @@ public class main {
         collisionGrid = grid;
     }
 
-    private int createTextureFromBufferedImage(BufferedImage img) {
+    public int createTextureFromBufferedImage(BufferedImage img) {
         int[] pixels = new int[img.getWidth() * img.getHeight()];
         img.getRGB(0, 0, img.getWidth(), img.getHeight(), pixels, 0, img.getWidth());
 
@@ -274,7 +243,6 @@ public class main {
             }
         }
         buffer.flip();
-
         int texId = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, texId);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -326,13 +294,18 @@ public class main {
         entities.add(player);
         parser.parse();
         player.setPosition(level.getEntities().get(0).getX(), level.getEntities().get(0).getY());
-        
+        entityIndexToAnimationObjects.put(0, new entityAnimation(player, RESOURCE_PATH)); // map player entity index to its animation object
+        entityMovement = new int[level.getEntities().size()][4]; // initialize entity movement array
+
         // add NPCs and other entities
         for(Entity e : level.getEntities()){
             if(!e.getType().equals("player")){
+                entityAIs.add(new EntityAI(e, parser, this)); // create AI object for the entity
+                entityIndexToAnimationObjects.put(entities.size(), new entityAnimation(e, RESOURCE_PATH)); // map entity index to its animation object
                 System.out.println("Adding entity of type " + e.getType() + " at (" + e.getX() + ", " + e.getY() + ")");
                 try {
                     e.setTextureId(createTextureFromBufferedImage(ImageIO.read(new File(RESOURCE_PATH+"\\textures\\" + e.getImagePath()))));
+                    System.out.println("Loaded texture for entity from " + RESOURCE_PATH+"\\textures\\" + e.getImagePath() + ". Texture ID: " + e.getTextureId());
                 } catch (IOException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
@@ -434,114 +407,75 @@ public class main {
         }
 
         if(yVelocity == 0 && xVelocity == 0){
-            entityAnimation(entities.get(0), "idle");
+            // reset player animation to idle
+            entityMovement[0][0] = 0; // right
+            entityMovement[0][1] = 0; // up
+            entityMovement[0][2] = 0; // left
+            entityMovement[0][3] = 0; // down
+            entityIndexToAnimationObjects.get(0).tick("idle");
         } else if (xVelocity == 24){
-            entityAnimation(entities.get(0), "walkingRight");
+            entityMovement[0][0] = 0; // right
+            entityMovement[0][1] = 0; // up
+            entityMovement[0][2] = 0; // left
+            entityMovement[0][3] = 0; // down
+            entityIndexToAnimationObjects.get(0).tick("walkingRight");
         } else if (xVelocity == -24){
-            entityAnimation(entities.get(0), "walkingLeft");
+            entityMovement[0][0] = 0; // right
+            entityMovement[0][1] = 0; // up
+            entityMovement[0][2] = 0; // left
+            entityMovement[0][3] = 0; // down
+            entityIndexToAnimationObjects.get(0).tick("walkingLeft");
+        } else if( yVelocity == 24){
+            entityMovement[0][0] = 0; // right
+            entityMovement[0][1] = 0; // up
+            entityMovement[0][2] = 0; // left
+            entityMovement[0][3] = 0; // down
+            // right now, the assets for walking up and down are unfinished, so just use idle for now
+            // TODO: replace with walkingUp animation when available
+            entityIndexToAnimationObjects.get(0).tick("idle");
+        } else if (yVelocity == -24){
+            entityMovement[0][0] = 0; // right
+            entityMovement[0][1] = 0; // up
+            entityMovement[0][2] = 0; // left
+            entityMovement[0][3] = 0; // down
+            // TODO: replace with walkingDown animation when available
+            entityIndexToAnimationObjects.get(0).tick("idle");
         }
 
         entities.get(0).setPosition(playerX, playerY);
 
-        // NPC random movement
-        if(RANDOM_NPC_MOVEMENT){
-            if (Math.random() < 0.01) {
-                for (int i = 1; i < entities.size(); i++) {
-                    Entity npc = entities.get(i);
-                    // check to see if npc will move into a collision tile, reuse the player collision code
-                    // check to see if npc will move into a collision tile
-                    // since the npc is 3x5 cells, check all 15 cells
-                    int newX = npc.getX() + 25;
-                    int newY = npc.getY() + 0;
-                    boolean collision = false;
-                    for(int px = 0; px < 3; px++){
-                        for(int py = 0; py < 5; py++){
-                            int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
-                            int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
-                            if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
-                                collision = true;
-                                return; // don't move if collision detected
-                            }
-                        }
-                    }
-                    npc.setPosition(npc.getX() + 25, npc.getY() + 0);
-                    // update the collision grid with the npcs new position
-                    for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
-                        for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                            collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
-                        }
-                    }
-                    //collisionGrid[npc.getY() / GRID_CELL_SIZE][(npc.getX() + ENTITY_WIDTH_CELLS * GRID_CELL_SIZE - 1) / GRID_CELL_SIZE] = 1;
-                }
-            } else if (Math.random() < 0.01) {
-                for (int i = 1; i < entities.size(); i++) {
-                    Entity npc = entities.get(i);
-                    int newX = npc.getX() + 0;
-                    int newY = npc.getY() + 25;
-                    boolean collision = false;
-                    for(int px = 0; px < 3; px++){
-                        for(int py = 0; py < 5; py++){
-                            int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
-                            int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
-                            if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
-                                collision = true;
-                                return; // don't move if collision detected
-                            }
-                        }
-                    }
-                    for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
-                        for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                            collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
-                        }
-                    }
-                    npc.setPosition(npc.getX() + 0, npc.getY() + 25);
-                }
-            } else if (Math.random() < 0.01) {
-                for (int i = 1; i < entities.size(); i++) {
-                    Entity npc = entities.get(i);
-                    int newX = npc.getX() - 25;
-                    int newY = npc.getY() + 0;
-                    boolean collision = false;
-                    for(int px = 0; px < 3; px++){
-                        for(int py = 0; py < 5; py++){
-                            int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
-                            int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
-                            if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
-                                collision = true;
-                                return; // don't move if collision detected
-                            }
-                        }
-                    }
-                    for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
-                        for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                            collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
-                        }
-                    }
-                    npc.setPosition(npc.getX() - 25, npc.getY() + 0);
-                }
-            } else if (Math.random() < 0.01) {
-                for (int i = 1; i < entities.size(); i++) {
-                    Entity npc = entities.get(i);
-                    int newX = npc.getX() + 0;
-                    int newY = npc.getY() - 25;
-                    boolean collision = false;
-                    for(int px = 0; px < 3; px++){
-                        for(int py = 0; py < 5; py++){
-                            int checkX = newX + npc.getX() + px * GRID_CELL_SIZE;
-                            int checkY = newY + npc.getX() + py * GRID_CELL_SIZE;
-                            if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
-                                collision = true;
-                                return; // don't move if collision detected
-                            }
-                        }
-                    }
-                    for(int x = 0; x <= ENTITY_WIDTH_CELLS-1; x++){
-                        for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                            collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + x] = 1;
-                        }
-                    }
+        for(int i = 1; i < entities.size(); i++){
+            Entity npc = entities.get(i);
+            if(entityMovement != null && entityMovement.length > i){
+                if(entityMovement[i][0] > 0){
+                    entityIndexToAnimationObjects.get(i).tick("walkingRight");
+                    //entityAnimation(npc, "walkingRight");
+                    entityMovement[i][0]--;
+                    continue;
+                } else if(entityMovement[i][2] > 0){
+                    entityIndexToAnimationObjects.get(i).tick("walkingLeft");
+                    entityMovement[i][2]--;
+                    continue;
+                } else if(entityMovement[i][1] > 0){
+                    entityIndexToAnimationObjects.get(i).tick("walkingUp");
+                    entityMovement[i][1]--;
+                    continue;
+                } else if(entityMovement[i][3] > 0){
+                    entityIndexToAnimationObjects.get(i).tick("walkingDown");
+                    entityMovement[i][3]--;
+                    continue;
+                } else if(entityMovement[i][0] == 0 && entityMovement[i][1] == 0 && entityMovement[i][2] == 0 && entityMovement[i][3] == 0){
+                    entityIndexToAnimationObjects.get(i).tick("idle");
+                } else {
+                    entityIndexToAnimationObjects.get(i).tick("idle");
                 }
             }
+        }
+
+        // Update NPC AI
+        for(int i = 0; i < entityAIs.size(); i++){
+            EntityAI ai = entityAIs.get(i);
+            ai.tick();
         }
 
         // Typewriter update if message is shown
@@ -567,6 +501,13 @@ public class main {
                 }
                 leftMouseButtonPressed = false;
             }
+            for(int i = 0; i < responsePositions.length; i++){
+                    int[] pos = responsePositions[i];
+                    if(cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
+                    cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]){
+                        changeColorOfResponseOptionMouseOver();
+                    }
+                }
         }
     }
 
@@ -632,7 +573,8 @@ public class main {
         }
     }
 
-    private void drawTexturedQuad(int texId, int x, int y, int w, int h, int texW, int texH) {
+    public void drawTexturedQuad(int texId, int x, int y, int w, int h, int texW, int texH) {
+        //System.out.println("Drawing textured quad at (" + x + ", " + y + ") with size (" + w + ", " + h + ") using texture ID " + texId);
         glBindTexture(GL_TEXTURE_2D, texId);
         glPushMatrix();
         glTranslatef(0f, 0f, 0f);
@@ -649,39 +591,13 @@ public class main {
         glPopMatrix();
     }
 
-    private long lastUpdate = System.currentTimeMillis();
-    private long now;
-    private int index = 0; // Keep track of the current image
-    private void entityAnimation(Entity entity, String currentEntityState){
-        List<String> imagePaths;
-        if(currentEntityState.equals("idle")){
-            imagePaths = entity.getAnimationStates().getIdleImagesPaths();
-        } else if(currentEntityState.equals("walkingUp")){
-            imagePaths = entity.getAnimationStates().getWalkingUpImagesPaths();
-        } else if(currentEntityState.equals("walkingDown")){
-            imagePaths = entity.getAnimationStates().getWalkingDownImagesPaths();
-        } else if(currentEntityState.equals("walkingLeft")){
-            imagePaths = entity.getAnimationStates().getWalkingLeftImagesPaths();
-        } else if(currentEntityState.equals("walkingRight")){
-            imagePaths = entity.getAnimationStates().getWalkingRightImagesPaths();
-        } else {
-            imagePaths = entity.getAnimationStates().getIdleImagesPaths();
-        }
-        now = System.currentTimeMillis();
-        if (now - lastUpdate >= 24) {
-            try {
-                entity.setTextureId(createTextureFromBufferedImage(ImageIO.read(new File(RESOURCE_PATH + "\\textures\\" + imagePaths.get(index % imagePaths.size())))));
-                drawTexturedQuad(entity.getTextureId(), entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight(), entity.getWidth(), entity.getHeight());
-            } catch (IOException e) {
-                // do nothing
-            }
-            index++;
-            lastUpdate = now; // Update lastUpdate *after* using it
-        }
+    public int getCurrentLevelIndex(){
+        return currentLevelIndex;
     }
 
     // === Input handling (GLFW key codes) ===
     private void keyPressed(int key) {
+        System.out.println("Key pressed: " + key);
         if (messageBoxDisplayed) {
             if (key == GLFW_KEY_E) {
                 closeMessage();
@@ -690,7 +606,12 @@ public class main {
             }
             return;
         }
+        // handle smooth key transitions
+        pressedKey[0] = pressedKey[1];
+        pressedKey[1] = key;
+        
 
+        // handle movement keys
         switch (key) {
             case GLFW_KEY_UP:
             case GLFW_KEY_W:
@@ -731,12 +652,34 @@ public class main {
                     System.out.println();
                 }
                 break;
-
+            case GLFW_KEY_1:
+                // reset collision grid
+                collisionGrid = parser.getCollisionGrid(currentLevelIndex);
+                // add locations of npcs
+                for (Entity entity : entities) {
+                    if(!entity.getType().equals("player")){
+                        for(int i = 0; i <= 3-1; i++){
+                            for(int j = 0; j <= 5-1; j++){
+                                collisionGrid[(entity.getY() / 24) + j][(entity.getX() / 24) + i] = 1;
+                            }
+                        }
+                    }
+                }
+                break;
+            case GLFW_KEY_2:
+                buildLevel(currentLevelIndex);
+                break;
         }
-        // prevent movement in both x and y at the same time
-        if (xVelocity != 0 && yVelocity != 0) {
-            xVelocity = 0;
-            yVelocity = 0;
+        System.out.println("xVelocity: " + xVelocity + ", yVelocity: " + yVelocity);
+        // prevent diagonal movement while allowing for smooth key transitions
+        if(pressedKey[0] != 0 && pressedKey[1] != 0){
+            boolean firstKeyIsVertical = (pressedKey[0] == GLFW_KEY_UP || pressedKey[0] == GLFW_KEY_W || pressedKey[0] == GLFW_KEY_DOWN || pressedKey[0] == GLFW_KEY_S);
+            boolean secondKeyIsVertical = (pressedKey[1] == GLFW_KEY_UP || pressedKey[1] == GLFW_KEY_W || pressedKey[1] == GLFW_KEY_DOWN || pressedKey[1] == GLFW_KEY_S);
+            if(firstKeyIsVertical && !secondKeyIsVertical){
+                yVelocity = 0;
+            } else if(!firstKeyIsVertical && secondKeyIsVertical){
+                xVelocity = 0;
+            }
         }
     }
 
@@ -764,7 +707,7 @@ public class main {
     }
 
     private void cursorCallback(long window, double xpos, double ypos) {
-        System.out.println("Cursor moved to: (" + xpos + ", " + ypos + ")");
+        //System.out.println("Cursor moved to: (" + xpos + ", " + ypos + ")");
         cursorXPosition = (int)xpos;
         cursorYPosition = (int)ypos;
         
@@ -772,8 +715,14 @@ public class main {
 
     private void mouseClickCallback(long window, int button, int action, int mods) {
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-            System.out.println("Left mouse button clicked");
+            System.out.println("Left mouse at " + cursorXPosition + ", " + cursorYPosition + ", position on grid: (" + playerPositionInWindowToPositionInGridX(cursorXPosition, cursorYPosition) + ", " + playerPositionInWindowToPositionInGridY(cursorXPosition, cursorYPosition) + ")");
             leftMouseButtonPressed = true;
+        }
+        // if the message box is open and the conversation is over, the user can click anywhere to close it
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+            if (messageBoxDisplayed && !messageBoxOptionsDisplayed) {
+                closeMessage();
+            }
         }
     }
 
@@ -808,7 +757,80 @@ public class main {
         playTalkingSound();
     }
 
-    public void drawResponseTextOnMessageBox(String[] responses){
+    public void drawResponseTextOnMessageBox(String[] responses) {
+        // draws text at the bottom of the message box for player responses and uses the cursor position to select a response
+        // reuse code from updateMessageTexture to draw the text
+        //if (messageBoxDisplayed) return;
+        yVelocity = 0;
+        xVelocity = 0;
+        messageBoxOptionsDisplayed = true;
+        messageBoxDisplayed = true;
+        if(responses != null || responses.length != 0){
+            currentResponseOptions = responses;
+        } else {
+            currentResponseOptions = new String[]{"Error: No responses"};
+        }
+        currentResponseOptions = responses;
+        currentFullMessage = "test"; // dummy message to show the box
+        int numberOfResponses = responses.length;
+        responsePositions = new int[numberOfResponses][4]; // x, y, w, h for each response
+        for(int i = 0; i < numberOfResponses; i++){
+            Graphics2D g = messageTextureImage.createGraphics();
+            g.setColor(Color.YELLOW);
+            g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+            //g.drawImage(messageBoxBI, 0, 0, messageTextureImage.getWidth(), messageTextureImage.getHeight(), null);
+            int padding = 12;
+            int maxWidth = messageTextureImage.getWidth() - padding * 2;
+            int lineHeight = 22;
+            int startY = messageTextureImage.getHeight() - (numberOfResponses * lineHeight) - padding;
+            g.drawString(responses[i], padding, startY + (i * lineHeight) + g.getFontMetrics().getAscent());
+            // add response to responsePositions
+            int textWidth = g.getFontMetrics().stringWidth(responses[i]);
+            responsePositions[i][0] = padding; // x
+            responsePositions[i][1] = startY + (i * lineHeight); // y
+            responsePositions[i][2] = textWidth; // w
+            responsePositions[i][3] = lineHeight; // h
+            g.dispose();
+        }
+        // upload to GL texture
+        int w = messageTextureImage.getWidth();
+        int h = messageTextureImage.getHeight();
+        int[] pixels = new int[w * h];
+        messageTextureImage.getRGB(0, 0, w, h, pixels, 0, w);
+        
+        ByteBuffer buf = BufferUtils.createByteBuffer(w * h * 4);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int pixel = pixels[y * w + x];
+                buf.put((byte) ((pixel >> 16) & 0xFF)); // R
+                buf.put((byte) ((pixel >> 8) & 0xFF));  // G
+                buf.put((byte) (pixel & 0xFF));         // B
+                buf.put((byte) ((pixel >> 24) & 0xFF)); // A
+            }
+        }
+            
+        buf.flip();
+
+        glBindTexture(GL_TEXTURE_2D, messageTextureGL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+
+        System.out.println("Response positions: " + java.util.Arrays.deepToString(responsePositions));
+            // since the options positions are relative to the message box, we need to offset them by the message box position in the window
+            for(int i = 0; i < responsePositions.length; i++){
+                responsePositions[i][0] += (winW - (winW / 2)) / 2; // boxX
+                responsePositions[i][1] += (int) (winH * 0.75); // boxY
+                // also shift the y position down by 22 pixels to account for the text ascent
+                responsePositions[i][1] += 22;
+                // and add some padding to the width and height
+                responsePositions[i][2] += 10;
+                responsePositions[i][3] += 10;
+            }
+            // specifically add extra padding to the last option to make it easier to click
+            responsePositions[responsePositions.length - 1][3] += 10;
+            System.out.println("Response positions in window: " + java.util.Arrays.deepToString(responsePositions));
+    }
+
+    public void drawResponseTextOnMessageBoxWithHighlight(String[] responses, int indexOfHighlightedOption) {
         // draws text at the bottom of the message box for player responses and uses the cursor position to select a response
         // reuse code from updateMessageTexture to draw the text
         //if (messageBoxDisplayed) return;
@@ -820,6 +842,25 @@ public class main {
         int numberOfResponses = responses.length;
         responsePositions = new int[numberOfResponses][4]; // x, y, w, h for each response
         for(int i = 0; i < numberOfResponses; i++){
+            if(i == indexOfHighlightedOption){
+                // draw highlighted option in different color
+                Graphics2D g = messageTextureImage.createGraphics();
+                g.setColor(Color.RED);
+                g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+                int padding = 12;
+                int maxWidth = messageTextureImage.getWidth() - padding * 2;
+                int lineHeight = 22;
+                int startY = messageTextureImage.getHeight() - (numberOfResponses * lineHeight) - padding;
+                g.drawString(responses[i], padding, startY + (i * lineHeight) + g.getFontMetrics().getAscent());
+                // add response to responsePositions
+                int textWidth = g.getFontMetrics().stringWidth(responses[i]);
+                responsePositions[i][0] = padding; // x
+                responsePositions[i][1] = startY + (i * lineHeight); // y
+                responsePositions[i][2] = textWidth; // w
+                responsePositions[i][3] = lineHeight; // h
+                g.dispose();
+                continue;
+            }
             Graphics2D g = messageTextureImage.createGraphics();
             g.setColor(Color.YELLOW);
             g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
@@ -880,7 +921,25 @@ public class main {
         messageBoxDisplayed = false;
         currentFullMessage = "";
         typeIndex = 0;
+        messageBoxOptionsDisplayed = false;
+        responsePositions = null;
         //soundPlayer.stopAudio();
+    }
+
+    void changeColorOfResponseOptionMouseOver(){
+        // check if cursor is over any response option and change its color
+        if(messageBoxOptionsDisplayed && responsePositions != null){
+            for(int i = 0; i < responsePositions.length; i++){
+                int[] pos = responsePositions[i];
+                if(cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
+                   cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]){
+                    System.out.println(java.util.Arrays.deepToString(currentResponseOptions));
+                    System.out.println(currentResponseOptions[i] + " is being hovered over");
+                    drawResponseTextOnMessageBoxWithHighlight(currentResponseOptions, i);
+                    return;
+                }
+            }
+        }
     }
 
     private void updateMessageTexture(String currentFullMessage) {
@@ -969,28 +1028,17 @@ public class main {
         }
     }
 
-    private int gridCoordinatesToWindowCoordinatesX(int coordx, int coordy){
-        return coordx * GRID_CELL_SIZE;
+    public int[][] getCollisionGrid(){
+        return collisionGrid;
     }
 
-    private int gridCoordinatesToWindowCoordinatesY(int coordx, int coordy){
-        return coordy * GRID_CELL_SIZE;
+    public List<Entity> getEntities(){
+        return entities;
     }
 
-    private void NPCPathfindToPoint(int[][] grid, int startX, int startY, int goalX, int goalY, Entity npc){
-        List<Point> wayPoints = AStar.findPath(grid, startX, startY, goalX, goalY, ENTITY_WIDTH_CELLS, ENTITY_HEIGHT_CELLS);
-        for(int i = 0; i < wayPoints.size(); i++){
-            System.out.println("Waypoints: " + wayPoints.get(i).getX() + ", " + wayPoints.get(i).getY());
-        }
-        for(int i = 0; i < wayPoints.size(); i++){
-            try {
-                Thread.sleep(200);
-                npc.setPosition(gridCoordinatesToWindowCoordinatesX((int)wayPoints.get(i).getX(), (int)wayPoints.get(i).getY()), gridCoordinatesToWindowCoordinatesX((int)wayPoints.get(i).getX(), (int)wayPoints.get(i).getY()));
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
+    public void setEntityMovement(int entityIndex, int directionIndex, int value){
+        // directionIndex: 0 = right, 1 = up, 2 = left, 3 = down
+        entityMovement[entityIndex][directionIndex] = value;
     }
 
     private void handleNPCActions(String action, Entity npc){
@@ -1012,29 +1060,33 @@ public class main {
                 // move the npc to the target cell
                 System.out.println("Start position: " + playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()) + ", " +  playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()) + " Target position: " + targetX / GRID_CELL_SIZE + ", " + targetY / GRID_CELL_SIZE);
                 //NPCPathfindToPoint(collisionGrid, playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), targetX / GRID_CELL_SIZE, targetY / GRID_CELL_SIZE, npc);
-                // clear old position
-                // for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
-                //     for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                //         collisionGrid[(oldPositionX / GRID_CELL_SIZE) + j][(oldPositionY / GRID_CELL_SIZE) + i] = 0;
-                //     }
-                // }
-                // just rebuild the collision from the json
-                collisionGrid = parser.getLevel(currentLevelIndex).getCollisionGrid();
-                npc.setPosition(targetX, targetY);
-                // update collision grid with entitys new position
-                for(int i = 0; i <= ENTITY_WIDTH_CELLS-1; i++){
-                    for(int j = 0; j <= ENTITY_HEIGHT_CELLS-1; j++){
-                        collisionGrid[(npc.getY() / GRID_CELL_SIZE) + j][(npc.getX() / GRID_CELL_SIZE) + i] = 1;
-                    }
-                }
+                Thread pathfindingThread = new Thread(() -> {
+                    entityAIs.get(entities.indexOf(npc)).NPCPathfindToPoint(playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), playerPositionInWindowToPositionInGridY(npc.getX(), npc.getY()), targetX / GRID_CELL_SIZE, targetY / GRID_CELL_SIZE, npc);
+                });
+                pathfindingThread.start();
                 System.out.println("Moved NPC to (" + targetX + ", " + targetY + ")");
+                //try {
+                //    pathfindingThread.join();
+                //} catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                //    e.printStackTrace();
+               // }
             } catch (NumberFormatException e) {
                 System.err.println("Invalid move_to action format: " + action);
             }
+        } else if(action.startsWith("change_player_level")){ // only used for the title screen, since we are reusing an npc for the title screen choices
+            int start = action.indexOf('(');
+            int end = action.indexOf(')');
+            if(start == -1 || end == -1 || end <= start + 1) return;
+            int level = Integer.parseInt(action.substring(start + 1, end));
+            buildLevel(level);
+        } else if(action.startsWith("exit_game")){
+            cleanup();
+            System.exit(0);
         }
     }
 
-    private void dialogueHandler(dialogueTree tree, int selectedResponse, Entity npc) {
+    public void dialogueHandler(dialogueTree tree, int selectedResponse, Entity npc) {
         // handle dialogue tree traversal
         // if selected response is zero, assume we are at the top level of the tree
         // close old message box
@@ -1062,9 +1114,11 @@ public class main {
                 Response r = playerResponses.get(i);
                 // if there are no responses, just display the npc text, this is the end of the conversation
                 if(currentTree.getResponses().isEmpty()){
+                    System.out.println("End of conversation reached.");
                     displayMessage(currentTree.getNpcText());
                     messageBoxOptionsDisplayed = false;
                     responsePositions = null;
+                    responses = null;
                 } else if(r.getNextNode() != null && r.getNextNode().getResponses().size() > 0){
                     // display the npc text for the selected response
                     dialogueHandler(r.getNextNode(), 0, npc);
@@ -1072,6 +1126,9 @@ public class main {
                     currentTree = r.getNextNode();
                 } else if(r.getNextNode() != null && r.getNextNode().getResponses().size() == 0) {
                     closeMessage();
+                    messageBoxOptionsDisplayed = false;
+                    responsePositions = null;
+                    responses = null;
                     currentTree = r.getNextNode();
                     displayMessage(r.getNextNode().getNpcText());
                     // run an npc action if it has one, these should always be at the end of the tree
@@ -1082,6 +1139,14 @@ public class main {
                 return;
             }
         }
+    }
+
+    public void setCurrentDialogueTree(dialogueTree tree){
+        currentTree = tree;
+    }
+
+    public void setCurrentNPCPlayerIsInteractingWith(Entity npc){
+        currentNPC = npc;
     }
 
     private void interactWithNearestNPC() {

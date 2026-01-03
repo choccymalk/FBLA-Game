@@ -19,21 +19,28 @@ public class AStar {
         {-1,  0 }  // left
     };
 
+    private static int startX;
+    private static int startY;
+
     /**
      * Finds a path for a rectangular entity of size objWidth×objHeight.
      * startX/Y and goalX/Y refer to the top-left corner of that rectangle.
      */
     public static List<Point> findPath(
         int[][] grid,
-        int startX, int startY,
+        int startXPos, int startYPos,
         int goalX,  int goalY,
-        int objWidth, int objHeight
+        int objWidth, int objHeight,
+        int playerPositionX, int playerPositionY
     ) {
         int rows = grid.length, cols = grid[0].length;
 
+        startX = startXPos;
+        startY = startYPos;
+
         // Quick reject if start or goal footprint collides immediately
-        if (!isAreaFree(grid, startX, startY, objWidth, objHeight)) return Collections.emptyList();
-        if (!isAreaFree(grid, goalX,  goalY,  objWidth, objHeight))  return Collections.emptyList();
+        if (!isAreaFree(grid, startX, startY, objWidth, objHeight, playerPositionX, playerPositionY)) return Collections.emptyList();
+        if (!isAreaFree(grid, goalX,  goalY,  objWidth, objHeight, playerPositionX, playerPositionY))  return Collections.emptyList();
 
         boolean[][] closed = new boolean[rows][cols];
         Node[][] nodes   = new Node[rows][cols];
@@ -60,7 +67,7 @@ public class AStar {
                  || ny + objHeight > rows) continue;
 
                 // Collision check for full footprint
-                if (!isAreaFree(grid, nx, ny, objWidth, objHeight)
+                if (!isAreaFree(grid, nx, ny, objWidth, objHeight, playerPositionX, playerPositionY)
                   || closed[ny][nx]) continue;
 
                 int gNew = cur.g + 1;
@@ -91,16 +98,35 @@ public class AStar {
     }
 
     // Scans a rectangle of size w×h at (x,y) for any '1' obstacles
-    private static boolean isAreaFree(int[][] grid, int x, int y, int w, int h) {
+    private static boolean isAreaFree(int[][] grid, int x, int y, int w, int h, int playerPositionX, int playerPositionY) {
+        System.out.println("Checking area free at (" + x + ", " + y + ") size (" + w + ", " + h + ")");
         for (int yy = y; yy < y + h; yy++) {
             for (int xx = x; xx < x + w; xx++) {
-                if (grid[yy][xx] == 1) return false;
+                try{
+                    if (grid[yy][xx] == 1) {
+                        // check the location i am at to make sure i am not colliding with myself
+                        if(yy == startY && xx == startX){
+                            return true;
+                        } else {
+                            System.out.println("Collision at (" + xx + ", " + yy + ")");
+                            return false;
+                        }
+                    }
+                } catch(Exception e){
+                    System.out.println(e);
+                }
+                // also check to make sure i will not collide with the player
+                if(xx == playerPositionX && yy == playerPositionY){
+                    System.out.println("Collision with player at (" + xx + ", " + yy + ")");
+                    return false;
+                }
             }
         }
         return true;
     }
 
     private static List<Point> buildPath(Node end) {
+        System.out.println("Building path...");
         LinkedList<Point> path = new LinkedList<>();
         for (Node cur = end; cur != null; cur = cur.parent) {
             path.addFirst(new Point(cur.x, cur.y));
