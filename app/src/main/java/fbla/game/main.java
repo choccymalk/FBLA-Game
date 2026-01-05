@@ -28,6 +28,7 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.util.concurrent.*;
 import java.util.Arrays;
 
@@ -53,7 +54,6 @@ public class main {
     // === Game States ===
     private enum GameState {
         TITLE_SCREEN,
-        OPTIONS_MENU,
         IN_GAME,
         PAUSED
     }
@@ -91,30 +91,6 @@ public class main {
     private int titleScreenTextureGL = -1;
     private boolean titleScreenNeedsUpdate = true;
     
-    // Options menu state
-    private BufferedImage optionsMenuTextureImage;
-    private int optionsMenuTextureGL = -1;
-    private boolean optionsMenuNeedsUpdate = true;
-    private String[] optionsMenuItems = {"Graphics", "Audio", "Controls", "Back"};
-    private String[][] optionsSubMenus = {
-        {"Resolution", "Fullscreen", "VSync", "Frame Rate Limit", "Back"},
-        {"Master Volume", "Music Volume", "SFX Volume", "Back"},
-        {"Key Bindings", "Mouse Sensitivity", "Invert Y-Axis", "Back"}
-    };
-    private int currentOptionsMenu = 0; // 0 = main, 1 = graphics, 2 = audio, 3 = controls
-    private int selectedOption = 0;
-    private int[][] optionsMenuPositions;
-    
-    // Settings variables
-    private boolean fullscreen = false;
-    private boolean vsync = true;
-    private int frameRateLimit = 60;
-    private int masterVolume = 100;
-    private int musicVolume = 80;
-    private int sfxVolume = 100;
-    private boolean invertYAxis = false;
-    private double mouseSensitivity = 1.0;
-    
     // get collision grid for the current level fron parser, for right now, we will only use level 0
     int[][] collisionGrid = parser.getCollisionGrid(0);
     
@@ -135,6 +111,8 @@ public class main {
     
     public void run() throws Exception {
         init();
+        // Don't build level immediately - start with title screen
+        // buildLevel(0); // Moved to startGame() method
         loop();
         cleanup();
     }
@@ -156,8 +134,7 @@ public class main {
             winW = w;
             winH = h;
             glViewport(0, 0, w, h);
-            titleScreenNeedsUpdate = true;
-            optionsMenuNeedsUpdate = true;
+            titleScreenNeedsUpdate = true; // Need to update title screen texture on resize
         });
         
         // Input callbacks
@@ -224,9 +201,6 @@ public class main {
         // Prepare title screen overlay buffer image
         titleScreenTextureImage = new BufferedImage(winW, winH, BufferedImage.TYPE_INT_ARGB);
         
-        // Prepare options menu overlay buffer image
-        optionsMenuTextureImage = new BufferedImage(winW, winH, BufferedImage.TYPE_INT_ARGB);
-        
         // Create a GL texture placeholder for the message box text overlay
         messageTextureGL = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, messageTextureGL);
@@ -249,17 +223,6 @@ public class main {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, winW, winH, 0, GL_RGBA, GL_UNSIGNED_BYTE, emptyTitle);
         memFree(emptyTitle);
         
-        // Create a GL texture placeholder for the options menu overlay
-        optionsMenuTextureGL = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, optionsMenuTextureGL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        
-        // Allocate empty image for options menu
-        ByteBuffer emptyOptions = memAlloc(winW * winH * 4);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, winW, winH, 0, GL_RGBA, GL_UNSIGNED_BYTE, emptyOptions);
-        memFree(emptyOptions);
-        
         // Initialize title screen
         updateTitleScreenTexture();
     }
@@ -278,6 +241,7 @@ public class main {
             try {
                 titleScreenBI = ImageIO.read(resourcesPath.resolve("textures/title_screen.png").toFile());
             } catch (IOException e) {
+                // If no title screen image, use background with overlay
                 System.out.println("No title screen image found, using background with overlay.");
                 titleScreenBI = backgroundBI;
             }
@@ -334,6 +298,7 @@ public class main {
         try {
             backgroundBI = ImageIO.read(new File(RESOURCE_PATH+"\\textures\\" + level.getBackgroundImage()));
         } catch (IOException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         backgroundTex = createTextureFromBufferedImage(backgroundBI);
@@ -352,6 +317,7 @@ public class main {
         try {
             playerBI = ImageIO.read(new File(RESOURCE_PATH+"\\textures\\" + player.getImagePath()));
         } catch (IOException e1) {
+            // TODO Auto-generated catch block
             e1.printStackTrace();
         }
         playerTex = createTextureFromBufferedImage(playerBI);
@@ -363,19 +329,20 @@ public class main {
         entities.add(player);
         parser.parse();
         player.setPosition(level.getEntities().get(0).getX(), level.getEntities().get(0).getY());
-        entityIndexToAnimationObjects.put(0, new entityAnimation(player, RESOURCE_PATH));
-        entityMovement = new int[level.getEntities().size()][4];
+        entityIndexToAnimationObjects.put(0, new entityAnimation(player, RESOURCE_PATH)); // map player entity index to its animation object
+        entityMovement = new int[level.getEntities().size()][4]; // initialize entity movement array
         
         // add NPCs and other entities
         for(Entity e : level.getEntities()){
             if(!e.getType().equals("player")){
-                entityAIs.add(new EntityAI(e, parser, this));
-                entityIndexToAnimationObjects.put(entities.size(), new entityAnimation(e, RESOURCE_PATH));
+                entityAIs.add(new EntityAI(e, parser, this)); // create AI object for the entity
+                entityIndexToAnimationObjects.put(entities.size(), new entityAnimation(e, RESOURCE_PATH)); // map entity index to its animation object
                 System.out.println("Adding entity of type " + e.getType() + " at (" + e.getX() + ", " + e.getY() + ")");
                 try {
                     e.setTextureId(createTextureFromBufferedImage(ImageIO.read(new File(RESOURCE_PATH+"\\textures\\" + e.getImagePath()))));
                     System.out.println("Loaded texture for entity from " + RESOURCE_PATH+"\\textures\\" + e.getImagePath() + ". Texture ID: " + e.getTextureId());
                 } catch (IOException e1) {
+                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
                 e.setWidth(ENTITY_WIDTH_CELLS * GRID_CELL_SIZE);
@@ -388,6 +355,13 @@ public class main {
                         collisionGrid[(e.getY() / GRID_CELL_SIZE) + j][(e.getX() / GRID_CELL_SIZE) + i] = 1;
                     }
                 }
+                // print the new collision grid
+                for(int[] row : collisionGrid){
+                    for(int cell : row){
+                        System.out.print(cell + " ");
+                    }
+                    System.out.println();
+                }
             }
         }
         
@@ -397,6 +371,7 @@ public class main {
     
     private void createDoors(List<Door> doors){
         for(Door d : doors){
+            // drawtexturequad draws textures at window coordinates, and that is what the coordinates are in json
             drawTexturedQuad(doorTex, d.getX(), d.getY(), DOOR_WIDTH, DOOR_HEIGHT, DOOR_WIDTH, DOOR_HEIGHT);
             System.out.println(d.getX() + ", " + d.getY());
             // create door entity
@@ -444,32 +419,41 @@ public class main {
             case TITLE_SCREEN:
                 updateTitleScreen();
                 break;
-            case OPTIONS_MENU:
-                updateOptionsMenu();
-                break;
             case IN_GAME:
                 updateInGame(deltaMs);
                 break;
             case PAUSED:
+                // Handle pause menu if needed
                 break;
         }
     }
     
     private void updateTitleScreen() {
         updateTitleScreenTexture();
-        
         // Update title screen selection based on mouse position
         if (cursorYPosition > winH / 2) {
+            int optionHeight = 40;
+            int startY = winH / 2;
+            // for (int i = 0; i < titleScreenOptions.length; i++) {
+            //     if (cursorYPosition >= startY + i * optionHeight && 
+            //         cursorYPosition <= startY + (i + 1) * optionHeight &&
+            //         cursorXPosition >= winW / 2 - 100 && 
+            //         cursorXPosition <= winW / 2 + 100) {
+            //         if (titleScreenSelectedOption != i) {
+            //             titleScreenSelectedOption = i;
+            //             titleScreenNeedsUpdate = true;
+            //         }
+            //         break;
+            //     }
+            // }
             for(int i = 0; i < titleScreenOptions.length; i++){
-                int[] pos = titleScreenOptionsPositions[i];
-                if(cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
-                cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]){
-                    if (titleScreenSelectedOption != i) {
+                    int[] pos = titleScreenOptionsPositions[i];
+                    if(cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
+                    cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]){
                         titleScreenSelectedOption = i;
                         titleScreenNeedsUpdate = true;
                     }
                 }
-            }
         }
         
         // Handle mouse click on title screen options
@@ -490,56 +474,21 @@ public class main {
             }
         }
         
+        // Update title screen texture if needed
         if (titleScreenNeedsUpdate) {
             updateTitleScreenTexture();
             titleScreenNeedsUpdate = false;
         }
     }
     
-    private void updateOptionsMenu() {
-        updateOptionsMenuTexture();
-        
-        // Update selection based on mouse position
-        String[] currentMenuItems = getCurrentMenuItems();
-        if (cursorYPosition > winH / 3) {
-            for(int i = 0; i < currentMenuItems.length; i++){
-                int[] pos = optionsMenuPositions[i];
-                if(cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
-                cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]){
-                    if (selectedOption != i) {
-                        selectedOption = i;
-                        optionsMenuNeedsUpdate = true;
-                    }
-                }
-            }
-        }
-        
-        // Handle mouse click on options
-        if (leftMouseButtonPressed) {
-            leftMouseButtonPressed = false;
-            handleOptionsMenuClick();
-        }
-        
-        if (optionsMenuNeedsUpdate) {
-            updateOptionsMenuTexture();
-            optionsMenuNeedsUpdate = false;
-        }
-    }
-    
-    private String[] getCurrentMenuItems() {
-        switch (currentOptionsMenu) {
-            case 1: return optionsSubMenus[0]; // Graphics
-            case 2: return optionsSubMenus[1]; // Audio
-            case 3: return optionsSubMenus[2]; // Controls
-            default: return optionsMenuItems; // Main menu
-        }
-    }
-    
     private void updateInGame(double deltaMs) {
         // Update player position
         if(!messageBoxDisplayed){
+            // delay movement to prevent moving too fast
             long now = System.currentTimeMillis();
             if (now - movementLastTime >= MOVEMENT_DELAY_MS) {
+                // check to see if player will move into a collision tile
+                // since the player is 3x5 cells, check all 15 cells
                 int newPlayerX = Math.max(0, Math.min(playerX + xVelocity, winW - playerBI.getWidth()));
                 int newPlayerY = Math.max(0, Math.min(playerY + yVelocity, winH - playerBI.getHeight()));
                 boolean collision = false;
@@ -549,7 +498,7 @@ public class main {
                         int checkY = playerPositionInWindowToPositionInGridY(newPlayerX + px * GRID_CELL_SIZE, newPlayerY + py * GRID_CELL_SIZE);
                         if(checkX < 0 || checkX >= collisionGrid[0].length || checkY < 0 || checkY >= collisionGrid.length || collisionGrid[checkY][checkX] == 1){
                             collision = true;
-                            return;
+                            return; // don't move if collision detected
                         }
                     }
                 }
@@ -557,39 +506,43 @@ public class main {
                 playerY = Math.max(0, Math.min(playerY + yVelocity, winH - playerBI.getHeight()));
                 movementLastTime = now;
             } else {
-                return;
+                return; // skip movement update
             }
         }
         
         if(yVelocity == 0 && xVelocity == 0){
-            entityMovement[0][0] = 0;
-            entityMovement[0][1] = 0;
-            entityMovement[0][2] = 0;
-            entityMovement[0][3] = 0;
+            // reset player animation to idle
+            entityMovement[0][0] = 0; // right
+            entityMovement[0][1] = 0; // up
+            entityMovement[0][2] = 0; // left
+            entityMovement[0][3] = 0; // down
             entityIndexToAnimationObjects.get(0).tick("idle");
         } else if (xVelocity == 24){
-            entityMovement[0][0] = 0;
-            entityMovement[0][1] = 0;
-            entityMovement[0][2] = 0;
-            entityMovement[0][3] = 0;
+            entityMovement[0][0] = 0; // right
+            entityMovement[0][1] = 0; // up
+            entityMovement[0][2] = 0; // left
+            entityMovement[0][3] = 0; // down
             entityIndexToAnimationObjects.get(0).tick("walkingRight");
         } else if (xVelocity == -24){
-            entityMovement[0][0] = 0;
-            entityMovement[0][1] = 0;
-            entityMovement[0][2] = 0;
-            entityMovement[0][3] = 0;
+            entityMovement[0][0] = 0; // right
+            entityMovement[0][1] = 0; // up
+            entityMovement[0][2] = 0; // left
+            entityMovement[0][3] = 0; // down
             entityIndexToAnimationObjects.get(0).tick("walkingLeft");
         } else if( yVelocity == 24){
-            entityMovement[0][0] = 0;
-            entityMovement[0][1] = 0;
-            entityMovement[0][2] = 0;
-            entityMovement[0][3] = 0;
+            entityMovement[0][0] = 0; // right
+            entityMovement[0][1] = 0; // up
+            entityMovement[0][2] = 0; // left
+            entityMovement[0][3] = 0; // down
+            // right now, the assets for walking up and down are unfinished, so just use idle for now
+            // TODO: replace with walkingUp animation when available
             entityIndexToAnimationObjects.get(0).tick("idle");
         } else if (yVelocity == -24){
-            entityMovement[0][0] = 0;
-            entityMovement[0][1] = 0;
-            entityMovement[0][2] = 0;
-            entityMovement[0][3] = 0;
+            entityMovement[0][0] = 0; // right
+            entityMovement[0][1] = 0; // up
+            entityMovement[0][2] = 0; // left
+            entityMovement[0][3] = 0; // down
+            // TODO: replace with walkingDown animation when available
             entityIndexToAnimationObjects.get(0).tick("idle");
         }
         
@@ -600,6 +553,7 @@ public class main {
             if(entityMovement != null && entityMovement.length > i){
                 if(entityMovement[i][0] > 0){
                     entityIndexToAnimationObjects.get(i).tick("walkingRight");
+                    //entityAnimation(npc, "walkingRight");
                     entityMovement[i][0]--;
                     continue;
                 } else if(entityMovement[i][2] > 0){
@@ -656,7 +610,7 @@ public class main {
         float half = size / 2.0f;
         float step = size / cells;
    
-        glColor3f(0.7f, 0.7f, 0.7f);
+        glColor3f(0.7f, 0.7f, 0.7f); // light gray grid lines
         glBegin(GL_LINES);
         for (int i = 0; i <= cells; i++) {
             float x = -half + i * step;
@@ -688,13 +642,11 @@ public class main {
             case TITLE_SCREEN:
                 renderTitleScreen();
                 break;
-            case OPTIONS_MENU:
-                renderOptionsMenu();
-                break;
             case IN_GAME:
                 renderInGame();
                 break;
             case PAUSED:
+                // Render game with pause overlay
                 renderInGame();
                 renderPauseMenu();
                 break;
@@ -702,54 +654,40 @@ public class main {
     }
     
     private void renderTitleScreen() {
+        // Draw title screen background
         drawTexturedQuad(titleScreenTex, 0, 0, winW, winH, titleScreenBI.getWidth(), titleScreenBI.getHeight());
         
+        // Draw title screen overlay (text and options)
         glEnable(GL_BLEND);
         glBindTexture(GL_TEXTURE_2D, titleScreenTextureGL);
         drawTexturedQuad(titleScreenTextureGL, 0, 0, winW, winH, winW, winH);
     }
     
-    private void renderOptionsMenu() {
-        // Draw background
-        drawTexturedQuad(titleScreenTex, 0, 0, winW, winH, titleScreenBI.getWidth(), titleScreenBI.getHeight());
-        
-        // Draw semi-transparent overlay
-        glDisable(GL_TEXTURE_2D);
-        glColor4f(0.0f, 0.0f, 0.0f, 0.7f);
-        glBegin(GL_QUADS);
-        glVertex2f(0, 0);
-        glVertex2f(winW, 0);
-        glVertex2f(winW, winH);
-        glVertex2f(0, winH);
-        glEnd();
-        glEnable(GL_TEXTURE_2D);
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        
-        // Draw options menu overlay
-        glEnable(GL_BLEND);
-        glBindTexture(GL_TEXTURE_2D, optionsMenuTextureGL);
-        drawTexturedQuad(optionsMenuTextureGL, 0, 0, winW, winH, winW, winH);
-    }
-    
     private void renderInGame() {
+        // Draw background to cover the entire window
         drawTexturedQuad(backgroundTex, 0, 0, winW, winH, backgroundBI.getWidth(), backgroundBI.getHeight());
         
+        // draw grid overlay for debugging
         if(DRAW_DEBUG_GRID){
             drawTexturedQuad(gridTex, 0, 0, winW, winH, gridBI.getWidth(), gridBI.getHeight());
         }
         
+        // Draw entities
         for (Entity e : entities) {
             drawTexturedQuad(e.getTextureId(), e.getX(), e.getY(), e.getWidth(), e.getHeight(), e.getWidth(), e.getHeight());
         }
         
+        // Draw message box overlay if necessary
         if (messageBoxDisplayed) {
             int boxW = winW / 2;
             int boxH = winH / 4;
             int boxX = (winW - boxW) / 2;
             int boxY = (int) (winH * 0.75);
             
+            // Draw message box background (scaled)
             drawTexturedQuad(messageBoxTex, boxX, boxY, boxW, boxH, messageBoxBI.getWidth(), messageBoxBI.getHeight());
             
+            // Draw text overlay (texture updated dynamically)
             glEnable(GL_BLEND);
             glBindTexture(GL_TEXTURE_2D, messageTextureGL);
             drawTexturedQuad(messageTextureGL, boxX, boxY, boxW, boxH, messageBoxBI.getWidth(), messageBoxBI.getHeight());
@@ -757,6 +695,7 @@ public class main {
     }
     
     private void renderPauseMenu() {
+        // Draw semi-transparent overlay
         glDisable(GL_TEXTURE_2D);
         glColor4f(0.0f, 0.0f, 0.0f, 0.5f);
         glBegin(GL_QUADS);
@@ -767,9 +706,12 @@ public class main {
         glEnd();
         glEnable(GL_TEXTURE_2D);
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        
+        // TODO: Add pause menu options
     }
     
     public void drawTexturedQuad(int texId, int x, int y, int w, int h, int texW, int texH) {
+        //System.out.println("Drawing textured quad at (" + x + ", " + y + ") with size (" + w + ", " + h + ") using texture ID " + texId);
         glBindTexture(GL_TEXTURE_2D, texId);
         glPushMatrix();
         glTranslatef(0f, 0f, 0f);
@@ -790,9 +732,11 @@ public class main {
         return currentLevelIndex;
     }
     
+    // === Input handling (GLFW key codes) ===
     private void keyPressed(int key) {
         System.out.println("Key pressed: " + key);
         
+        // Handle global keys (work in any state)
         if (key == GLFW_KEY_ESCAPE) {
             if (currentGameState == GameState.IN_GAME) {
                 currentGameState = GameState.PAUSED;
@@ -800,26 +744,14 @@ public class main {
                 currentGameState = GameState.IN_GAME;
             } else if (currentGameState == GameState.TITLE_SCREEN) {
                 glfwSetWindowShouldClose(window, true);
-            } else if (currentGameState == GameState.OPTIONS_MENU) {
-                // Go back to title screen or previous menu
-                if (currentOptionsMenu == 0) {
-                    currentGameState = GameState.TITLE_SCREEN;
-                    titleScreenNeedsUpdate = true;
-                } else {
-                    currentOptionsMenu = 0;
-                    selectedOption = 0;
-                    optionsMenuNeedsUpdate = true;
-                }
             }
             return;
         }
         
+        // Handle state-specific key inputs
         switch (currentGameState) {
             case TITLE_SCREEN:
                 handleTitleScreenKeyPress(key);
-                break;
-            case OPTIONS_MENU:
-                handleOptionsMenuKeyPress(key);
                 break;
             case IN_GAME:
                 handleInGameKeyPress(key);
@@ -849,35 +781,6 @@ public class main {
         }
     }
     
-    private void handleOptionsMenuKeyPress(int key) {
-        String[] currentMenuItems = getCurrentMenuItems();
-        
-        switch (key) {
-            case GLFW_KEY_UP:
-            case GLFW_KEY_W:
-                selectedOption = (selectedOption - 1 + currentMenuItems.length) % currentMenuItems.length;
-                optionsMenuNeedsUpdate = true;
-                break;
-            case GLFW_KEY_DOWN:
-            case GLFW_KEY_S:
-                selectedOption = (selectedOption + 1) % currentMenuItems.length;
-                optionsMenuNeedsUpdate = true;
-                break;
-            case GLFW_KEY_ENTER:
-            case GLFW_KEY_SPACE:
-                handleOptionsMenuOption(selectedOption);
-                break;
-            case GLFW_KEY_LEFT:
-            case GLFW_KEY_A:
-                adjustSetting(-1);
-                break;
-            case GLFW_KEY_RIGHT:
-            case GLFW_KEY_D:
-                adjustSetting(1);
-                break;
-        }
-    }
-    
     private void handleInGameKeyPress(int key) {
         if (messageBoxDisplayed) {
             if (key == GLFW_KEY_E) {
@@ -888,9 +791,11 @@ public class main {
             return;
         }
         
+        // handle smooth key transitions
         pressedKey[0] = pressedKey[1];
         pressedKey[1] = key;
        
+        // handle movement keys
         switch (key) {
             case GLFW_KEY_UP:
             case GLFW_KEY_W:
@@ -912,9 +817,12 @@ public class main {
                 interactWithNearestNPC();
                 break;
             case GLFW_KEY_P:
+                // debug: print player position
                 System.out.println("Player position in window: (" + playerX + ", " + playerY + ")" + " " + "Player position in grid: (" + playerPositionInWindowToPositionInGridX(playerX, playerY) + ", " + playerPositionInWindowToPositionInGridY(playerX, playerY) + ")");
                 break;
             case GLFW_KEY_I:
+                // debug: display message box with test responses
+                //displayMessage("This is a test message. Choose an option below:");
                 drawResponseTextOnMessageBox(new String[]{"Option 1", "Option 2", "Option 3"});
                 break;
             case GLFW_KEY_G:
@@ -926,7 +834,9 @@ public class main {
                 }
                 break;
             case GLFW_KEY_1:
+                // reset collision grid
                 collisionGrid = parser.getCollisionGrid(currentLevelIndex);
+                // add locations of npcs
                 for (Entity entity : entities) {
                     if(!entity.getType().equals("player")){
                         for(int i = 0; i <= 3-1; i++){
@@ -941,15 +851,13 @@ public class main {
                 buildLevel(currentLevelIndex);
                 break;
             case GLFW_KEY_T:
+                // Go back to title screen for testing
                 currentGameState = GameState.TITLE_SCREEN;
-                break;
-            case GLFW_KEY_O:
-                // Open options menu from game
-                currentGameState = GameState.OPTIONS_MENU;
                 break;
         }
         System.out.println("xVelocity: " + xVelocity + ", yVelocity: " + yVelocity);
         
+        // prevent diagonal movement while allowing for smooth key transitions
         if(pressedKey[0] != 0 && pressedKey[1] != 0){
             boolean firstKeyIsVertical = (pressedKey[0] == GLFW_KEY_UP || pressedKey[0] == GLFW_KEY_W || pressedKey[0] == GLFW_KEY_DOWN || pressedKey[0] == GLFW_KEY_S);
             boolean secondKeyIsVertical = (pressedKey[1] == GLFW_KEY_UP || pressedKey[1] == GLFW_KEY_W || pressedKey[1] == GLFW_KEY_DOWN || pressedKey[1] == GLFW_KEY_S);
@@ -991,6 +899,7 @@ public class main {
     private void cursorCallback(long window, double xpos, double ypos) {
         cursorXPosition = (int)xpos;
         cursorYPosition = (int)ypos;
+       
     }
     
     private void mouseClickCallback(long window, int button, int action, int mods) {
@@ -999,6 +908,7 @@ public class main {
             leftMouseButtonPressed = true;
         }
         
+        // if the message box is open and the conversation is over, the user can click anywhere to close it
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
             if (messageBoxDisplayed && !messageBoxOptionsDisplayed) {
                 closeMessage();
@@ -1008,17 +918,22 @@ public class main {
     
     private void updateTitleScreenTexture() {
         Graphics2D g = titleScreenTextureImage.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         
+        // Clear with transparency
         g.setColor(new Color(0, 0, 0, 0));
         g.fillRect(0, 0, winW, winH);
         
+        // Draw title
         g.setColor(Color.WHITE);
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
-        String title = "FBLA Game";
+        String title = "title screen";
         FontMetrics fm = g.getFontMetrics();
         int titleWidth = fm.stringWidth(title);
         g.drawString(title, (winW - titleWidth) / 2, winH / 3);
         
+        // Draw menu options
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 32));
         int optionHeight = 40;
         int startY = winH / 2;
@@ -1026,6 +941,9 @@ public class main {
         for (int i = 0; i < titleScreenOptions.length; i++) {
             if (i == titleScreenSelectedOption) {
                 g.setColor(Color.YELLOW);
+                // Draw highlight background
+                //g.fillRect(winW / 2 - 110, startY + i * optionHeight - 30, 220, 40);
+                //g.setColor(Color.BLACK);
             } else {
                 g.setColor(Color.WHITE);
             }
@@ -1039,140 +957,27 @@ public class main {
             titleScreenOptionsPositions[i][3] = optionHeight;
         }
         
-        // Draw instructions
-        g.setColor(Color.GRAY);
-        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
-        String instructions = "Use arrow keys/WASD to navigate, ENTER/SPACE to select, ESC to exit";
-        int instructionsWidth = g.getFontMetrics().stringWidth(instructions);
-        g.drawString(instructions, (winW - instructionsWidth) / 2, winH - 30);
-        
         g.dispose();
         
-        uploadTextureToGL(titleScreenTextureImage, titleScreenTextureGL);
-    }
-    
-    private void updateOptionsMenuTexture() {
-        optionsMenuTextureImage = new BufferedImage(winW, winH, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = optionsMenuTextureImage.createGraphics();
-        
-        g.setColor(new Color(0, 0, 0, 0));
-        g.fillRect(0, 0, winW, winH);
-        
-        // Draw menu title
-        g.setColor(Color.WHITE);
-        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
-        String title = "Options";
-        if (currentOptionsMenu == 1) title = "Graphics";
-        else if (currentOptionsMenu == 2) title = "Audio";
-        else if (currentOptionsMenu == 3) title = "Controls";
-        FontMetrics fm = g.getFontMetrics();
-        int titleWidth = fm.stringWidth(title);
-        g.drawString(title, (winW - titleWidth) / 2, winH / 4);
-        
-        // Draw menu items
-        String[] currentMenuItems = getCurrentMenuItems();
-        optionsMenuPositions = new int[currentMenuItems.length][4];
-        
-        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 28));
-        int optionHeight = 40;
-        int startY = winH / 3;
-        
-        for (int i = 0; i < currentMenuItems.length; i++) {
-            if (i == selectedOption) {
-                g.setColor(Color.YELLOW);
-            } else {
-                g.setColor(Color.WHITE);
-            }
-            
-            String menuText = currentMenuItems[i];
-            
-            // Add setting values for specific options
-            if (currentOptionsMenu == 0) {
-                // Main options menu
-                menuText = currentMenuItems[i];
-            } else if (currentOptionsMenu == 1) {
-                // Graphics submenu
-                switch (currentMenuItems[i]) {
-                    case "Fullscreen":
-                        menuText = "Fullscreen: " + (fullscreen ? "ON" : "OFF");
-                        break;
-                    case "VSync":
-                        menuText = "VSync: " + (vsync ? "ON" : "OFF");
-                        break;
-                    case "Frame Rate Limit":
-                        menuText = "Frame Rate: " + frameRateLimit + " FPS";
-                        break;
-                }
-            } else if (currentOptionsMenu == 2) {
-                // Audio submenu
-                switch (currentMenuItems[i]) {
-                    case "Master Volume":
-                        menuText = "Master Volume: " + masterVolume + "%";
-                        break;
-                    case "Music Volume":
-                        menuText = "Music Volume: " + musicVolume + "%";
-                        break;
-                    case "SFX Volume":
-                        menuText = "SFX Volume: " + sfxVolume + "%";
-                        break;
-                }
-            } else if (currentOptionsMenu == 3) {
-                // Controls submenu
-                switch (currentMenuItems[i]) {
-                    case "Invert Y-Axis":
-                        menuText = "Invert Y-Axis: " + (invertYAxis ? "ON" : "OFF");
-                        break;
-                    case "Mouse Sensitivity":
-                        menuText = String.format("Mouse Sensitivity: %.1f", mouseSensitivity);
-                        break;
-                }
-            }
-            
-            fm = g.getFontMetrics();
-            int optionWidth = fm.stringWidth(menuText);
-            g.drawString(menuText, (winW - optionWidth) / 2, (startY + i * optionHeight) + 20);
-            optionsMenuPositions[i][0] = (winW - optionWidth) / 2;
-            optionsMenuPositions[i][1] = startY + i * optionHeight - 30;
-            optionsMenuPositions[i][2] = optionWidth;
-            optionsMenuPositions[i][3] = optionHeight;
-        }
-        
-        // Draw instructions
-        g.setColor(Color.GRAY);
-        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
-        String instructions;
-        if (currentOptionsMenu == 0) {
-            instructions = "Use arrow keys/WASD to navigate, ENTER/SPACE to select, ESC to go back";
-        } else {
-            instructions = "Use arrow keys/WASD to navigate and adjust, ENTER/SPACE to select, ESC to go back";
-        }
-        int instructionsWidth = g.getFontMetrics().stringWidth(instructions);
-        g.drawString(instructions, (winW - instructionsWidth) / 2, winH - 30);
-        
-        g.dispose();
-        
-        uploadTextureToGL(optionsMenuTextureImage, optionsMenuTextureGL);
-    }
-    
-    private void uploadTextureToGL(BufferedImage image, int textureID) {
-        int w = image.getWidth();
-        int h = image.getHeight();
+        // Upload to GL texture
+        int w = titleScreenTextureImage.getWidth();
+        int h = titleScreenTextureImage.getHeight();
         int[] pixels = new int[w * h];
-        image.getRGB(0, 0, w, h, pixels, 0, w);
+        titleScreenTextureImage.getRGB(0, 0, w, h, pixels, 0, w);
         
         ByteBuffer buf = BufferUtils.createByteBuffer(w * h * 4);
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 int pixel = pixels[y * w + x];
-                buf.put((byte) ((pixel >> 16) & 0xFF));
-                buf.put((byte) ((pixel >> 8) & 0xFF));
-                buf.put((byte) (pixel & 0xFF));
-                buf.put((byte) ((pixel >> 24) & 0xFF));
+                buf.put((byte) ((pixel >> 16) & 0xFF)); // R
+                buf.put((byte) ((pixel >> 8) & 0xFF));  // G
+                buf.put((byte) (pixel & 0xFF));         // B
+                buf.put((byte) ((pixel >> 24) & 0xFF)); // A
             }
         }
         
         buf.flip();
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        glBindTexture(GL_TEXTURE_2D, titleScreenTextureGL);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
     }
     
@@ -1182,170 +987,13 @@ public class main {
                 startGame();
                 break;
             case 1: // Options
-                currentGameState = GameState.OPTIONS_MENU;
-                currentOptionsMenu = 0;
-                selectedOption = 0;
-                optionsMenuNeedsUpdate = true;
+                // TODO: Implement options menu
+                System.out.println("Options menu not implemented yet");
                 break;
             case 2: // Exit
                 glfwSetWindowShouldClose(window, true);
                 break;
         }
-    }
-    
-    private void handleOptionsMenuClick() {
-        String[] currentMenuItems = getCurrentMenuItems();
-        for (int i = 0; i < currentMenuItems.length; i++) {
-            int[] pos = optionsMenuPositions[i];
-            if (cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
-                cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]) {
-                handleOptionsMenuOption(i);
-                break;
-            }
-        }
-    }
-    
-    private void handleOptionsMenuOption(int optionIndex) {
-        String[] currentMenuItems = getCurrentMenuItems();
-        String selectedItem = currentMenuItems[optionIndex];
-        
-        switch (currentOptionsMenu) {
-            case 0: // Main options menu
-                switch (selectedItem) {
-                    case "Graphics":
-                        currentOptionsMenu = 1;
-                        selectedOption = 0;
-                        break;
-                    case "Audio":
-                        currentOptionsMenu = 2;
-                        selectedOption = 0;
-                        break;
-                    case "Controls":
-                        currentOptionsMenu = 3;
-                        selectedOption = 0;
-                        break;
-                    case "Back":
-                        currentGameState = GameState.TITLE_SCREEN;
-                        titleScreenNeedsUpdate = true;
-                        break;
-                }
-                break;
-                
-            case 1: // Graphics submenu
-                switch (selectedItem) {
-                    case "Fullscreen":
-                        fullscreen = !fullscreen;
-                        applyGraphicsSettings();
-                        break;
-                    case "VSync":
-                        vsync = !vsync;
-                        applyGraphicsSettings();
-                        break;
-                    case "Frame Rate Limit":
-                        // Cycle through common frame rates
-                        if (frameRateLimit == 30) frameRateLimit = 60;
-                        else if (frameRateLimit == 60) frameRateLimit = 120;
-                        else if (frameRateLimit == 120) frameRateLimit = 144;
-                        else frameRateLimit = 30;
-                        applyGraphicsSettings();
-                        break;
-                    case "Back":
-                        currentOptionsMenu = 0;
-                        selectedOption = 0;
-                        break;
-                }
-                break;
-                
-            case 2: // Audio submenu
-                switch (selectedItem) {
-                    case "Master Volume":
-                        masterVolume = Math.min(100, Math.max(0, masterVolume + 10));
-                        if (masterVolume >= 100) masterVolume = 0;
-                        break;
-                    case "Music Volume":
-                        musicVolume = Math.min(100, Math.max(0, musicVolume + 10));
-                        if (musicVolume >= 100) musicVolume = 0;
-                        break;
-                    case "SFX Volume":
-                        sfxVolume = Math.min(100, Math.max(0, sfxVolume + 10));
-                        if (sfxVolume >= 100) sfxVolume = 0;
-                        break;
-                    case "Back":
-                        currentOptionsMenu = 0;
-                        selectedOption = 0;
-                        break;
-                }
-                break;
-                
-            case 3: // Controls submenu
-                switch (selectedItem) {
-                    case "Invert Y-Axis":
-                        invertYAxis = !invertYAxis;
-                        break;
-                    case "Mouse Sensitivity":
-                        mouseSensitivity += 0.1;
-                        if (mouseSensitivity > 2.0) mouseSensitivity = 0.5;
-                        break;
-                    case "Back":
-                        currentOptionsMenu = 0;
-                        selectedOption = 0;
-                        break;
-                }
-                break;
-        }
-        
-        optionsMenuNeedsUpdate = true;
-    }
-    
-    private void adjustSetting(int direction) {
-        String[] currentMenuItems = getCurrentMenuItems();
-        String selectedItem = currentMenuItems[selectedOption];
-        
-        switch (currentOptionsMenu) {
-            case 1: // Graphics
-                switch (selectedItem) {
-                    case "Frame Rate Limit":
-                        frameRateLimit = Math.max(30, Math.min(240, frameRateLimit + direction * 30));
-                        applyGraphicsSettings();
-                        break;
-                }
-                break;
-            case 2: // Audio
-                switch (selectedItem) {
-                    case "Master Volume":
-                        masterVolume = Math.min(100, Math.max(0, masterVolume + direction * 5));
-                        break;
-                    case "Music Volume":
-                        musicVolume = Math.min(100, Math.max(0, musicVolume + direction * 5));
-                        break;
-                    case "SFX Volume":
-                        sfxVolume = Math.min(100, Math.max(0, sfxVolume + direction * 5));
-                        break;
-                }
-                break;
-            case 3: // Controls
-                switch (selectedItem) {
-                    case "Mouse Sensitivity":
-                        mouseSensitivity = Math.max(0.1, Math.min(5.0, mouseSensitivity + direction * 0.1));
-                        mouseSensitivity = Math.round(mouseSensitivity * 10) / 10.0;
-                        break;
-                }
-                break;
-        }
-        
-        optionsMenuNeedsUpdate = true;
-    }
-    
-    private void applyGraphicsSettings() {
-        // Apply frame rate
-        FRAMERATE = frameRateLimit;
-        
-        // Apply VSync
-        glfwSwapInterval(vsync ? 1 : 0);
-        
-        // Note: Fullscreen would require recreating the window
-        System.out.println("Graphics settings applied: Frame Rate=" + frameRateLimit + 
-                         ", VSync=" + vsync + ", Fullscreen=" + fullscreen);
     }
 
     // === Message box handling ===
@@ -1364,6 +1012,7 @@ public class main {
 
     public void displayMessageWithResponses(String message, String[] responses) {
         if (messageBoxDisplayed) return;
+        // close old message
         closeMessage();
         System.out.println("Displaying message with responses: " + message);
         yVelocity = 0;
@@ -1371,12 +1020,17 @@ public class main {
         messageBoxOptionsDisplayed = true;
         messageBoxDisplayed = true;
         currentFullMessage = message;
+        //typeIndex = 0;
+        //lastTypeTime = System.currentTimeMillis();
         updateMessageTexture(message);
         drawResponseTextOnMessageBox(responses);
         playTalkingSound();
     }
 
     public void drawResponseTextOnMessageBox(String[] responses) {
+        // draws text at the bottom of the message box for player responses and uses the cursor position to select a response
+        // reuse code from updateMessageTexture to draw the text
+        //if (messageBoxDisplayed) return;
         yVelocity = 0;
         xVelocity = 0;
         messageBoxOptionsDisplayed = true;
@@ -1387,48 +1041,79 @@ public class main {
             currentResponseOptions = new String[]{"Error: No responses"};
         }
         currentResponseOptions = responses;
-        currentFullMessage = "test";
+        currentFullMessage = "test"; // dummy message to show the box
         int numberOfResponses = responses.length;
-        responsePositions = new int[numberOfResponses][4];
+        responsePositions = new int[numberOfResponses][4]; // x, y, w, h for each response
         for(int i = 0; i < numberOfResponses; i++){
             Graphics2D g = messageTextureImage.createGraphics();
             g.setColor(Color.YELLOW);
             g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+            //g.drawImage(messageBoxBI, 0, 0, messageTextureImage.getWidth(), messageTextureImage.getHeight(), null);
             int padding = 12;
             int maxWidth = messageTextureImage.getWidth() - padding * 2;
             int lineHeight = 22;
             int startY = messageTextureImage.getHeight() - (numberOfResponses * lineHeight) - padding;
             g.drawString(responses[i], padding, startY + (i * lineHeight) + g.getFontMetrics().getAscent());
+            // add response to responsePositions
             int textWidth = g.getFontMetrics().stringWidth(responses[i]);
-            responsePositions[i][0] = padding;
-            responsePositions[i][1] = startY + (i * lineHeight);
-            responsePositions[i][2] = textWidth;
-            responsePositions[i][3] = lineHeight;
+            responsePositions[i][0] = padding; // x
+            responsePositions[i][1] = startY + (i * lineHeight); // y
+            responsePositions[i][2] = textWidth; // w
+            responsePositions[i][3] = lineHeight; // h
             g.dispose();
         }
+        // upload to GL texture
+        int w = messageTextureImage.getWidth();
+        int h = messageTextureImage.getHeight();
+        int[] pixels = new int[w * h];
+        messageTextureImage.getRGB(0, 0, w, h, pixels, 0, w);
         
-        uploadTextureToGL(messageTextureImage, messageTextureGL);
-        
-        for(int i = 0; i < responsePositions.length; i++){
-            responsePositions[i][0] += (winW - (winW / 2)) / 2;
-            responsePositions[i][1] += (int) (winH * 0.75);
-            responsePositions[i][1] += 22;
-            responsePositions[i][2] += 10;
-            responsePositions[i][3] += 10;
+        ByteBuffer buf = BufferUtils.createByteBuffer(w * h * 4);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int pixel = pixels[y * w + x];
+                buf.put((byte) ((pixel >> 16) & 0xFF)); // R
+                buf.put((byte) ((pixel >> 8) & 0xFF));  // G
+                buf.put((byte) (pixel & 0xFF));         // B
+                buf.put((byte) ((pixel >> 24) & 0xFF)); // A
+            }
         }
-        responsePositions[responsePositions.length - 1][3] += 10;
+            
+        buf.flip();
+
+        glBindTexture(GL_TEXTURE_2D, messageTextureGL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+
+        System.out.println("Response positions: " + java.util.Arrays.deepToString(responsePositions));
+            // since the options positions are relative to the message box, we need to offset them by the message box position in the window
+            for(int i = 0; i < responsePositions.length; i++){
+                responsePositions[i][0] += (winW - (winW / 2)) / 2; // boxX
+                responsePositions[i][1] += (int) (winH * 0.75); // boxY
+                // also shift the y position down by 22 pixels to account for the text ascent
+                responsePositions[i][1] += 22;
+                // and add some padding to the width and height
+                responsePositions[i][2] += 10;
+                responsePositions[i][3] += 10;
+            }
+            // specifically add extra padding to the last option to make it easier to click
+            responsePositions[responsePositions.length - 1][3] += 10;
+            System.out.println("Response positions in window: " + java.util.Arrays.deepToString(responsePositions));
     }
 
     public void drawResponseTextOnMessageBoxWithHighlight(String[] responses, int indexOfHighlightedOption) {
+        // draws text at the bottom of the message box for player responses and uses the cursor position to select a response
+        // reuse code from updateMessageTexture to draw the text
+        //if (messageBoxDisplayed) return;
         yVelocity = 0;
         xVelocity = 0;
         messageBoxOptionsDisplayed = true;
         messageBoxDisplayed = true;
-        currentFullMessage = "test";
+        currentFullMessage = "test"; // dummy message to show the box
         int numberOfResponses = responses.length;
-        responsePositions = new int[numberOfResponses][4];
+        responsePositions = new int[numberOfResponses][4]; // x, y, w, h for each response
         for(int i = 0; i < numberOfResponses; i++){
             if(i == indexOfHighlightedOption){
+                // draw highlighted option in different color
                 Graphics2D g = messageTextureImage.createGraphics();
                 g.setColor(Color.RED);
                 g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
@@ -1437,40 +1122,68 @@ public class main {
                 int lineHeight = 22;
                 int startY = messageTextureImage.getHeight() - (numberOfResponses * lineHeight) - padding;
                 g.drawString(responses[i], padding, startY + (i * lineHeight) + g.getFontMetrics().getAscent());
+                // add response to responsePositions
                 int textWidth = g.getFontMetrics().stringWidth(responses[i]);
-                responsePositions[i][0] = padding;
-                responsePositions[i][1] = startY + (i * lineHeight);
-                responsePositions[i][2] = textWidth;
-                responsePositions[i][3] = lineHeight;
+                responsePositions[i][0] = padding; // x
+                responsePositions[i][1] = startY + (i * lineHeight); // y
+                responsePositions[i][2] = textWidth; // w
+                responsePositions[i][3] = lineHeight; // h
                 g.dispose();
                 continue;
             }
             Graphics2D g = messageTextureImage.createGraphics();
             g.setColor(Color.YELLOW);
             g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+            //g.drawImage(messageBoxBI, 0, 0, messageTextureImage.getWidth(), messageTextureImage.getHeight(), null);
             int padding = 12;
             int maxWidth = messageTextureImage.getWidth() - padding * 2;
             int lineHeight = 22;
             int startY = messageTextureImage.getHeight() - (numberOfResponses * lineHeight) - padding;
             g.drawString(responses[i], padding, startY + (i * lineHeight) + g.getFontMetrics().getAscent());
+            // add response to responsePositions
             int textWidth = g.getFontMetrics().stringWidth(responses[i]);
-            responsePositions[i][0] = padding;
-            responsePositions[i][1] = startY + (i * lineHeight);
-            responsePositions[i][2] = textWidth;
-            responsePositions[i][3] = lineHeight;
+            responsePositions[i][0] = padding; // x
+            responsePositions[i][1] = startY + (i * lineHeight); // y
+            responsePositions[i][2] = textWidth; // w
+            responsePositions[i][3] = lineHeight; // h
             g.dispose();
         }
+        // upload to GL texture
+        int w = messageTextureImage.getWidth();
+        int h = messageTextureImage.getHeight();
+        int[] pixels = new int[w * h];
+        messageTextureImage.getRGB(0, 0, w, h, pixels, 0, w);
         
-        uploadTextureToGL(messageTextureImage, messageTextureGL);
-        
-        for(int i = 0; i < responsePositions.length; i++){
-            responsePositions[i][0] += (winW - (winW / 2)) / 2;
-            responsePositions[i][1] += (int) (winH * 0.75);
-            responsePositions[i][1] += 22;
-            responsePositions[i][2] += 10;
-            responsePositions[i][3] += 10;
+        ByteBuffer buf = BufferUtils.createByteBuffer(w * h * 4);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int pixel = pixels[y * w + x];
+                buf.put((byte) ((pixel >> 16) & 0xFF)); // R
+                buf.put((byte) ((pixel >> 8) & 0xFF));  // G
+                buf.put((byte) (pixel & 0xFF));         // B
+                buf.put((byte) ((pixel >> 24) & 0xFF)); // A
+            }
         }
-        responsePositions[responsePositions.length - 1][3] += 10;
+            
+        buf.flip();
+
+        glBindTexture(GL_TEXTURE_2D, messageTextureGL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+
+        System.out.println("Response positions: " + java.util.Arrays.deepToString(responsePositions));
+            // since the options positions are relative to the message box, we need to offset them by the message box position in the window
+            for(int i = 0; i < responsePositions.length; i++){
+                responsePositions[i][0] += (winW - (winW / 2)) / 2; // boxX
+                responsePositions[i][1] += (int) (winH * 0.75); // boxY
+                // also shift the y position down by 22 pixels to account for the text ascent
+                responsePositions[i][1] += 22;
+                // and add some padding to the width and height
+                responsePositions[i][2] += 10;
+                responsePositions[i][3] += 10;
+            }
+            // specifically add extra padding to the last option to make it easier to click
+            responsePositions[responsePositions.length - 1][3] += 10;
+            System.out.println("Response positions in window: " + java.util.Arrays.deepToString(responsePositions));
     }
 
     public void closeMessage() {
@@ -1480,14 +1193,18 @@ public class main {
         typeIndex = 0;
         messageBoxOptionsDisplayed = false;
         responsePositions = null;
+        //soundPlayer.stopAudio();
     }
 
     void changeColorOfResponseOptionMouseOver(){
+        // check if cursor is over any response option and change its color
         if(messageBoxOptionsDisplayed && responsePositions != null){
             for(int i = 0; i < responsePositions.length; i++){
                 int[] pos = responsePositions[i];
                 if(cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
                    cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]){
+                    System.out.println(java.util.Arrays.deepToString(currentResponseOptions));
+                    System.out.println(currentResponseOptions[i] + " is being hovered over");
                     drawResponseTextOnMessageBoxWithHighlight(currentResponseOptions, i);
                     return;
                 }
@@ -1497,21 +1214,47 @@ public class main {
 
     private void updateMessageTexture(String currentFullMessage) {
         System.out.println("Updating message texture: " + currentFullMessage);
-        String text = currentFullMessage;
+        // Compose message box image with current substring text
+        String text = currentFullMessage;//.substring(0, Math.min(typeIndex, currentFullMessage.length()));
 
         Graphics2D g = messageTextureImage.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        // draw background image as base
         g.drawImage(messageBoxBI, 0, 0, messageTextureImage.getWidth(), messageTextureImage.getHeight(), null);
 
+        // draw wrapped text (simple)
         g.setColor(Color.WHITE);
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
 
+        // Basic wrapping
         int padding = 12;
         int maxWidth = messageTextureImage.getWidth() - padding * 2;
         drawStringWrapped(g, text, padding, padding, maxWidth, 22);
 
         g.dispose();
 
-        uploadTextureToGL(messageTextureImage, messageTextureGL);
+        // upload to GL texture
+        int w = messageTextureImage.getWidth();
+        int h = messageTextureImage.getHeight();
+        int[] pixels = new int[w * h];
+        messageTextureImage.getRGB(0, 0, w, h, pixels, 0, w);
+
+        ByteBuffer buf = BufferUtils.createByteBuffer(w * h * 4);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int pixel = pixels[y * w + x];
+                buf.put((byte) ((pixel >> 16) & 0xFF)); // R
+                buf.put((byte) ((pixel >> 8) & 0xFF));  // G
+                buf.put((byte) (pixel & 0xFF));         // B
+                buf.put((byte) ((pixel >> 24) & 0xFF)); // A
+            }
+        }
+        buf.flip();
+
+        glBindTexture(GL_TEXTURE_2D, messageTextureGL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+        
     }
 
     private void drawStringWrapped(Graphics2D g, String text, int x, int y, int maxWidth, int lineHeight) {
@@ -1538,12 +1281,16 @@ public class main {
     }
 
     private void checkIfPlayerClickedResponses(int[][] responsePositions) {
+        // check if the player clicked on one of the response options in the message box
+        // use responsePositions to check if cursorXPosition and cursorYPosition are within any of the response boxes
+        // responsePotions is an array of [x, y, w, h] for each response
         if(leftMouseButtonPressed){
             for(int i = 0; i < responsePositions.length; i++){
                 int[] pos = responsePositions[i];
                 if(cursorXPosition >= pos[0] && cursorXPosition <= pos[0] + pos[2] &&
                    cursorYPosition >= pos[1] && cursorYPosition <= pos[1] + pos[3]){
                     System.out.println("Player clicked on response: " + (i + 1));
+                    // close message box after clicking a response
                     closeMessage();
                     leftMouseButtonPressed = false;
                     return;
@@ -1562,11 +1309,16 @@ public class main {
     }
 
     public void setEntityMovement(int entityIndex, int directionIndex, int value){
+        // directionIndex: 0 = right, 1 = up, 2 = left, 3 = down
         entityMovement[entityIndex][directionIndex] = value;
     }
 
     private void handleNPCActions(String action, Entity npc){
+        // this method is primarily meant to handle NPC actions that are triggered from dialogue trees
+        // right now, the only action that an NPC will do is to move to a new cell.
+        // here is what the action looks like: move_to(11,2)
         if(action.startsWith("move_to")){
+            // parse the action to get the target cell
             int start = action.indexOf('(');
             int end = action.indexOf(')');
             if(start == -1 || end == -1 || end <= start + 1) return;
@@ -1575,15 +1327,30 @@ public class main {
             try {
                 int targetX = Integer.parseInt(parts[0].trim()) * GRID_CELL_SIZE;
                 int targetY = Integer.parseInt(parts[1].trim()) * GRID_CELL_SIZE;
+                int oldPositionX = npc.getX();
+                int oldPositionY = npc.getY();
+                // move the npc to the target cell
+                System.out.println("Start position: " + playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()) + ", " +  playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()) + " Target position: " + targetX / GRID_CELL_SIZE + ", " + targetY / GRID_CELL_SIZE);
+                //NPCPathfindToPoint(collisionGrid, playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), targetX / GRID_CELL_SIZE, targetY / GRID_CELL_SIZE, npc);
+                System.out.println(entityAIs.size());
+                System.out.println(entityAIs.toString());
+                System.out.println(entities.size());
+                System.out.println(entities.indexOf(npc));
                 Thread pathfindingThread = new Thread(() -> {
-                    entityAIs.get(entities.indexOf(npc)).NPCPathfindToPoint(playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), playerPositionInWindowToPositionInGridY(npc.getX(), npc.getY()), targetX / GRID_CELL_SIZE, targetY / GRID_CELL_SIZE, npc);
+                    entityAIs.get(entities.indexOf(npc)-1).NPCPathfindToPoint(playerPositionInWindowToPositionInGridX(npc.getX(), npc.getY()), playerPositionInWindowToPositionInGridY(npc.getX(), npc.getY()), targetX / GRID_CELL_SIZE, targetY / GRID_CELL_SIZE, npc);
                 });
                 pathfindingThread.start();
                 System.out.println("Moved NPC to (" + targetX + ", " + targetY + ")");
+                //try {
+                //    pathfindingThread.join();
+                //} catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                //    e.printStackTrace();
+               // }
             } catch (NumberFormatException e) {
                 System.err.println("Invalid move_to action format: " + action);
             }
-        } else if(action.startsWith("change_player_level")){
+        } else if(action.startsWith("change_player_level")){ // only used for the title screen, since we are reusing an npc for the title screen choices
             int start = action.indexOf('(');
             int end = action.indexOf(')');
             if(start == -1 || end == -1 || end <= start + 1) return;
@@ -1597,6 +1364,9 @@ public class main {
     }
 
     public void dialogueHandler(dialogueTree tree, int selectedResponse, Entity npc) {
+        // handle dialogue tree traversal
+        // if selected response is zero, assume we are at the top level of the tree
+        // close old message box
         closeMessage();
         String npcText = tree.getNpcText();
         List<Response> playerResponses = tree.getResponses();
@@ -1605,15 +1375,21 @@ public class main {
             responses[i] = playerResponses.get(i).getResponseText();
         }
         if(selectedResponse == 0){
+            // display top level npc text and responses
             displayMessageWithResponses(npcText, responses);
             return;
         }
+        // print all responses for debugging
         for(int i = 0; i < responses.length; i++){
             System.out.println((i + 1) + ": " + responses[i]);
         }
+        // enumerate through the responses to find the selected one
         for(int i = 0; i < playerResponses.size(); i++){
+            // check to ensure that there are actually responses to select from
             if(i == selectedResponse - 1 && responses.length > 0){
+                // remember that a selectedresponse of 0 is the top level, so subtract 1 from the index
                 Response r = playerResponses.get(i);
+                // if there are no responses, just display the npc text, this is the end of the conversation
                 if(currentTree.getResponses().isEmpty()){
                     System.out.println("End of conversation reached.");
                     displayMessage(currentTree.getNpcText());
@@ -1621,7 +1397,9 @@ public class main {
                     responsePositions = null;
                     responses = null;
                 } else if(r.getNextNode() != null && r.getNextNode().getResponses().size() > 0){
+                    // display the npc text for the selected response
                     dialogueHandler(r.getNextNode(), 0, npc);
+                    // refresh playerresponses and responses array for the new node
                     currentTree = r.getNextNode();
                 } else if(r.getNextNode() != null && r.getNextNode().getResponses().size() == 0) {
                     closeMessage();
@@ -1630,6 +1408,7 @@ public class main {
                     responses = null;
                     currentTree = r.getNextNode();
                     displayMessage(r.getNextNode().getNpcText());
+                    // run an npc action if it has one, these should always be at the end of the tree
                     if(r.getNextNode().getNpcAction() != null){
                         handleNPCActions(r.getNextNode().getNpcAction(), npc);
                     }
@@ -1662,17 +1441,21 @@ public class main {
                 nearest = npc;
             }
         }
+        // if the nearest npc is a door, run the build level function with the door's target level
         if(nearest != null && nearest.getType().equals("door")){
             buildLevel(nearest.getTargetLevel());
             return;
         }
+        // display npc conversation if npc has one defined
         if(nearest != null && !nearest.getDialogueTree().isTreeEmpty()) {
+            // start dialogue tree, the 0 means the top level of the tree
             currentTree = nearest.getDialogueTree();
             currentNPC = nearest;
             dialogueHandler(nearest.getDialogueTree(), 0, nearest);
             return;
         }
 
+        // display random message if npc does not have a conversation defined
         if(nearest != null) {
             displayMessage(getRandomNPCMessage());
         } 
@@ -1696,12 +1479,17 @@ public class main {
 
     // === Cleanup ===
     private void cleanup() {
+        // delete GL textures
         glDeleteTextures(playerTex);
         glDeleteTextures(npcTex);
         glDeleteTextures(backgroundTex);
         glDeleteTextures(messageBoxTex);
         if (messageTextureGL != -1) glDeleteTextures(messageTextureGL);
-        if (titleScreenTextureGL != -1) glDeleteTextures(titleScreenTextureGL);
-        if (optionsMenuTextureGL != -1) glDeleteTextures(optionsMenuTextureGL);
+
+        //glfwFreeCallbacks(window);
+        //glfwDestroyWindow(window);
+        //glfwTerminate();
+        //glfwSetErrorCallback(null).free();
+        //soundPlayer.stopAudio();
     }
 }
