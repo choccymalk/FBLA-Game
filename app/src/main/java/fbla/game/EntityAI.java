@@ -23,7 +23,7 @@ public class EntityAI {
     // update AI state to be called in main game loop
     public void tick(){
         // random chance to pathfind and move to a random point in the level
-        if(Math.random() < 0.01 && packages.contains(new String("move_randomly")) && !pathfinding){
+        if(Math.random() < 0.001 && packages.contains(new String("move_randomly")) && !pathfinding){
             pathfinding = true;
             // generate random point in level
             int goalX = (int)(Math.random() * 53);
