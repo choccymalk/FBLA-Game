@@ -64,46 +64,22 @@ public class EntityAI {
             try {
                 Thread.sleep(200);
                 // determine what direction npc will move for this waypoint to update the npc's animation state
-                // we can't do this, opengl calls need to be done on the main thread, so we will just set a variable and handle it in the main loop
                 if(i > 0){
                     Point previousPoint = wayPoints.get(i - 1);
                     Point currentPoint = wayPoints.get(i);
                     if(currentPoint.getX() > previousPoint.getX()){
-                        // reset movement states
-                        //main.setEntityMovement(npcIndex, 0, 0); // right
-                        //main.setEntityMovement(npcIndex, 1, 0); // up
-                        //main.setEntityMovement(npcIndex, 2, 0); // left
-                        //main.setEntityMovement(npcIndex, 3, 0); // down
                         // set new movement state
                         main.setEntityMovement(npcIndex, 0, 1); // moving right
                         //entityAnimation(npc, "walkingRight");
                     } else if(currentPoint.getX() < previousPoint.getX()){
-                        // reset movement states
-                        //main.setEntityMovement(npcIndex, 0, 0); // right
-                        //main.setEntityMovement(npcIndex, 1, 0); // up
-                        //main.setEntityMovement(npcIndex, 2, 0); // left
-                        //main.setEntityMovement(npcIndex, 3, 0); // down
                         // set new movement state
                         main.setEntityMovement(npcIndex, 2, 1); // moving left
                         //entityAnimation(npc, "walkingLeft");
                     } else if(currentPoint.getY() > previousPoint.getY()){
-                        // reset movement states
-                        //main.setEntityMovement(npcIndex, 0, 0); // right
-                        //main.setEntityMovement(npcIndex, 1, 0); // up
-                        //main.setEntityMovement(npcIndex, 2, 0); // left
-                        //main.setEntityMovement(npcIndex, 3, 0); // down
                         // set new movement state
                         main.setEntityMovement(npcIndex, 3, 1); // moving down
-                        //entityAnimation(npc, "walkingDown");
-                    } else if(currentPoint.getY() < previousPoint.getY()){
-                        // reset movement states
-                        //main.setEntityMovement(npcIndex, 0, 0); // right
-                        //main.setEntityMovement(npcIndex, 1, 0); // up
-                        //main.setEntityMovement(npcIndex, 2, 0); // left
-                        //main.setEntityMovement(npcIndex, 3, 0); // down
                         // set new movement state
                         main.setEntityMovement(npcIndex, 1, 1); // moving up
-                        //entityAnimation(npc, "walkingUp");
                     }
                 }
                 for(int a = 0; a <= 3-1; a++){

@@ -3,6 +3,7 @@ package fbla.game;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Entity {
