@@ -51,6 +51,8 @@ import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
 
+import fbla.game.GameRenderer.Object3D;
+
 public class main {
     // === Config ===
     private static final int WINDOW_W = 1280;
@@ -60,8 +62,8 @@ public class main {
     private static final double NPC_INTERACTION_DISTANCE = 500.0;
     private static final String RESOURCE_PATH = System.getProperty("user.home")
             + "\\Desktop\\FBLA-Game\\game_resources";
-    private double FRAMERATE = 30.0;
-    private int soundPlayerVolume = 50;
+    public double FRAMERATE = 30.0;
+    public int soundPlayerVolume = 50;
     private static final int GRID_CELL_SIZE = 24;
     private static final int GRID_WIDTH = 53;
     private static final int GRID_HEIGHT = 30;
@@ -74,53 +76,56 @@ public class main {
     private static final int DEFAULT_FONT_SIZE = 20;
     private static boolean FULLSCREEN = false;
     ImBoolean isFullscreen;
-    private FullscreenToggle fstoggle;
+    public FullscreenToggle fstoggle;
+    private GameRenderer renderer;
+    Object3D model;
+    //Model3D model;
 
-    private enum GameState {
+    public enum GameState {
         TITLE_SCREEN,
         IN_GAME,
         PAUSED,
         OPTIONS
     }
 
-    private long window;
-    private int winW = WINDOW_W, winH = WINDOW_H;
-    private final List<Entity> entities = new ArrayList<>();
-    private List<EntityAI> entityAIs = new ArrayList<>();
-    private BufferedImage playerBI, backgroundBI, npcBI, gridBI, doorBI, titleScreenBI, titleScreenGameLogoBI;
-    private int playerTex, backgroundTex, npcTex, gridTex, doorTex, titleScreenTex, titleScreenGameLogoTex;
-    private java.util.HashMap<Integer, entityAnimation> entityIndexToAnimationObjects = new java.util.HashMap<>();
-    private int playerX = 0, playerY = 600;
+    public long window;
+    public int winW = WINDOW_W, winH = WINDOW_H;
+    public final List<Entity> entities = new ArrayList<>();
+    public List<EntityAI> entityAIs = new ArrayList<>();
+    public BufferedImage playerBI, backgroundBI, npcBI, gridBI, doorBI, titleScreenBI, titleScreenGameLogoBI;
+    public int playerTex, backgroundTex, npcTex, gridTex, doorTex, titleScreenTex, titleScreenGameLogoTex;
+    public java.util.HashMap<Integer, entityAnimation> entityIndexToAnimationObjects = new java.util.HashMap<>();
+    public int playerX = 0, playerY = 600;
     private int xVelocity = 0, yVelocity = 0;
     private int cursorXPosition;
     private int cursorYPosition;
     private boolean leftMouseButtonPressed = false;
-    private String[] currentResponseOptions;
-    private dialogueTree currentTree = null;
-    private Entity currentNPC = null;
-    private int currentLevelIndex;
-    private int[][] entityMovement;
+    public String[] currentResponseOptions;
+    public dialogueTree currentTree = null;
+    public Entity currentNPC = null;
+    public int currentLevelIndex;
+    public int[][] entityMovement;
     private int[] pressedKey = new int[2];
     jsonParser parser = new jsonParser(new File(RESOURCE_PATH + "\\levels.json"));
     int[][] collisionGrid = parser.getCollisionGrid(0);
-    private GameState currentGameState = GameState.TITLE_SCREEN;
+    public GameState currentGameState = GameState.TITLE_SCREEN;
 
     // Title screen state
-    private String[] titleScreenOptions = { "Start Game", "Options", "Exit" };
-    private int titleScreenSelectedOption = 0;
+    public String[] titleScreenOptions = { "Start Game", "Options", "Exit" };
+    public int titleScreenSelectedOption = 0;
 
     // Options screen state
-    private String[] optionsScreenOptions = { "Volume", "Framerate" };
-    private float[] optionsVolume = { 50.0f };
-    private float[] optionsFrameRate = { 30.0f };
+    public String[] optionsScreenOptions = { "Volume", "Framerate" };
+    public float[] optionsVolume = { 50.0f };
+    public float[] optionsFrameRate = { 30.0f };
 
     // ImGui state
-    private ImGuiImplGlfw imguiGlfw;
-    private ImGuiImplGl3 imguiGl3;
-    private boolean messageBoxDisplayed = false;
-    private boolean messageBoxOptionsDisplayed = false;
-    private String currentFullMessage = "";
-    private int selectedResponseIndex = -1;
+    public ImGuiImplGlfw imguiGlfw;
+    public ImGuiImplGl3 imguiGl3;
+    public boolean messageBoxDisplayed = false;
+    public boolean messageBoxOptionsDisplayed = false;
+    public String currentFullMessage = "";
+    public int selectedResponseIndex = -1;
 
     long movementLastTime = System.currentTimeMillis();
 
@@ -142,7 +147,7 @@ public class main {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-        //glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+        // glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         window = glfwCreateWindow(winW, winH, "Game Window", NULL, NULL);
         if (window == NULL)
             throw new RuntimeException("Failed to create GLFW window");
@@ -177,11 +182,12 @@ public class main {
             glfwGetWindowSize(window, pWidth, pHeight);
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             if (vidmode != null) {
-                 glfwSetWindowPos(
-                 window,
-                 (vidmode.width() - pWidth.get(0)) / 2,
-                 (vidmode.height() - pHeight.get(0)) / 2);
-                //glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, 1280, 720, vidmode.refreshRate());
+                glfwSetWindowPos(
+                        window,
+                        (vidmode.width() - pWidth.get(0)) / 2,
+                        (vidmode.height() - pHeight.get(0)) / 2);
+                // glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, 1280, 720,
+                // vidmode.refreshRate());
             }
         }
         FULLSCREEN = false;
@@ -223,16 +229,21 @@ public class main {
         style.setWindowRounding(5.3f);
         style.setFrameRounding(5f);
         style.setScrollbarRounding(0.0f);
+        renderer = new GameRenderer(this, imguiGlfw, imguiGl3);
 
         fstoggle = new FullscreenToggle(window);
 
-        //GL43.glEnable(GL43.GL_DEBUG_OUTPUT);
-        //GL43.glEnable(GL43.GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        //GL43.glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, (IntBuffer)null, true);
-        
+        //model = renderer.load3DModel(RESOURCE_PATH + "\\models\\model.obj");
+        model = renderer.load3DObject(RESOURCE_PATH + "\\models\\model.obj", gridTex, "model");
+
+        // GL43.glEnable(GL43.GL_DEBUG_OUTPUT);
+        // GL43.glEnable(GL43.GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        // GL43.glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE,
+        // (IntBuffer)null, true);
+
     }
 
-    public void GLDebugMessageCallback(){
+    public void GLDebugMessageCallback() {
     }
 
     public void changeWindowMode(boolean fullscreen) {
@@ -259,10 +270,11 @@ public class main {
                 GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
                 if (vidmode != null) {
                     glfwSetWindowPos(
-                        window,
-                        (vidmode.width() - pWidth.get(0)) / 2,
-                        (vidmode.height() - pHeight.get(0)) / 2);
-                    //glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, 1280, 720, vidmode.refreshRate());
+                            window,
+                            (vidmode.width() - pWidth.get(0)) / 2,
+                            (vidmode.height() - pHeight.get(0)) / 2);
+                    // glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, 1280, 720,
+                    // vidmode.refreshRate());
                 }
             }
             FULLSCREEN = true;
@@ -555,206 +567,41 @@ public class main {
     }
 
     private void render() {
-        glClearColor(0f, 0f, 0f, 1f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0, winW, winH, 0, -1, 1);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-
-        switch (currentGameState) {
-            case TITLE_SCREEN:
-                renderTitleScreen();
-                break;
-            case IN_GAME:
-                renderInGame();
-                if (messageBoxDisplayed) {
-                    renderMessageBox();
-                }
-                break;
-            case PAUSED:
-                // renderInGame();
-                renderPauseMenu();
-                break;
-            case OPTIONS:
-                renderOptions();
-                break;
-        }
+        renderer.render(winW, winH, backgroundBI, backgroundTex, playerBI,
+                gridBI, gridTex, titleScreenBI, titleScreenTex,
+                titleScreenGameLogoBI, titleScreenGameLogoTex);
     }
-    
-    private void renderOptions() {
-        drawTexturedQuad(titleScreenTex, 0, 0, winW, winH, titleScreenBI.getWidth(), titleScreenBI.getHeight());
-        drawImGui();
-        ImGui.setNextWindowPos(winW / 2 - 150, winH / 2 - 100);
-        ImGui.setNextWindowSize(300, 330);
-        ImGui.begin("Options", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse);
-
-        // ImGui.text(optionsScreenOptions[0]);
-        ImGui.dragFloat("Volume", optionsVolume, 1f, 0.0f, 100.0f, "%.3f");
-        if (ImGui.button("Test Volume", 200, 40)) {
-            playTalkingSound();
-        }
-        // ImGui.text(optionsScreenOptions[1]);
-        ImGui.dragFloat("Framerate", optionsFrameRate, 1f, 1.0f, 60.0f, "%.3f");
-        if(ImGui.checkbox("Fullscreen", isFullscreen)){
-            fstoggle.setFullscreen(isFullscreen.get());
-            System.out.println(isFullscreen.get());
-        }
-        
-        if (ImGui.button("Back", 200, 40)) {
-            currentGameState = GameState.TITLE_SCREEN;
-        }
-
-        soundPlayerVolume = (int) optionsVolume[0];
-        FRAMERATE = (int) optionsFrameRate[0];
-
-        ImGui.end();
-        ImGui.render();
-        imguiGl3.renderDrawData(ImGui.getDrawData());
-    }
-
-    private void renderTitleScreen() {
-        drawTexturedQuad(titleScreenTex, 0, 0, winW, winH, titleScreenBI.getWidth(), titleScreenBI.getHeight());
-        drawImGui();
-        // to center use winW * 0.25f, winH * 0.25f
-        ImGui.setNextWindowPos(winW * 0.05f, winH * 0.4f);// winW / 2 - 150, winH / 2 - 100);// ,
-                                                          // ImGuiWindowFlags.getWindowFlags());
-        ImGui.setNextWindowSize(winW / 2, 330);
-        ImGui.pushStyleColor(ImGuiCol.WindowBg, 0f, 0f, 0f, 0f);
-        ImGui.pushStyleColor(ImGuiCol.Button, 0f, 0f, 0f, 1f);
-        ImGui.begin("Main Menu", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse
-                | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoDecoration);
-        // System.out.println(ImGui.calcTextSize("Title Screen").x + " " +
-        // ImGui.calcTextSize("Title Screen").y);
-        // ImGui.setCursorPosX((winH - ImGui.calcTextSize("game name").x) -
-        // (ImGui.calcTextSize("game name").x * 0.5f));
-        // ImGui.text("game name");
-        // ImGui.image(titleScreenGameLogoTex, 256, 144);
-        // ImGui.separator();
-
-        for (int i = 0; i < titleScreenOptions.length; i++) {
-            if (ImGui.button(titleScreenOptions[i], (winW / 2) - 20, 100)) {
-                handleTitleScreenOption(i);
-            }
-        }
-
-        ImGui.end();
-        ImGui.popStyleColor();
-        ImGui.popStyleColor();
-        ImGui.render();
-        imguiGl3.renderDrawData(ImGui.getDrawData());
-    }
-
-    private int inGameFrameCount = 0;
-
-    private void renderInGame() {
-        // System.out.println("drawing frame " + inGameFrameCount);
-        inGameFrameCount++;
-        drawTexturedQuad(backgroundTex, 0, 0, winW, winH, backgroundBI.getWidth(), backgroundBI.getHeight());
-
-        if (DRAW_DEBUG_GRID) {
-            drawTexturedQuad(gridTex, 0, 0, winW, winH, gridBI.getWidth(), gridBI.getHeight());
-        }
-
-        for (Entity e : entities) {
-            drawTexturedQuad(e.getTextureId(), e.getX(), e.getY(), e.getWidth(), e.getHeight(),
-                    e.getWidth(), e.getHeight());
-        }
-
-        // if (messageBoxDisplayed) {
-        // renderMessageBox();
-        // }
-        if (!messageBoxDisplayed) {
-            drawImGui();
-            ImGui.render();
-        }
-    }
-
-    private void renderMessageBox() {
-        drawImGui();
-        ImGui.setNextWindowPos(winW / 2 - 300, winH - 250);// , ImGui.getWindowFlags());
-        ImGui.setNextWindowSize(600, 200);
-        ImGui.begin(currentNPC.getName(),
-                ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse);
-
-        ImGui.textWrapped(currentFullMessage);
-        ImGui.separator();
-
-        try {
-            if (!messageBoxOptionsDisplayed) {
-                if (ImGui.button("Close (E)", 100, 30)) {
-                    closeMessage();
-                }
-            } else if (this.currentResponseOptions != null) {
-                for (int i = 0; i < currentResponseOptions.length; i++) {
-                    if (ImGui.button(currentResponseOptions[i], 500, 30)) {
-                        selectedResponseIndex = i;
-                        dialogueHandler(currentTree, i + 1, currentNPC);
-                    }
-                }
-            } else {
-                if (ImGui.button("Close (E)", 100, 30)) {
-                    closeMessage();
-                }
-            }
-        } catch (Exception e) {
-            // if no response options are found (currentResponseOptions = null), just
-            // display a button to close the message
-            if (ImGui.button("Close (E)", 100, 30)) {
-                closeMessage();
-            }
-        }
-
-        ImGui.end();
-        ImGui.render();
-        imguiGl3.renderDrawData(ImGui.getDrawData());
-    }
-
-    private void renderPauseMenu() {
-        drawImGui();
-        ImGui.setNextWindowPos(winW / 2 - 150, winH / 2 - 100);// , ImGui.getWindowFlags());
-        ImGui.setNextWindowSize(300, 200);
-        ImGui.begin("Paused", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse);
-
-        ImGui.text("Game Paused");
-        ImGui.separator();
-
-        if (ImGui.button("Resume", 200, 40)) {
-            currentGameState = GameState.IN_GAME;
-        }
-        if (ImGui.button("To Title Screen", 200, 40)) {
-            currentGameState = GameState.TITLE_SCREEN;
-        }
-
-        ImGui.end();
-        ImGui.render();
-        imguiGl3.renderDrawData(ImGui.getDrawData());
-    }
-
-    private void drawImGui() {
-        imguiGlfw.newFrame();
-        imguiGl3.newFrame();
-        ImGui.newFrame();
-    }
-
-    public void drawTexturedQuad(int texId, int x, int y, int w, int h, int texW, int texH) {
-        glBindTexture(GL_TEXTURE_2D, texId);
-        glPushMatrix();
-        glTranslatef(0f, 0f, 0f);
-        glBegin(GL_QUADS);
-        glTexCoord2f(0f, 0f);
-        glVertex2f(x, y);
-        glTexCoord2f(1f, 0f);
-        glVertex2f(x + w, y);
-        glTexCoord2f(1f, 1f);
-        glVertex2f(x + w, y + h);
-        glTexCoord2f(0f, 1f);
-        glVertex2f(x, y + h);
-        glEnd();
-        glPopMatrix();
-    }
+    /*
+     * private void render() {
+     * glClearColor(0f, 0f, 0f, 1f);
+     * glClear(GL_COLOR_BUFFER_BIT);
+     * 
+     * glMatrixMode(GL_PROJECTION);
+     * glLoadIdentity();
+     * glOrtho(0, winW, winH, 0, -1, 1);
+     * glMatrixMode(GL_MODELVIEW);
+     * glLoadIdentity();
+     * 
+     * switch (currentGameState) {
+     * case TITLE_SCREEN:
+     * renderTitleScreen();
+     * break;
+     * case IN_GAME:
+     * renderInGame();
+     * if (messageBoxDisplayed) {
+     * renderMessageBox();
+     * }
+     * break;
+     * case PAUSED:
+     * // renderInGame();
+     * renderPauseMenu();
+     * break;
+     * case OPTIONS:
+     * renderOptions();
+     * break;
+     * }
+     * }
+     */
 
     private void keyPressed(int key) {
         System.out.println("Key pressed: " + key);
@@ -777,8 +624,8 @@ public class main {
             case PAUSED:
                 break;
         }
-    }
-
+    } // (int)(Math.random() * 1000)
+    int modelRotX, modelRotY, modelRotZ = 0;
     private void handleInGameKeyPress(int key) {
         if (messageBoxDisplayed) {
             if (key == GLFW_KEY_E) {
@@ -810,6 +657,21 @@ public class main {
             case GLFW_KEY_E:
                 interactWithNearestNPC();
                 break;
+            case GLFW_KEY_O:
+                renderer.move3DObject(model, 500, 500, 0);
+                break;
+            case GLFW_KEY_P:
+                renderer.scale3DObject(model, 10.0f, 10.0f, 10.0f);
+                break;
+            case GLFW_KEY_I:
+                //modelRotX = modelRotX + 10;
+                //modelRotY = modelRotY + 10;
+                modelRotZ = modelRotZ + 10;
+                renderer.rotate3DObject(model, 90, modelRotY, modelRotZ);
+                break;
+            // case GLFW_KEY_P:
+            //     renderer.move3DModel(model, 1, 0, 5);
+            //     break;
         }
 
         if (pressedKey[0] != 0 && pressedKey[1] != 0) {
@@ -904,7 +766,7 @@ public class main {
         entityMovement[entityIndex][directionIndex] = value;
     }
 
-    private void handleTitleScreenOption(int optionIndex) {
+    public void handleTitleScreenOption(int optionIndex) {
         switch (optionIndex) {
             case 0:
                 startGame();
@@ -1040,7 +902,7 @@ public class main {
         }
     }
 
-    private void playTalkingSound() {
+    public void playTalkingSound() {
         try {
             WavPlayer soundPlayer = new WavPlayer(RESOURCE_PATH + "\\audio\\talking.wav", soundPlayerVolume);
             soundPlayer.setName("soundPlayerThread");
