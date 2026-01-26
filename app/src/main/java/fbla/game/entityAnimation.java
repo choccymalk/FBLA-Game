@@ -42,11 +42,6 @@ public class entityAnimation {
         now = System.currentTimeMillis();
         if (now - lastUpdate >= 24) {
             try {
-                // don't spam console with player animation frames
-                //if(!entity.getType().equals("player")){
-                //    System.out.println("Loading animation frame: " + RESOURCE_PATH + "\\textures\\" + imagePaths.get(index % imagePaths.size()) + " for entity at (" + entity.getX() + ", " + entity.getY() + ")" + " with state " + currentEntityState + " and index " + index + " with texture ID " + entity.getTextureId() + " with type " + entity.getType());
-                //}
-                //System.out.println("Loading animation frame: " + RESOURCE_PATH + "\\textures\\" + imagePaths.get(index % imagePaths.size()) + " for entity at (" + entity.getX() + ", " + entity.getY() + ")" + " with state " + currentEntityState + " and index " + index + " with texture ID " + entity.getTextureId() + " with type " + entity.getType());
                 entity.setTextureId(createTextureFromBufferedImage(ImageIO.read(new File(RESOURCE_PATH + "\\textures\\" + imagePaths.get(index % imagePaths.size())))));
                 drawTexturedQuad(entity.getTextureId(), entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight(), entity.getWidth(), entity.getHeight());
             } catch (IOException e) {

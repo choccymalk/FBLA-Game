@@ -103,6 +103,4 @@ public class EntityAI {
         pathfinding = false;
         return 0;
     }
-
-    
 }

@@ -29,6 +29,9 @@ public class Entity {
     @SerializedName("ai_abilities")
     private AIAbilities AIAbilities;
 
+    @SerializedName("name")
+    private String name;
+
     // Fields you want to set at runtime (JSON doesn't contain them).
     // Mark transient if you do NOT want Gson to attempt to read/write them.
     private transient int textureId;
@@ -37,18 +40,20 @@ public class Entity {
     private transient int targetLevel; // only used if the entity is a door
     private transient int targetX; // only used if the entity is a door
     private transient int targetY; // only used if the entity is a door
+    private transient entityAnimation animation;
 
     // No-arg constructor required by Gson
     public Entity() {}
 
     // Optional convenience constructor for runtime creation
-    public Entity(String type, int textureId, int x, int y, int width, int height) {
+    public Entity(String type, int textureId, int x, int y, int width, int height, entityAnimation animation) {
         this.type = type;
         this.x = x;
         this.y = y;
         this.textureId = textureId;
         this.width = width;
         this.height = height;
+        this.animation = animation;
     }
 
     // only used if creating door
@@ -98,6 +103,21 @@ public class Entity {
     }
     public void setTargetX(int targetX){
         this.targetX = targetX;
+    }
+    public int getTargetY(){
+        return targetY;
+    }
+    public void setTargetY(int targetY){
+        this.targetY = targetY;
+    }
+    public String getName(){
+        return this.name;
+    }
+    public entityAnimation getEntityAnimation(){
+        return animation;
+    }
+    public void setEntityAnimation(entityAnimation animation){
+        this.animation = animation;
     }
 
     // Optional convenience
