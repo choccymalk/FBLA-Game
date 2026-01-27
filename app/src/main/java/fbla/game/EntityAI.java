@@ -5,7 +5,6 @@ import java.util.List;
 
 public class EntityAI {
     Entity entity;
-    jsonParser parser;
     main main;
     boolean hasAlreadyForcedDialogueWithPlayer = false; // only used if ai is assigned package force_dialogue_with_player_on_level_start
     List<String> packages;
@@ -13,9 +12,8 @@ public class EntityAI {
     boolean inDialogueWithPlayer = false;
     Thread pathfindingThread;
 
-    public EntityAI(Entity entity, jsonParser parser, main main) {
+    public EntityAI(Entity entity, main main) {
         this.entity = entity;
-        this.parser = parser;
         this.main = main;
         packages = entity.getAIAbilities().getAllAbilities();
     }

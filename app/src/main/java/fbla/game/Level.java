@@ -34,4 +34,30 @@ public class Level {
     public List<Door> getDoors() {
         return doors;
     }
+
+    public void setEntities(List<Entity> entities){
+        this.entities = entities;
+    }
+
+    public void removePlayerEntityFromLevel(){
+        for (Entity entity : entities) {
+            if(entity.getType().equals("player")){
+                entities.remove(entity);
+            }
+        }
+    }
+
+    public Entity getPlayerEntityFromLevel(){
+        for (Entity entity : entities) {
+            if(entity.getType().equals("player")){
+                return entity;
+            }
+        }
+        return null;
+    }
+
+    public void setDoors(List<Door> doors){
+        this.doors = doors;
+    }
+
 }

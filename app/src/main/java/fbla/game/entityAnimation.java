@@ -7,96 +7,57 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
 
 public class entityAnimation {
-    Entity entity;
-    String RESOURCE_PATH;
+    private final Entity entity;
+    private final Map<String, int[]> animationStates = new HashMap<>();
+    private String currentState = "idle";
+    
     private long lastUpdate = System.currentTimeMillis();
-    private long now;
-    private int index = 0; // Keep track of the current image
-    public entityAnimation(Entity e, String resourcePath){
-        entity = e;
-        RESOURCE_PATH = resourcePath;
+    private int frameIndex = 0;
+    private static final int MS_PER_FRAME = 100; // Adjust for speed
+
+    public entityAnimation(Entity e, String resourcePath, GameRenderer renderer) {
+        this.entity = e;
+        // Pre-load all animations for this entity
+        loadState("idle", e.getAnimationStates().getIdleImagesPaths(), resourcePath, renderer);
+        loadState("walkingUp", e.getAnimationStates().getWalkingUpImagesPaths(), resourcePath, renderer);
+        loadState("walkingDown", e.getAnimationStates().getWalkingDownImagesPaths(), resourcePath, renderer);
+        loadState("walkingLeft", e.getAnimationStates().getWalkingLeftImagesPaths(), resourcePath, renderer);
+        loadState("walkingRight", e.getAnimationStates().getWalkingRightImagesPaths(), resourcePath, renderer);
     }
-    // update frame to be called in main game loop
-    public void tick(String currentEntityState){
-        List<String> imagePaths;
-        if(currentEntityState.equals("idle")){
-            imagePaths = entity.getAnimationStates().getIdleImagesPaths();
-        } else if(currentEntityState.equals("walkingUp")){
-            imagePaths = entity.getAnimationStates().getWalkingUpImagesPaths();
-        } else if(currentEntityState.equals("walkingDown")){
-            imagePaths = entity.getAnimationStates().getWalkingDownImagesPaths();
-        } else if(currentEntityState.equals("walkingLeft")){
-            imagePaths = entity.getAnimationStates().getWalkingLeftImagesPaths();
-        } else if(currentEntityState.equals("walkingRight")){
-            imagePaths = entity.getAnimationStates().getWalkingRightImagesPaths();
-        } else {
-            imagePaths = entity.getAnimationStates().getIdleImagesPaths();
+
+    private void loadState(String state, List<String> paths, String path, GameRenderer renderer) {
+        if (paths == null || paths.isEmpty()) return;
+        int[] textureIds = new int[paths.size()];
+        for (int i = 0; i < paths.size(); i++) {
+            // Use a helper to load the texture ONCE
+            textureIds[i] = renderer.loadTexture(path + "\\textures\\" + paths.get(i));
         }
-        now = System.currentTimeMillis();
-        if (now - lastUpdate >= 24) {
-            try {
-                entity.setTextureId(createTextureFromBufferedImage(ImageIO.read(new File(RESOURCE_PATH + "\\textures\\" + imagePaths.get(index % imagePaths.size())))));
-                drawTexturedQuad(entity.getTextureId(), entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight(), entity.getWidth(), entity.getHeight());
-            } catch (IOException e) {
-                // do nothing
-                System.out.println("Failed to load animation frame: " + e.getMessage());
+        animationStates.put(state, textureIds);
+    }
+
+    public void tick(String newState) {
+        if (!newState.equals(currentState)) {
+            currentState = newState;
+            frameIndex = 0;
+        }
+
+        long now = System.currentTimeMillis();
+        if (now - lastUpdate >= MS_PER_FRAME) {
+            int[] frames = animationStates.get(currentState);
+            if (frames != null) {
+                frameIndex = (frameIndex + 1) % frames.length;
+                entity.setTextureId(frames[frameIndex]);
             }
-            index++;
-            lastUpdate = now; // Update lastUpdate *after* using it
+            lastUpdate = now;
         }
-    }
-
-    private int createTextureFromBufferedImage(BufferedImage img) {
-        int[] pixels = new int[img.getWidth() * img.getHeight()];
-        img.getRGB(0, 0, img.getWidth(), img.getHeight(), pixels, 0, img.getWidth());
-
-        ByteBuffer buffer = BufferUtils.createByteBuffer(img.getWidth() * img.getHeight() * 4);
-
-        // ARGB to RGBA
-        for (int y = 0; y < img.getHeight(); y++) {
-            for (int x = 0; x < img.getWidth(); x++) {
-                int pixel = pixels[y * img.getWidth() + x];
-                buffer.put((byte) ((pixel >> 16) & 0xFF)); // R
-                buffer.put((byte) ((pixel >> 8) & 0xFF));  // G
-                buffer.put((byte) (pixel & 0xFF));         // B
-                buffer.put((byte) ((pixel >> 24) & 0xFF)); // A
-            }
-        }
-        buffer.flip();
-        // crashing here when updating npc animation texture? output from jvm: 
-        // FATAL ERROR in native method: Thread[#48,Thread-2,5,main]: No context is current or a function that is not available in the current context was called. The JVM will abort execution.
-        // turns out that opengl calls need to be done in the main thread, not in other threads (like during npc animation updates)
-        int texId = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, texId);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, img.getWidth(), img.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        return texId;
-    }
-
-    private void drawTexturedQuad(int texId, int x, int y, int w, int h, int texW, int texH) {
-        //System.out.println("Drawing textured quad at (" + x + ", " + y + ") with size (" + w + ", " + h + ") using texture ID " + texId);
-        glBindTexture(GL_TEXTURE_2D, texId);
-        glPushMatrix();
-        glTranslatef(0f, 0f, 0f);
-        glBegin(GL_QUADS);
-        glTexCoord2f(0f, 0f);
-        glVertex2f(x, y);
-        glTexCoord2f(1f, 0f);
-        glVertex2f(x + w, y);
-        glTexCoord2f(1f, 1f);
-        glVertex2f(x + w, y + h);
-        glTexCoord2f(0f, 1f);
-        glVertex2f(x, y + h);
-        glEnd();
-        glPopMatrix();
     }
 }

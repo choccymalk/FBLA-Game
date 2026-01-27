@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
@@ -62,7 +63,8 @@ public class main {
     private static final double NPC_INTERACTION_DISTANCE = 500.0;
     private static final String RESOURCE_PATH = System.getProperty("user.home")
             + "\\Desktop\\FBLA-Game\\game_resources";
-    public double FRAMERATE = 30.0;
+    public double FRAMERATE = 10.0;
+    public double UPDATE_RATE = 10.0;
     public int soundPlayerVolume = 50;
     private static final int GRID_CELL_SIZE = 24;
     private static final int GRID_WIDTH = 53;
@@ -79,7 +81,7 @@ public class main {
     public FullscreenToggle fstoggle;
     private GameRenderer renderer;
     Object3D model;
-    //Model3D model;
+    // Model3D model;
 
     public enum GameState {
         TITLE_SCREEN,
@@ -92,8 +94,8 @@ public class main {
     public int winW = WINDOW_W, winH = WINDOW_H;
     public final List<Entity> entities = new ArrayList<>();
     public List<EntityAI> entityAIs = new ArrayList<>();
-    public BufferedImage playerBI, backgroundBI, npcBI, gridBI, doorBI, titleScreenBI, titleScreenGameLogoBI;
-    public int playerTex, backgroundTex, npcTex, gridTex, doorTex, titleScreenTex, titleScreenGameLogoTex;
+    public BufferedImage playerBI, backgroundBI, npcBI, gridBI, doorBI, titleScreenBI, titleScreenGameLogoBI, fishBI;
+    public int playerTex, backgroundTex, npcTex, gridTex, doorTex, titleScreenTex, titleScreenGameLogoTex, fishTex;
     public java.util.HashMap<Integer, entityAnimation> entityIndexToAnimationObjects = new java.util.HashMap<>();
     public int playerX = 0, playerY = 600;
     private int xVelocity = 0, yVelocity = 0;
@@ -109,6 +111,9 @@ public class main {
     jsonParser parser = new jsonParser(new File(RESOURCE_PATH + "\\levels.json"));
     int[][] collisionGrid = parser.getCollisionGrid(0);
     public GameState currentGameState = GameState.TITLE_SCREEN;
+    private HashMap<Entity, Integer> entityMap = new HashMap<>(); // entity to level index map
+    private List<Level> levels;
+    private HashMap<Integer, List<Entity>> levelIndexToEntityMap = new HashMap<>();
 
     // Title screen state
     public String[] titleScreenOptions = { "Start Game", "Options", "Exit" };
@@ -118,6 +123,7 @@ public class main {
     public String[] optionsScreenOptions = { "Volume", "Framerate" };
     public float[] optionsVolume = { 50.0f };
     public float[] optionsFrameRate = { 30.0f };
+    public float[] optionsUpdateRate = { 30.0f };
 
     // ImGui state
     public ImGuiImplGlfw imguiGlfw;
@@ -216,6 +222,7 @@ public class main {
         doorTex = createTextureFromBufferedImage(doorBI);
         titleScreenTex = createTextureFromBufferedImage(titleScreenBI);
         titleScreenGameLogoTex = createTextureFromBufferedImage(titleScreenGameLogoBI);
+        fishTex = createTextureFromBufferedImage(fishBI);
 
         // Initialize ImGui
         ImGui.createContext();
@@ -233,14 +240,19 @@ public class main {
 
         fstoggle = new FullscreenToggle(window);
 
-        //model = renderer.load3DModel(RESOURCE_PATH + "\\models\\model.obj");
-        model = renderer.load3DObject(RESOURCE_PATH + "\\models\\model.obj", gridTex, "model");
+        // model = renderer.load3DModel(RESOURCE_PATH + "\\models\\model.obj");
+        model = renderer.load3DObject(RESOURCE_PATH + "\\models\\fish.obj", fishTex, "model");
 
         // GL43.glEnable(GL43.GL_DEBUG_OUTPUT);
         // GL43.glEnable(GL43.GL_DEBUG_OUTPUT_SYNCHRONOUS);
         // GL43.glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE,
         // (IntBuffer)null, true);
-
+        levels = parser.getLevels();
+        for (Level level : levels) {
+            for (Entity entity : level.getEntities()) {
+                entityMap.put(entity, levels.indexOf(level));
+            }
+        }
     }
 
     public void GLDebugMessageCallback() {
@@ -323,6 +335,7 @@ public class main {
             gridBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/grid_overlay.png").toFile());
             doorBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/door.png").toFile());
             titleScreenGameLogoBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/logo.png").toFile());
+            fishBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/fish_texture.png").toFile());
 
             try {
                 titleScreenBI = javax.imageio.ImageIO
@@ -381,10 +394,9 @@ public class main {
     private void buildLevel(int levelIndex) {
         currentLevelIndex = levelIndex;
         entities.clear();
-        entityAIs.clear();
-        entityIndexToAnimationObjects.clear();
 
-        Level level = parser.getLevel(levelIndex);
+        Level level = levels.get(levelIndex);
+
         collisionGrid = level.getCollisionGrid();
         try {
             backgroundBI = javax.imageio.ImageIO
@@ -418,13 +430,13 @@ public class main {
         entities.add(player);
         parser.parse();
         player.setPosition(level.getEntities().get(0).getX(), level.getEntities().get(0).getY());
-        entityIndexToAnimationObjects.put(0, new entityAnimation(player, RESOURCE_PATH));
+        player.setEntityAnimation(new entityAnimation(player, RESOURCE_PATH, this.renderer));
         entityMovement = new int[level.getEntities().size()][4];
 
         for (Entity e : level.getEntities()) {
             if (!e.getType().equals("player")) {
-                entityAIs.add(new EntityAI(e, parser, this));
-                entityIndexToAnimationObjects.put(entities.size(), new entityAnimation(e, RESOURCE_PATH));
+                e.setEntityAi(new EntityAI(e, this));
+                e.setEntityAnimation(new entityAnimation(e, RESOURCE_PATH, this.renderer));
                 System.out.println("Adding entity of type " + e.getType() + " at (" + e.getX() + ", " + e.getY() + ")");
                 try {
                     e.setTextureId(createTextureFromBufferedImage(
@@ -444,7 +456,9 @@ public class main {
             }
         }
 
-        createDoors(parser.getDoors(levelIndex));
+        createDoors(levels.get(levelIndex).getDoors());
+        renderer.move3DObject(model, 500, 500, 0);
+        renderer.scale3DObject(model, 50.0f, 50.0f, 50.0f);
     }
 
     private void createDoors(List<Door> doors) {
@@ -457,16 +471,47 @@ public class main {
 
     private void loop() {
         long lastTime = System.nanoTime();
-        double nsPerUpdate = 1_000_000_000.0 / FRAMERATE;
+        long lastRenderTime = lastTime;
+
+        // Game updates fast (e.g., 60 UPS)
+        double nsPerUpdate = 1_000_000_000.0 / UPDATE_RATE; // framerate / 2 updates per second
+
+        // Rendering slow (e.g., 10 FPS)
+        double nsPerFrame = 1_000_000_000.0 / FRAMERATE;
+
+        double deltaUpdate = 0;
+        double deltaFrame = 0;
+
         while (!glfwWindowShouldClose(window)) {
             long now = System.nanoTime();
-            if (now - lastTime >= nsPerUpdate) {
-                updateGame((now - lastTime) / 1_000_000.0);
-                lastTime = now;
+
+            // Accumulate time for updates
+            deltaUpdate += (now - lastTime) / nsPerUpdate;
+
+            // Accumulate time for rendering
+            deltaFrame += (now - lastRenderTime) / nsPerFrame;
+
+            lastTime = now;
+
+            // Update game as fast as needed (60 times/sec)
+            while (deltaUpdate >= 1) {
+                updateGame(1.0f / (float) UPDATE_RATE); // Fixed timestep for updates
+                deltaUpdate--;
             }
-            render();
-            glfwSwapBuffers(window);
-            glfwPollEvents();
+
+            // Render only when it's time (10 times/sec)
+            if (deltaFrame >= 1) {
+                render(); // Render the current game state
+                deltaFrame = 0; // Reset, don't accumulate
+
+                // Swap buffers only when we actually rendered
+                glfwSwapBuffers(window);
+
+                // Update render timestamp
+                lastRenderTime = now;
+            }
+
+            glfwPollEvents(); // Still poll events every iteration for responsiveness
         }
     }
 
@@ -502,6 +547,13 @@ public class main {
         // moved to renderOptions like updateTitleScreen
     }
 
+    private void spinfish() {
+        modelRotX = modelRotX + 0.5f;
+        modelRotY = 180f;//modelRotY + 0.5f;
+        //modelRotZ = modelRotZ + 0.5f;
+        renderer.rotate3DObject(model, modelRotX, modelRotY, modelRotZ);
+    }
+
     private void updateInGame(double deltaMs) {
         if (!messageBoxDisplayed) {
             long now = System.currentTimeMillis();
@@ -528,41 +580,10 @@ public class main {
             }
         }
 
-        if (yVelocity == 0 && xVelocity == 0) {
-            entityIndexToAnimationObjects.get(0).tick("idle");
-        } else if (xVelocity == 24) {
-            entityIndexToAnimationObjects.get(0).tick("walkingRight");
-        } else if (xVelocity == -24) {
-            entityIndexToAnimationObjects.get(0).tick("walkingLeft");
-        } else if (yVelocity != 0) {
-            entityIndexToAnimationObjects.get(0).tick("idle");
-        }
-
-        entities.get(0).setPosition(playerX, playerY);
-
-        for (int i = 1; i < entities.size(); i++) {
-            if (entityMovement != null && entityMovement.length > i) {
-                if (entityMovement[i][0] > 0) {
-                    entityIndexToAnimationObjects.get(i).tick("walkingRight");
-                    entityMovement[i][0]--;
-                } else if (entityMovement[i][2] > 0) {
-                    entityIndexToAnimationObjects.get(i).tick("walkingLeft");
-                    entityMovement[i][2]--;
-                } else if (entityMovement[i][1] > 0) {
-                    entityIndexToAnimationObjects.get(i).tick("walkingUp");
-                    entityMovement[i][1]--;
-                } else if (entityMovement[i][3] > 0) {
-                    entityIndexToAnimationObjects.get(i).tick("walkingDown");
-                    entityMovement[i][3]--;
-                } else {
-                    entityIndexToAnimationObjects.get(i).tick("idle");
-                }
+        for (Entity entity : entities) {
+            if(entity.getEntityAI() != null){
+                entity.getEntityAI().tick();
             }
-        }
-
-        for (int i = 0; i < entityAIs.size(); i++) {
-            EntityAI ai = entityAIs.get(i);
-            ai.tick();
         }
     }
 
@@ -570,6 +591,41 @@ public class main {
         renderer.render(winW, winH, backgroundBI, backgroundTex, playerBI,
                 gridBI, gridTex, titleScreenBI, titleScreenTex,
                 titleScreenGameLogoBI, titleScreenGameLogoTex);
+        spinfish();
+        if (currentGameState == GameState.IN_GAME) {
+            if (yVelocity == 0 && xVelocity == 0) {
+                entities.get(0).setCurrentAnimationState("idle");
+            } else if (xVelocity == 24) {
+                entities.get(0).setCurrentAnimationState("walkingRight");
+            } else if (xVelocity == -24) {
+                entities.get(0).setCurrentAnimationState("walkingLeft");
+            } else if (yVelocity != 0) {
+                entities.get(0).setCurrentAnimationState("idle");
+            }
+
+            entities.get(0).setPosition(playerX, playerY);
+
+            for (int i = 1; i < entities.size(); i++) {
+                if (entityMovement != null && entityMovement.length > i) {
+                    if (entityMovement[i][0] > 0) {
+                        entities.get(i).setCurrentAnimationState("walkingRight");
+                        entityMovement[i][0]--;
+                    } else if (entityMovement[i][2] > 0) {
+                        entities.get(i).setCurrentAnimationState("walkingLeft");
+                        entityMovement[i][2]--;
+                    } else if (entityMovement[i][1] > 0) {
+                        entities.get(i).setCurrentAnimationState("walkingUp");
+                        entityMovement[i][1]--;
+                    } else if (entityMovement[i][3] > 0) {
+                        entities.get(i).setCurrentAnimationState("walkingDown");
+                        entityMovement[i][3]--;
+                    } else {
+                        //entityIndexToAnimationObjects.get(i).tick("idle");
+                        entities.get(i).setCurrentAnimationState("idle");
+                    }
+                }
+            }
+        }
     }
     /*
      * private void render() {
@@ -625,7 +681,9 @@ public class main {
                 break;
         }
     } // (int)(Math.random() * 1000)
-    int modelRotX, modelRotY, modelRotZ = 0;
+
+    float modelRotX, modelRotY, modelRotZ = 0f;
+
     private void handleInGameKeyPress(int key) {
         if (messageBoxDisplayed) {
             if (key == GLFW_KEY_E) {
@@ -661,17 +719,20 @@ public class main {
                 renderer.move3DObject(model, 500, 500, 0);
                 break;
             case GLFW_KEY_P:
-                renderer.scale3DObject(model, 10.0f, 10.0f, 10.0f);
+                renderer.scale3DObject(model, 50.0f, 50.0f, 50.0f);
                 break;
             case GLFW_KEY_I:
-                //modelRotX = modelRotX + 10;
-                //modelRotY = modelRotY + 10;
+                modelRotX = modelRotX + 10;
+                modelRotY = modelRotY + 10;
                 modelRotZ = modelRotZ + 10;
-                renderer.rotate3DObject(model, 90, modelRotY, modelRotZ);
+                renderer.rotate3DObject(model, modelRotX, modelRotY, modelRotZ);
+                break;
+            case GLFW_KEY_F9:
+                loadGameFromFile(this, "player_save");
                 break;
             // case GLFW_KEY_P:
-            //     renderer.move3DModel(model, 1, 0, 5);
-            //     break;
+            // renderer.move3DModel(model, 1, 0, 5);
+            // break;
         }
 
         if (pressedKey[0] != 0 && pressedKey[1] != 0) {
@@ -766,6 +827,31 @@ public class main {
         entityMovement[entityIndex][directionIndex] = value;
     }
 
+    public void saveCurrentGame(main mainInstance) {
+        SaveGame saveGame = new SaveGame("player_save");
+        if (saveGame.saveGame(mainInstance)) {
+            System.out.println("Game saved successfully!");
+        } else {
+            System.err.println("Failed to save game!");
+        }
+    }
+
+    public static void loadGameFromFile(main mainInstance, String saveFileName) {
+        SaveGame loadGame = new SaveGame();
+        if (loadGame.loadGame(saveFileName)) {
+            // First, build the level to populate entities
+            mainInstance.buildLevel(loadGame.getGameStateData().currentLevelIndex);
+            
+            // Then apply the loaded state to restore positions
+            loadGame.applyLoadedState(mainInstance);
+            
+            System.out.println("Game loaded successfully!");
+            mainInstance.currentGameState = main.GameState.IN_GAME;
+        } else {
+            System.err.println("Failed to load game!");
+        }
+    }
+
     public void handleTitleScreenOption(int optionIndex) {
         switch (optionIndex) {
             case 0:
@@ -806,6 +892,7 @@ public class main {
         }
 
         if (nearest != null && nearest.getType().equals("door")) {
+            levels.get(nearest.getTargetLevel()).getPlayerEntityFromLevel().setPosition(nearest.getTargetX(), nearest.getTargetY());
             buildLevel(nearest.getTargetLevel());
             return;
         }
@@ -878,7 +965,7 @@ public class main {
                         + ", " + positionInWindowToPositionInGridY(npc.getX(), npc.getY()) + " Target position: "
                         + targetX / GRID_CELL_SIZE + ", " + targetY / GRID_CELL_SIZE);
                 Thread pathfindingThread = new Thread(() -> {
-                    entityAIs.get(entities.indexOf(npc) - 1).NPCPathfindToPoint(
+                    npc.getEntityAI().NPCPathfindToPoint(
                             positionInWindowToPositionInGridX(npc.getX(), npc.getY()),
                             positionInWindowToPositionInGridY(npc.getX(), npc.getY()), targetX / GRID_CELL_SIZE,
                             targetY / GRID_CELL_SIZE, npc);

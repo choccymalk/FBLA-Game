@@ -59,6 +59,9 @@ dependencies {
 	implementation "org.lwjgl:lwjgl-stb::natives-windows"
 	implementation "org.lwjglx:lwjgl3-awt:0.1.8"
     implementation "io.github.spair:imgui-java-app:1.90.0"
+
+    // Source: https://mvnrepository.com/artifact/org.json/json
+    implementation 'org.json:json:20251224'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

@@ -32,6 +32,9 @@ public class Entity {
     @SerializedName("name")
     private String name;
 
+    @SerializedName("entity_id")
+    private String entityId;
+
     // Fields you want to set at runtime (JSON doesn't contain them).
     // Mark transient if you do NOT want Gson to attempt to read/write them.
     private transient int textureId;
@@ -41,6 +44,8 @@ public class Entity {
     private transient int targetX; // only used if the entity is a door
     private transient int targetY; // only used if the entity is a door
     private transient entityAnimation animation;
+    private transient EntityAI entityAi;
+    private transient String currentAnimationState;
 
     // No-arg constructor required by Gson
     public Entity() {}
@@ -118,6 +123,25 @@ public class Entity {
     }
     public void setEntityAnimation(entityAnimation animation){
         this.animation = animation;
+    }
+    public String getEntityId(){
+        return this.entityId;
+    }
+    public void setEntityAi(EntityAI entityAi){
+        this.entityAi = entityAi;
+    }
+    public EntityAI getEntityAI(){
+        return this.entityAi;
+    }
+    public void setCurrentAnimationState(String state){
+        this.currentAnimationState = state;
+    }
+    public String getCurrentAnimationState(){
+        if(this.currentAnimationState != null){
+            return this.currentAnimationState;
+        } else {
+            return "idle";
+        }
     }
 
     // Optional convenience
