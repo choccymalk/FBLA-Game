@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import org.lwjgl.BufferUtils;
@@ -73,11 +74,12 @@ public class main {
     private static final int ENTITY_HEIGHT_CELLS = 5;
     private static final int DOOR_WIDTH = 96;
     private static final int DOOR_HEIGHT = 144;
-    private static final boolean DRAW_DEBUG_GRID = false;
+    public boolean DRAW_DEBUG_GRID;
     private static final String DEFAULT_FONT = "roboto";
     private static final int DEFAULT_FONT_SIZE = 20;
     private static boolean FULLSCREEN = false;
     ImBoolean isFullscreen;
+    ImBoolean shouldDebugGridBeDrawn;
     public FullscreenToggle fstoggle;
     private GameRenderer renderer;
     Object3D model;
@@ -198,20 +200,21 @@ public class main {
         }
         FULLSCREEN = false;
         isFullscreen = new ImBoolean(false);
+        shouldDebugGridBeDrawn = new ImBoolean(false);
 
         glfwMakeContextCurrent(window);
         glfwSwapInterval(1);
         glfwShowWindow(window);
         GL.createCapabilities();
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0, winW, winH, 0, -1, 1);
-        glMatrixMode(GL_MODELVIEW);
+        // glMatrixMode(GL_PROJECTION);
+        // glLoadIdentity();
+        // glOrtho(0, winW, winH, 0, -1, 1);
+        // glMatrixMode(GL_MODELVIEW);
 
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        // glEnable(GL_TEXTURE_2D);
+        // glEnable(GL_BLEND);
+        // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         loadResources();
 
@@ -387,8 +390,11 @@ public class main {
     }
 
     private void startGame() {
-        currentGameState = GameState.IN_GAME;
-        buildLevel(0);
+        if (!loadGameFromFile(this, "quicksave")) {
+            currentGameState = GameState.IN_GAME;
+            buildLevel(0);
+        }
+        ;
     }
 
     private void buildLevel(int levelIndex) {
@@ -457,8 +463,8 @@ public class main {
         }
 
         createDoors(levels.get(levelIndex).getDoors());
-        renderer.move3DObject(model, 500, 500, 0);
-        renderer.scale3DObject(model, 50.0f, 50.0f, 50.0f);
+        renderer.move3DObject(model, 10, 10, 0);
+        renderer.scale3DObject(model, 10.0f, 10.0f, 10.0f);
     }
 
     private void createDoors(List<Door> doors) {
@@ -549,9 +555,10 @@ public class main {
 
     private void spinfish() {
         modelRotX = modelRotX + 0.5f;
-        modelRotY = 180f;//modelRotY + 0.5f;
-        //modelRotZ = modelRotZ + 0.5f;
+        modelRotY = modelRotY + 0.5f;
+        modelRotZ = modelRotZ + 0.5f;
         renderer.rotate3DObject(model, modelRotX, modelRotY, modelRotZ);
+
     }
 
     private void updateInGame(double deltaMs) {
@@ -581,7 +588,7 @@ public class main {
         }
 
         for (Entity entity : entities) {
-            if(entity.getEntityAI() != null){
+            if (entity.getEntityAI() != null) {
                 entity.getEntityAI().tick();
             }
         }
@@ -620,7 +627,7 @@ public class main {
                         entities.get(i).setCurrentAnimationState("walkingDown");
                         entityMovement[i][3]--;
                     } else {
-                        //entityIndexToAnimationObjects.get(i).tick("idle");
+                        // entityIndexToAnimationObjects.get(i).tick("idle");
                         entities.get(i).setCurrentAnimationState("idle");
                     }
                 }
@@ -730,6 +737,12 @@ public class main {
             case GLFW_KEY_F9:
                 loadGameFromFile(this, "player_save");
                 break;
+            case GLFW_KEY_0:
+                System.out.println(Arrays.deepToString(collisionGrid));
+                break;
+            case GLFW_KEY_K:
+                killNearestNPC();
+                break;
             // case GLFW_KEY_P:
             // renderer.move3DModel(model, 1, 0, 5);
             // break;
@@ -827,8 +840,8 @@ public class main {
         entityMovement[entityIndex][directionIndex] = value;
     }
 
-    public void saveCurrentGame(main mainInstance) {
-        SaveGame saveGame = new SaveGame("player_save");
+    public void saveCurrentGame(main mainInstance, String name) {
+        SaveGame saveGame = new SaveGame(name);
         if (saveGame.saveGame(mainInstance)) {
             System.out.println("Game saved successfully!");
         } else {
@@ -836,19 +849,21 @@ public class main {
         }
     }
 
-    public static void loadGameFromFile(main mainInstance, String saveFileName) {
+    public boolean loadGameFromFile(main mainInstance, String saveFileName) {
         SaveGame loadGame = new SaveGame();
         if (loadGame.loadGame(saveFileName)) {
             // First, build the level to populate entities
             mainInstance.buildLevel(loadGame.getGameStateData().currentLevelIndex);
-            
+
             // Then apply the loaded state to restore positions
             loadGame.applyLoadedState(mainInstance);
-            
+
             System.out.println("Game loaded successfully!");
             mainInstance.currentGameState = main.GameState.IN_GAME;
+            return true;
         } else {
             System.err.println("Failed to load game!");
+            return false;
         }
     }
 
@@ -874,6 +889,43 @@ public class main {
         currentNPC = npc;
     }
 
+    private void removeEntity(Entity e) {
+        int[][] collisionGrid = getCollisionGrid();
+        for (int a = 0; a < 3; a++) {
+            for (int j = 0; j < 5; j++) {
+                collisionGrid[(e.getY() / 24) + j][(e.getX() / 24) + a] = 0;
+            }
+        }
+        setCollisionGrid(collisionGrid);
+        entities.remove(e);
+        List<Entity> levelEntities = levels.get(currentLevelIndex).getEntities();
+        levelEntities.remove(e);
+        levels.get(currentLevelIndex).setEntities(levelEntities);
+    }
+
+    private void killNearestNPC(){
+        if (entities.size() < 2)
+            return;
+        Entity player = entities.get(0);
+        Entity nearest = null;
+        double minDist = NPC_INTERACTION_DISTANCE;
+        for (int i = 1; i < entities.size(); i++) {
+            Entity npc = entities.get(i);
+            double dx = player.getX() - npc.getX();
+            double dy = player.getY() - npc.getY();
+            double d = Math.sqrt(dx * dx + dy * dy);
+            if (d < minDist) {
+                minDist = d;
+                nearest = npc;
+            }
+        }
+        if(nearest != null){
+            if(!nearest.getType().equals("door")){
+                removeEntity(nearest);
+            }
+        }
+    }
+
     private void interactWithNearestNPC() {
         if (entities.size() < 2)
             return;
@@ -892,7 +944,8 @@ public class main {
         }
 
         if (nearest != null && nearest.getType().equals("door")) {
-            levels.get(nearest.getTargetLevel()).getPlayerEntityFromLevel().setPosition(nearest.getTargetX(), nearest.getTargetY());
+            levels.get(nearest.getTargetLevel()).getPlayerEntityFromLevel().setPosition(nearest.getTargetX(),
+                    nearest.getTargetY());
             buildLevel(nearest.getTargetLevel());
             return;
         }

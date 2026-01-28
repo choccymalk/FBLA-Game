@@ -19,7 +19,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+
 import org.lwjgl.BufferUtils;
+import org.lwjgl.assimp.*;
+
+import fbla.game.main.GameState;
 
 public class GameRenderer {
     private final main game;
@@ -27,7 +32,7 @@ public class GameRenderer {
     private final ImGuiImplGl3 imguiGl3;
 
     private static final int GRID_CELL_SIZE = 24;
-    private static final boolean DRAW_DEBUG_GRID = false;
+    private boolean DRAW_DEBUG_GRID;
     private static final int DOOR_HEIGHT = 144;
     private static final int DOOR_WIDTH = 96;
 
@@ -41,6 +46,8 @@ public class GameRenderer {
     private int quadCount = 0;
 
     private int inGameFrameCount = 0;
+
+    private GameState lastStateForOptionsMenu = GameState.TITLE_SCREEN;
 
     // 3D Object storage
 
@@ -72,6 +79,7 @@ public class GameRenderer {
             BufferedImage titleScreenGameLogoBI, int titleScreenGameLogoTex) {
         // 1. Reset State
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         lastBoundTex = -1; // Reset texture tracking for the new frame
@@ -101,6 +109,8 @@ public class GameRenderer {
                 renderPauseMenu(winW, winH);
                 break;
             case OPTIONS:
+                draw2D(titleScreenTex, 0, 0, winW, winH);
+                flushBatch(); // Finish 2D before ImGui
                 renderOptions(winW, winH, titleScreenTex, titleScreenBI);
                 break;
         }
@@ -132,42 +142,13 @@ public class GameRenderer {
         imguiGl3.renderDrawData(ImGui.getDrawData());
     }
 
-    /*
-     * private void renderInGame(int winW, int winH, int backgroundTex,
-     * BufferedImage backgroundBI,
-     * int gridTex, BufferedImage gridBI, BufferedImage playerBI) {
-     * inGameFrameCount++;
-     * drawTexturedQuad(backgroundTex, winW, winH, backgroundBI.getWidth(),
-     * backgroundBI.getHeight());
-     * 
-     * if (DRAW_DEBUG_GRID) {
-     * drawTexturedQuad(gridTex, winW, winH, gridBI.getWidth(), gridBI.getHeight());
-     * }
-     * 
-     * // Render 3D objects
-     * for (Object3D obj : loaded3DObjects) {
-     * render3DObject(obj);
-     * }
-     * 
-     * List<Entity> entities = game.getEntities();
-     * for (Entity e : entities) {
-     * drawTexturedQuad(e.getTextureId(), e.getX(), e.getY(), e.getWidth(),
-     * e.getHeight());
-     * }
-     * 
-     * if (!game.messageBoxDisplayed) {
-     * drawImGui();
-     * ImGui.render();
-     * }
-     * }
-     */
-
     private void renderInGameUI() {
         // no in game ui right now
     }
 
     private void renderInGame(int winW, int winH, int backgroundTex, int gridTex) {
         // --- STEP 1: 2D BACKGROUND LAYER ---
+        glDisable(GL_DEPTH_TEST);
         draw2D(backgroundTex, 0, 0, winW, winH);
         if (DRAW_DEBUG_GRID) {
             draw2D(gridTex, 0, 0, winW, winH);
@@ -175,23 +156,53 @@ public class GameRenderer {
         flushBatch(); // Must flush 2D before starting 3D
 
         // --- STEP 2: 3D OBJECT LAYER ---
-        // Enable depth test for 3D if needed, but your current code uses "Flat"
-        // projection
+        // --- START 3D SECTION ---
+        glEnable(GL_DEPTH_TEST);
+        glClear(GL_DEPTH_BUFFER_BIT); // Clear depth buffer before rendering 3D
+
+        // Save current projection (2D ortho)
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadIdentity();
+
+        // Setup Perspective: FOV, Aspect Ratio, Near Clip, Far Clip
+        float aspect = (float) winW / (float) winH;
+        setupPerspective(45.0f, aspect, 0.1f, 1000.0f);
+
+        // Switch to modelview and set up camera
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
+        
+        // IMPORTANT: Move the camera back so we aren't inside the model
+        // In perspective, negative Z moves objects AWAY from you
+        glTranslatef(0, 0, -25.0f);
+
+        // Render your VBO objects here
         for (Object3D obj : loaded3DObjects) {
-            render3DObject(obj); // Uses the VBO method we built
+            render3DObject(obj);
         }
+
+        glPopMatrix(); // Restore modelview
+        
+        // Restore 2D projection
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        // --- END 3D SECTION ---
 
         // --- STEP 3: 2D ENTITY LAYER (Sprites) ---
         // 1. Update Animations (Logic)
         for (Entity e : game.getEntities()) {
-            if(!e.getType().equals("door")){
+            if (!e.getType().equals("door")) {
                 e.getEntityAnimation().tick(e.getCurrentAnimationState());
             }
         }
 
         // 2. Batch Draw (Rendering)
-        draw2D(backgroundTex, 0, 0, winW, winH);
-
+        // draw2D(backgroundTex, 0, 0, winW, winH);
+        glDisable(GL_DEPTH_TEST);
         for (Entity e : game.getEntities()) {
             // Just grab the ID that tick() already updated
             draw2D(e.getTextureId(), e.getX(), e.getY(), e.getWidth(), e.getHeight());
@@ -246,29 +257,34 @@ public class GameRenderer {
     }
 
     private void renderOptions(int winW, int winH, int titleScreenTex, BufferedImage titleScreenBI) {
-        drawTexturedQuad(titleScreenTex, 0, 0, titleScreenBI.getWidth(), titleScreenBI.getHeight());
         drawImGui();
         ImGui.setNextWindowPos(winW / 2 - 150, winH / 2 - 100);
         ImGui.setNextWindowSize(300, 330);
         ImGui.begin("Options", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse);
 
-        ImGui.dragFloat("Volume", game.optionsVolume, 1f, 0.0f, 100.0f, "%.3f");
+        ImGui.dragFloat("Volume", game.optionsVolume, 1f, 0.0f, 100.0f, "%.0f");
         if (ImGui.button("Test Volume", 200, 40)) {
             game.playTalkingSound();
         }
 
-        ImGui.dragFloat("Framerate", game.optionsFrameRate, 1f, 1.0f, 60.0f, "%.3f");
+        ImGui.dragFloat("Framerate", game.optionsFrameRate, 1f, 1.0f, 60.0f, "%.0f");
+        ImGui.dragFloat("Update Rate", game.optionsUpdateRate, 1f, 1.0f, 60.0f, "%.0f");
         if (ImGui.checkbox("Fullscreen", game.isFullscreen)) {
             game.fstoggle.setFullscreen(game.isFullscreen.get());
             System.out.println(game.isFullscreen.get());
         }
+        if (ImGui.checkbox("Draw Debug Grid", game.shouldDebugGridBeDrawn)) {
+            DRAW_DEBUG_GRID = game.shouldDebugGridBeDrawn.get();
+            game.DRAW_DEBUG_GRID = game.shouldDebugGridBeDrawn.get();
+        }
 
         if (ImGui.button("Back", 200, 40)) {
-            game.setCurrentGameState(main.GameState.TITLE_SCREEN);
+            game.setCurrentGameState(lastStateForOptionsMenu);
         }
 
         game.soundPlayerVolume = (int) game.optionsVolume[0];
         game.FRAMERATE = (int) game.optionsFrameRate[0];
+        game.UPDATE_RATE = (int) game.optionsUpdateRate[0];
 
         ImGui.end();
         ImGui.render();
@@ -278,7 +294,7 @@ public class GameRenderer {
     private void renderPauseMenu(int winW, int winH) {
         drawImGui();
         ImGui.setNextWindowPos(winW / 2 - 150, winH / 2 - 100);
-        ImGui.setNextWindowSize(300, 200);
+        ImGui.setNextWindowSize(300, 400);
         ImGui.begin("Paused", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse);
 
         ImGui.text("Game Paused");
@@ -286,6 +302,16 @@ public class GameRenderer {
 
         if (ImGui.button("Resume", 200, 40)) {
             game.setCurrentGameState(main.GameState.IN_GAME);
+        }
+        if (ImGui.button("Save", 200, 40)) {
+            game.saveCurrentGame(game, "quicksave");
+        }
+        if (ImGui.button("Load", 200, 40)) {
+            game.loadGameFromFile(game, "quicksave");
+        }
+        if (ImGui.button("Options", 200, 40)) {
+            lastStateForOptionsMenu = GameState.PAUSED;
+            game.setCurrentGameState(main.GameState.OPTIONS);
         }
         if (ImGui.button("To Title Screen", 200, 40)) {
             game.setCurrentGameState(main.GameState.TITLE_SCREEN);
@@ -382,6 +408,12 @@ public class GameRenderer {
         quadCount = 0;
     }
 
+    private void setupPerspective(float fov, float aspect, float zNear, float zFar) {
+        float fh = (float) Math.tan(Math.toRadians(fov / 2.0f)) * zNear;
+        float fw = fh * aspect;
+        glFrustum(-fw, fw, -fh, fh, zNear, zFar);
+    }
+
     public int loadTexture(String filePath) {
         try {
             BufferedImage img = ImageIO.read(new File(filePath));
@@ -415,7 +447,6 @@ public class GameRenderer {
     }
 
     // ========== 3D OBJECT METHODS ==========
-
     /**
      * Loads a 3D object from an OBJ file
      * Parses vertices, texture coordinates, and faces
@@ -443,8 +474,10 @@ public class GameRenderer {
                             Float.parseFloat(parts[3]) });
                 } else if (parts[0].equals("vt")) {
                     tempTexCoords.add(new float[] { Float.parseFloat(parts[1]), 1.0f - Float.parseFloat(parts[2]) });
-                } else if (parts[0].equals("f")) {
-                    // Triangulation: Convert N-gon to triangles
+                } // Inside load3DObject, replace the 'f' parsing block:
+                else if (parts[0].equals("f")) {
+                    // Standard OBJ faces can have 3, 4, or more vertices.
+                    // We must convert them to triangles (1-2-3, 1-3-4, 1-4-5...)
                     for (int i = 2; i < parts.length - 1; i++) {
                         packVertex(parts[1], tempVertices, tempTexCoords, packedData);
                         packVertex(parts[i], tempVertices, tempTexCoords, packedData);
@@ -453,7 +486,6 @@ public class GameRenderer {
                 }
             }
 
-            // --- THE MISSING STEP: Converting List to Primitive float[] ---
             float[] vertexData = new float[packedData.size()];
             for (int i = 0; i < packedData.size(); i++) {
                 vertexData[i] = packedData.get(i);
@@ -506,7 +538,7 @@ public class GameRenderer {
     }
 
     /**
-     * Renders a 3D object by projecting its faces to 2D screen space
+     * Renders a 3D object by using vertex arrays with VBO
      * 
      * @param obj The Object3D to render
      */
@@ -517,6 +549,9 @@ public class GameRenderer {
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, obj.textureId);
 
+        // Disable culling to render both sides of faces
+        glDisable(GL_CULL_FACE);
+
         glPushMatrix();
         glTranslatef(obj.x, obj.y, obj.z);
         glRotatef(obj.rotationX, 1, 0, 0);
@@ -524,59 +559,27 @@ public class GameRenderer {
         glRotatef(obj.rotationZ, 0, 0, 1);
         glScalef(obj.scaleX, obj.scaleY, obj.scaleZ);
 
-        // Bind our VBO
         glBindBuffer(GL_ARRAY_BUFFER, obj.vboId);
 
-        // Define the structure: 5 floats per vertex [X, Y, Z, U, V]
-        int stride = 5 * Float.BYTES; // Total bytes per vertex
+        // STRIDE: 5 floats * 4 bytes = 20 bytes per vertex
+        int stride = 20;
 
-        // Enable Position (First 3 floats)
         glEnableClientState(GL_VERTEX_ARRAY);
+        // 3 components (X,Y,Z), offset 0
         glVertexPointer(3, GL_FLOAT, stride, 0);
 
-        // Enable Texture Coords (Next 2 floats, starting after 3 floats)
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        glTexCoordPointer(2, GL_FLOAT, stride, 3 * Float.BYTES);
+        // 2 components (U,V), offset 12 bytes (3 floats * 4 bytes)
+        glTexCoordPointer(2, GL_FLOAT, stride, 12);
 
-        // Draw everything in one shot
         glDrawArrays(GL_TRIANGLES, 0, obj.vertexCount);
 
-        // Cleanup states
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-
         glPopMatrix();
     }
 
-    /**
-     * Render a single face using immediate mode
-     */
-    /*
-     * private void renderFaceImmediate(int[][] face, Object3D obj) {
-     * for (int[] vertexData : face) {
-     * int vertexIndex = vertexData[0];
-     * int texCoordIndex = vertexData[1];
-     * 
-     * // Get projected vertex position
-     * if (vertexIndex >= 0 && vertexIndex < obj.projectedVertices.length) {
-     * float px = obj.projectedVertices[vertexIndex][0];
-     * float py = obj.projectedVertices[vertexIndex][1];
-     * 
-     * // Get texture coordinates
-     * float texU = 0.0f, texV = 0.0f;
-     * if (texCoordIndex >= 0 && texCoordIndex < obj.textureCoords.size()) {
-     * float[] texCoord = obj.textureCoords.get(texCoordIndex);
-     * texU = texCoord[0];
-     * texV = texCoord[1];
-     * }
-     * 
-     * glTexCoord2f(texU, texV);
-     * glVertex2f(px, py);
-     * }
-     * }
-     * }
-     */
     /**
      * Helper method to apply rotation transformations in 3D space
      * 

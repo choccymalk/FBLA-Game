@@ -211,6 +211,15 @@ public class SaveGame {
                 entity.setPosition(entityState.positionX, entityState.positionY);
                 entity.setWidth(entityState.width);
                 entity.setHeight(entityState.height);
+                if(!entity.getType().equals("player") && !entity.getType().equals("door")){
+                    int[][] collisionGrid = main.getCollisionGrid();
+                    for(int a = 0; a < 3; a++){
+                        for(int j = 0; j < 5; j++){
+                            collisionGrid[(entity.getY() / 24) + j][(entity.getX() / 24) + a] = 1;
+                        }
+                    }
+                    main.setCollisionGrid(collisionGrid);
+                }
             }
         }
 
