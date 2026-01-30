@@ -1,4 +1,4 @@
-package fbla.game;
+package fbla.editor;
 
 import com.google.gson.annotations.SerializedName;
 

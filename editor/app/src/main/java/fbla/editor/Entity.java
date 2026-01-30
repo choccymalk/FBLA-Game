@@ -1,4 +1,4 @@
-package fbla.game;
+package fbla.editor;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -43,7 +43,6 @@ public class Entity {
     private transient int targetX; // only used if the entity is a door
     private transient int targetY; // only used if the entity is a door
     private transient entityAnimation animation;
-    private transient EntityAI entityAi;
     private transient String currentAnimationState;
 
     // No-arg constructor required by Gson
@@ -125,12 +124,6 @@ public class Entity {
     }
     public String getEntityId(){
         return this.entityId;
-    }
-    public void setEntityAi(EntityAI entityAi){
-        this.entityAi = entityAi;
-    }
-    public EntityAI getEntityAI(){
-        return this.entityAi;
     }
     public void setCurrentAnimationState(String state){
         this.currentAnimationState = state;
