@@ -11,6 +11,14 @@ public class AIAbilities {
     // required no-arg constructor for Gson
     public AIAbilities() {}
 
+    public AIAbilities(List<String> packages){
+        this.setAiPackages(packages);
+    }
+
+    public void setAiPackages(List<String> aiPackages){
+        this.aiPackages = aiPackages;
+    }
+
     public boolean canMoveRandomly() {
         return aiPackages != null && aiPackages.contains("move_randomly");
     }

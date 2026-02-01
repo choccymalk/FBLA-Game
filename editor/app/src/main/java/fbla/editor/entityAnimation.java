@@ -16,6 +16,7 @@ import javax.imageio.ImageIO;
 import org.lwjgl.BufferUtils;
 
 public class entityAnimation {
+    // commented out because it needs the game rendering class, which the level editor does not have
     /*private final Entity entity;
     private final Map<String, int[]> animationStates = new HashMap<>();
     private String currentState = "idle";

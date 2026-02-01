@@ -93,6 +93,10 @@ public class Entity {
     public String getImagePath() { return imagePath; }
 
     public animationStates getAnimationStates() { return animationStates; }
+    
+    public void setAnimationStates(animationStates states){
+        this.animationStates = states;
+    }
 
     // only used if the entity is a door
     public int getTargetLevel(){
@@ -134,6 +138,9 @@ public class Entity {
         } else {
             return "idle";
         }
+    }
+    public void setAIAbilities(AIAbilities AiAbilities){
+        this.AIAbilities = AiAbilities;
     }
 
     // Optional convenience

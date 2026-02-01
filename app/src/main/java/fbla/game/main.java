@@ -431,14 +431,18 @@ public class main {
         player.setTextureId(playerTex);
         player.setWidth(ENTITY_WIDTH_CELLS * GRID_CELL_SIZE);
         player.setHeight(ENTITY_HEIGHT_CELLS * GRID_CELL_SIZE);
-        playerX = player.getX() * GRID_CELL_SIZE;
-        playerY = player.getY() * GRID_CELL_SIZE;
+        //playerX = player.getX() * GRID_CELL_SIZE;
+        //playerY = player.getY() * GRID_CELL_SIZE;
         entities.add(player);
         parser.parse();
-        player.setPosition(level.getEntities().get(0).getX(), level.getEntities().get(0).getY());
+        //player.setPosition(level.getEntities().get(0).getX(), level.getEntities().get(0).getY());
+        player.setPosition(parser.getLevel(levelIndex).getPlayerEntityFromLevel().getX(), parser.getLevel(levelIndex).getPlayerEntityFromLevel().getY());
         player.setEntityAnimation(new entityAnimation(player, RESOURCE_PATH, this.renderer));
+        playerX = player.getX();
+        playerY = player.getY();
         entityMovement = new int[level.getEntities().size()][4];
-
+        System.out.println(player.getX() + " " + player.getY());
+        System.out.println(level.getEntities().get(0).getX() + " " + level.getEntities().get(0).getY());
         for (Entity e : level.getEntities()) {
             if (!e.getType().equals("player")) {
                 e.setEntityAi(new EntityAI(e, this));
@@ -568,6 +572,7 @@ public class main {
                 int newPlayerX = Math.max(0, Math.min(playerX + xVelocity, winW - playerBI.getWidth()));
                 int newPlayerY = Math.max(0, Math.min(playerY + yVelocity, winH - playerBI.getHeight()));
                 boolean collision = false;
+                System.out.println(newPlayerX + " " + newPlayerY);
                 for (int px = 0; px < 3; px++) {
                     for (int py = 0; py < 5; py++) {
                         int checkX = positionInWindowToPositionInGridX(newPlayerX + px * GRID_CELL_SIZE,
@@ -742,6 +747,9 @@ public class main {
                 break;
             case GLFW_KEY_K:
                 killNearestNPC();
+                break;
+            case GLFW_KEY_F12:
+                buildLevel(currentLevelIndex);
                 break;
             // case GLFW_KEY_P:
             // renderer.move3DModel(model, 1, 0, 5);

@@ -1,0 +1,2726 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ffea46319b1, pid=16744, tid=40100
+#
+# JRE version: Java(TM) SE Runtime Environment (21.0.7+8) (build 21.0.7+8-LTS-245)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (21.0.7+8-LTS-245, mixed mode, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, windows-amd64)
+# Problematic frame:
+# C  [imgui-java64.dll+0x219b1]
+#
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   https://bugreport.java.com/bugreport/crash.jsp
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Dfile.encoding=UTF-8 -Duser.country=US -Duser.language=en -Duser.variant fbla.game.main
+
+Host: AMD Ryzen 7 8845HS w/ Radeon 780M Graphics, 16 cores, 31G,  Windows 11 , 64 bit Build 22621 (10.0.22621.5415)
+Time: Sat Jan 31 18:37:49 2026 Eastern Standard Time elapsed time: 12.006899 seconds (0d 0h 0m 12s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00000271579fb1c0):  JavaThread "main"             [_thread_in_native, id=40100, stack(0x000000d230a00000,0x000000d230b00000) (1024K)]
+
+Stack: [0x000000d230a00000,0x000000d230b00000],  sp=0x000000d230aff270,  free space=1020k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [imgui-java64.dll+0x219b1]
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+J 2229  imgui.ImGui.nTextWrapped(Ljava/lang/String;)V (0 bytes) @ 0x0000027167b22e2a [0x0000027167b22dc0+0x000000000000006a]
+J 2234 c1 fbla.game.GameRenderer.renderMessageBox(II)V (242 bytes) @ 0x0000027160242f54 [0x0000027160242ac0+0x0000000000000494]
+J 1713 c1 fbla.game.GameRenderer.render(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V (198 bytes) @ 0x000002716015fc2c [0x000002716015f720+0x000000000000050c]
+J 1712 c1 fbla.game.main.render()V (450 bytes) @ 0x0000027160160e54 [0x0000027160160d00+0x0000000000000154]
+j  fbla.game.main.loop()V+112
+j  fbla.game.main.run()V+5
+j  fbla.game.main.main([Ljava/lang/String;)V+7
+v  ~StubRoutines::call_stub 0x00000271672d10e7
+
+siginfo: EXCEPTION_ACCESS_VIOLATION (0xc0000005), reading address 0x0000000000000000
+
+
+Registers:
+RAX=0x000002717e82e630, RBX=0x0000000000000000, RCX=0x000000d230aff2f0, RDX=0x000000d230aff2f8
+RSP=0x000000d230aff270, RBP=0x000000d230aff380, RSI=0x000000d230aff328, RDI=0x000002717e79bff0
+R8 =0x0000000000000000, R9 =0x000000d230aff328, R10=0x00007ffeb7845820, R11=0x000000d230aff230
+R12=0x0000000000000000, R13=0x0000000628a639c8, R14=0x000000d230aff370, R15=0x00000271579fb1c0
+RIP=0x00007ffea46319b1, EFLAGS=0x0000000000010202
+
+
+Register to memory mapping:
+
+RAX=0x000002717e82e630 points into unknown readable memory: 0x000002717e79bff0 | f0 bf 79 7e 71 02 00 00
+RBX=0x0 is null
+RCX=0x000000d230aff2f0 is pointing into the stack for thread: 0x00000271579fb1c0
+RDX=0x000000d230aff2f8 is pointing into the stack for thread: 0x00000271579fb1c0
+RSP=0x000000d230aff270 is pointing into the stack for thread: 0x00000271579fb1c0
+RBP=0x000000d230aff380 is pointing into the stack for thread: 0x00000271579fb1c0
+RSI=0x000000d230aff328 is pointing into the stack for thread: 0x00000271579fb1c0
+RDI=0x000002717e79bff0 points into unknown readable memory: 0x0000027155990101 | 01 01 99 55 71 02 00 00
+R8 =0x0 is null
+R9 =0x000000d230aff328 is pointing into the stack for thread: 0x00000271579fb1c0
+R10=0x00007ffeb7845820 jvm.dll
+R11=0x000000d230aff230 is pointing into the stack for thread: 0x00000271579fb1c0
+R12=0x0 is null
+R13=0x0000000628a639c8 is an oop: [F 
+{0x0000000628a639c8} - klass: {type array float}
+ - length: 16
+R14=0x000000d230aff370 is pointing into the stack for thread: 0x00000271579fb1c0
+R15=0x00000271579fb1c0 is a thread
+
+Top of Stack: (sp=0x000000d230aff270)
+0x000000d230aff270:   0000000000000001 0000000000000000
+0x000000d230aff280:   00000000424c0000 0000000000000000
+0x000000d230aff290:   0000000000000000 000000d230aff328
+0x000000d230aff2a0:   00007ffea4bfc788 000000d230aff380
+0x000000d230aff2b0:   0000000000000000 00007ffea47aaa65
+0x000000d230aff2c0:   00000271579fb578 00007ffea468ceee
+0x000000d230aff2d0:   0000027145d9f9f0 0000000000000000
+0x000000d230aff2e0:   00000271579fb1c0 000000d230aff328
+0x000000d230aff2f0:   000000d230aff380 00000000000004c8
+0x000000d230aff300:   000000000000011a 0000000000000000
+0x000000d230aff310:   000002714185d470 0000027167b22ec1
+0x000000d230aff320:   0000000628826428 0000000000000000
+0x000000d230aff330:   0000000000000000 0000000000000001
+0x000000d230aff340:   0000000000000000 0000027167b1f9a0
+0x000000d230aff350:   0000000600000000 0000000628a638f0
+0x000000d230aff360:   00000006288463e8 0000000628843420
+0x000000d230aff370:   000000062885f338 000002716022df4c
+0x000000d230aff380:   000000d230aff5e0 0000027160242f54
+0x000000d230aff390:   0000000000000070 ffffffffffffffff
+0x000000d230aff3a0:   000002714182f3a0 0000027167aad729
+0x000000d230aff3b0:   000000000000123a 000002714182ee38
+0x000000d230aff3c0:   bff0000000000000 000002d000000500
+0x000000d230aff3d0:   0000000628826428 0000000628826428
+0x000000d230aff3e0:   000002d000000500 0000000629f0c740
+0x000000d230aff3f0:   0000000629edd950 0000000629f0c760
+0x000000d230aff400:   4434000044a00000 000000d2305a6800
+0x000000d230aff410:   000000d230aff5e0 000002716015fc2c
+0x000000d230aff420:   00007fff15e3c328 0000027155e9f5d0
+0x000000d230aff430:   00000000003b13ca 00007fff45365cd1
+0x000000d230aff440:   0000027100000000 000000d230aff501
+0x000000d230aff450:   000000d230afc1ae 0000000000000000
+0x000000d230aff460:   000002717cc94700 00007fff15de1174 
+
+Instructions: (pc=0x00007ffea46319b1)
+0x00007ffea46318b1:   e8 aa 8b 2a 00 c6 03 00 48 83 c4 20 5b c3 90 49
+0x00007ffea46318c1:   29 d0 4a 8d 1c 01 eb e3 48 89 cb 84 c0 75 ac eb
+0x00007ffea46318d1:   e4 66 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 0f
+0x00007ffea46318e1:   b6 11 48 89 c8 80 fa 09 75 12 0f 1f 44 00 00 0f
+0x00007ffea46318f1:   b6 50 01 48 83 c0 01 80 fa 09 74 f3 80 fa 20 74
+0x00007ffea4631901:   ee c3 66 66 2e 0f 1f 84 00 00 00 00 00 66 90 56
+0x00007ffea4631911:   53 48 83 ec 38 4c 89 4c 24 68 48 89 cb 4c 8d 4c
+0x00007ffea4631921:   24 68 48 89 d6 4c 89 4c 24 28 e8 70 e7 29 00 48
+0x00007ffea4631931:   85 db 74 10 83 f8 ff 74 16 39 f0 7d 12 48 63 d0
+0x00007ffea4631941:   c6 04 13 00 48 83 c4 38 5b 5e c3 0f 1f 40 00 8d
+0x00007ffea4631951:   46 ff eb e9 66 66 2e 0f 1f 84 00 00 00 00 00 56
+0x00007ffea4631961:   53 48 83 ec 28 48 89 cb 48 89 d6 e8 2f e7 29 00
+0x00007ffea4631971:   48 85 db 74 10 83 f8 ff 74 15 39 f0 7d 11 48 63
+0x00007ffea4631981:   d0 c6 04 13 00 48 83 c4 28 5b 5e c3 0f 1f 00 8d
+0x00007ffea4631991:   46 ff eb ea 66 66 2e 0f 1f 84 00 00 00 00 00 41
+0x00007ffea46319a1:   54 55 57 56 53 48 83 ec 20 48 8b 3d d7 ad 5c 00
+0x00007ffea46319b1:   41 80 38 25 48 89 ce 48 89 d3 74 5b 48 8b af c0
+0x00007ffea46319c1:   64 00 00 48 63 97 b8 64 00 00 48 89 e9 49 89 d4
+0x00007ffea46319d1:   e8 ca e6 29 00 48 85 ed 74 17 83 f8 ff 74 05 41
+0x00007ffea46319e1:   39 c4 7f 05 41 8d 44 24 ff 48 63 d0 c6 44 15 00
+0x00007ffea46319f1:   00 48 8b 97 c0 64 00 00 48 89 16 48 85 db 74 08
+0x00007ffea4631a01:   48 98 48 01 c2 48 89 13 48 83 c4 20 5b 5e 5f 5d
+0x00007ffea4631a11:   41 5c c3 0f 1f 40 00 41 0f b6 40 01 3c 73 74 37
+0x00007ffea4631a21:   3c 2e 75 98 41 80 78 02 2a 75 91 41 80 78 03 73
+0x00007ffea4631a31:   75 8a 41 80 78 04 00 75 83 49 8b 41 08 49 63 11
+0x00007ffea4631a41:   48 85 c0 74 49 48 89 06 48 01 d0 48 89 03 eb b8
+0x00007ffea4631a51:   0f 1f 80 00 00 00 00 41 80 78 02 00 0f 85 5a ff
+0x00007ffea4631a61:   ff ff 49 8b 39 48 8d 05 bd 6c 50 00 48 85 ff 48
+0x00007ffea4631a71:   0f 44 f8 48 89 39 48 85 d2 74 8d 48 89 f9 e8 5c
+0x00007ffea4631a81:   8a 2a 00 48 01 c7 48 89 3b e9 7a ff ff ff b8 06
+0x00007ffea4631a91:   00 00 00 39 c2 48 0f 4f d0 48 8d 05 89 6c 50 00
+0x00007ffea4631aa1:   eb a3 66 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 
+
+
+Stack slot to memory mapping:
+
+stack at sp + 0 slots: 0x0000000000000001 is an unknown value
+stack at sp + 1 slots: 0x0 is null
+stack at sp + 2 slots: 0x00000000424c0000 is an unknown value
+stack at sp + 3 slots: 0x0 is null
+stack at sp + 4 slots: 0x0 is null
+stack at sp + 5 slots: 0x000000d230aff328 is pointing into the stack for thread: 0x00000271579fb1c0
+stack at sp + 6 slots: 0x00007ffea4bfc788 imgui-java64.dll
+stack at sp + 7 slots: 0x000000d230aff380 is pointing into the stack for thread: 0x00000271579fb1c0
+
+
+Compiled method (n/a)   12038 2229     n 0       imgui.ImGui::nTextWrapped (native)
+ total in heap  [0x0000027167b22c10,0x0000027167b22ff0] = 992
+ relocation     [0x0000027167b22d70,0x0000027167b22da8] = 56
+ main code      [0x0000027167b22dc0,0x0000027167b22fe5] = 549
+ stub code      [0x0000027167b22fe5,0x0000027167b22fe8] = 3
+ oops           [0x0000027167b22fe8,0x0000027167b22ff0] = 8
+
+[Constant Pool (empty)]
+
+[MachCode]
+[Entry Point]
+  # {method} {0x00000271416a3be8} 'nTextWrapped' '(Ljava/lang/String;)V' in 'imgui/ImGui'
+  # parm0:    rdx:rdx   = 'java/lang/String'
+  #           [sp+0x70]  (sp of caller)
+  0x0000027167b22dc0: 448b 5208 | 49bb 0000 | 0000 7102 | 0000 4d03 | d349 3bc2 | 0f84 0600 
+
+  0x0000027167b22dd8: ;   {runtime_call ic_miss_stub}
+  0x0000027167b22dd8: 0000 e9a1 | bb7f ff90 
+[Verified Entry Point]
+  0x0000027167b22de0: 8984 2400 | 80ff ff55 | 488b ec48 | 83ec 6090 | 4181 7f20 | 0100 0000 
+
+  0x0000027167b22df8: ;   {runtime_call StubRoutines (final stubs)}
+  0x0000027167b22df8: 7405 e881 | 2f7e ff48 | 8954 2420 | 4883 fa00 | 4c8d 4424 | 204c 0f44 
+
+  0x0000027167b22e10: ;   {oop(a 'java/lang/Class'{0x000000062885f338} = 'imgui/ImGui')}
+  0x0000027167b22e10: 4424 2049 | be38 f385 | 2806 0000 | 004c 8974 | 2450 4c8d | 7424 5049 | 8bd6 c5f8 
+
+  0x0000027167b22e2c: ;   {internal_word}
+  0x0000027167b22e2c: 7749 ba2a | 2eb2 6771 | 0200 004d | 8997 a003 | 0000 4989 | a798 0300 
+
+  0x0000027167b22e44: ;   {external_word}
+  0x0000027167b22e44: 0049 ba20 | 5884 b7fe | 7f00 0041 | 803a 000f | 844a 0000 | 0052 4150 
+
+  0x0000027167b22e5c: ;   {metadata({method} {0x00000271416a3be8} 'nTextWrapped' '(Ljava/lang/String;)V' in 'imgui/ImGui')}
+  0x0000027167b22e5c: 48ba e03b | 6a41 7102 | 0000 498b | cf48 83ec | 2040 f6c4 | 0f0f 8419 | 0000 0048 
+
+  0x0000027167b22e78: ;   {runtime_call}
+  0x0000027167b22e78: 83ec 0848 | b850 0d35 | b7fe 7f00 | 00ff d048 | 83c4 08e9 | 0c00 0000 
+
+  0x0000027167b22e90: ;   {runtime_call}
+  0x0000027167b22e90: 48b8 500d | 35b7 fe7f | 0000 ffd0 | 4883 c420 | 4158 5a49 | 8d8f b803 | 0000 41c7 | 8744 0400 
+  0x0000027167b22eb0: 0004 0000 
+
+  0x0000027167b22eb4: ;   {runtime_call}
+  0x0000027167b22eb4: 0048 b840 | ef68 a4fe | 7f00 00ff | d0c5 f877 | 41c7 8744 | 0400 0005 | 0000 00f0 | 8344 24c0 
+  0x0000027167b22ed4: 0049 3baf | 4804 0000 | 0f87 0e00 | 0000 4183 | bf40 0400 | 0000 0f84 | 2300 0000 | c5f8 7749 
+  0x0000027167b22ef4: 8bcf 4c8b | e448 83ec | 2048 83e4 
+
+  0x0000027167b22f00: ;   {runtime_call}
+  0x0000027167b22f00: f048 b830 | b900 b7fe | 7f00 00ff | d049 8be4 | 4d33 e441 | c787 4404 | 0000 0800 | 0000 4183 
+  0x0000027167b22f20: bfc0 0400 | 0002 0f84 | 9400 0000 
+
+  0x0000027167b22f2c: ;   {external_word}
+  0x0000027167b22f2c: 49ba 2058 | 84b7 fe7f | 0000 4180 | 3a00 0f84 | 4400 0000 
+
+  0x0000027167b22f40: ;   {metadata({method} {0x00000271416a3be8} 'nTextWrapped' '(Ljava/lang/String;)V' in 'imgui/ImGui')}
+  0x0000027167b22f40: 48ba e03b | 6a41 7102 | 0000 498b | cf48 83ec | 2040 f6c4 | 0f0f 8419 | 0000 0048 
+
+  0x0000027167b22f5c: ;   {runtime_call}
+  0x0000027167b22f5c: 83ec 0848 | b850 0d35 | b7fe 7f00 | 00ff d048 | 83c4 08e9 | 0c00 0000 
+
+  0x0000027167b22f74: ;   {runtime_call}
+  0x0000027167b22f74: 48b8 500d | 35b7 fe7f | 0000 ffd0 | 4883 c420 | 49c7 8798 | 0300 0000 | 0000 0049 | c787 a003 
+  0x0000027167b22f94: 0000 0000 | 0000 c5f8 | 7749 8b8f | 2804 0000 | c781 0001 | 0000 0000 | 0000 c949 | 837f 0800 
+  0x0000027167b22fb4: 0f85 0100 
+
+  0x0000027167b22fb8: ;   {runtime_call StubRoutines (initial stubs)}
+  0x0000027167b22fb8: 0000 c3e9 | 40df 7aff | c5f8 774c | 8be4 4883 | ec20 4883 
+
+  0x0000027167b22fcc: ;   {runtime_call}
+  0x0000027167b22fcc: e4f0 48b8 | 4045 35b7 | fe7f 0000 | ffd0 498b | e44d 33e4 | e947 ffff | fff4 f4f4 
+[/MachCode]
+
+
+Compiled method (c1)   12042 2234   !   3       fbla.game.GameRenderer::renderMessageBox (242 bytes)
+ total in heap  [0x0000027160242690,0x00000271602446e8] = 8280
+ relocation     [0x00000271602427f0,0x0000027160242a80] = 656
+ constants      [0x0000027160242a80,0x0000027160242ac0] = 64
+ main code      [0x0000027160242ac0,0x0000027160243d08] = 4680
+ stub code      [0x0000027160243d08,0x0000027160243e28] = 288
+ oops           [0x0000027160243e28,0x0000027160243e40] = 24
+ metadata       [0x0000027160243e40,0x0000027160243ed8] = 152
+ scopes data    [0x0000027160243ed8,0x00000271602441b8] = 736
+ scopes pcs     [0x00000271602441b8,0x0000027160244558] = 928
+ dependencies   [0x0000027160244558,0x0000027160244568] = 16
+ handler table  [0x0000027160244568,0x0000027160244658] = 240
+ nul chk table  [0x0000027160244658,0x00000271602446e8] = 144
+
+
+[Constant Pool]
+             Address          hex4                    hex8      
+  0x0000027160242a80:   0x44160000      0x4348000044160000      
+  0x0000027160242a84:   0x43480000                              
+  0x0000027160242a88:   0x42c80000      0x41f0000042c80000      
+  0x0000027160242a8c:   0x41f00000                              
+  0x0000027160242a90:   0x43fa0000      0x41f0000043fa0000      
+  0x0000027160242a94:   0x41f00000                              
+  0x0000027160242a98:   0x42c80000      0x41f0000042c80000      
+  0x0000027160242a9c:   0x41f00000                              
+  0x0000027160242aa0:   0x42c80000      0x41f0000042c80000      
+  0x0000027160242aa4:   0x41f00000                              
+  0x0000027160242aa8:   0xf4f4f4f4      0xf4f4f4f4f4f4f4f4      
+  0x0000027160242aac:   0xf4f4f4f4                              
+  0x0000027160242ab0:   0xf4f4f4f4      0xf4f4f4f4f4f4f4f4      
+  0x0000027160242ab4:   0xf4f4f4f4                              
+  0x0000027160242ab8:   0xf4f4f4f4      0xf4f4f4f4f4f4f4f4      
+  0x0000027160242abc:   0xf4f4f4f4                              
+
+[MachCode]
+[Entry Point]
+  # {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer'
+  # this:     rdx:rdx   = 'fbla/game/GameRenderer'
+  # parm0:    r8        = int
+  # parm1:    r9        = int
+  #           [sp+0x90]  (sp of caller)
+  0x0000027160242ac0: ;   {no_reloc}
+  0x0000027160242ac0: 448b 5208 | 49bb 0000 | 0000 7102 | 0000 4d03 | d34c 3bd0 
+
+  0x0000027160242ad4: ;   {runtime_call ic_miss_stub}
+  0x0000027160242ad4: 0f85 a6be | 0d07 660f | 1f44 0000 
+[Verified Entry Point]
+  0x0000027160242ae0: 8984 2400 | 80ff ff55 | 4881 ec80 | 0000 0090 | 4181 7f20 | 0100 0000 
+
+  0x0000027160242af8: ;   {runtime_call StubRoutines (final stubs)}
+  0x0000027160242af8: 7405 e881 | 320c 0748 | 8954 2448 
+
+  0x0000027160242b04: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160242b04: 48be 3015 | 8341 7102 | 0000 8bbe | cc00 0000 | 83c7 0289 | becc 0000 | 0081 e7fe | 0700 0085 
+  0x0000027160242b24: ff0f 849f | 0d00 0044 | 894c 2454 | 4489 4424 | 5048 8bf2 
+
+  0x0000027160242b38: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160242b38: 48bf 3015 | 8341 7102 | 0000 4883 | 8710 0100 
+
+  0x0000027160242b48: ;   {metadata(method data for {method} {0x00000271417ca6a8} 'drawImGui' '()V' in 'fbla/game/GameRenderer')}
+  0x0000027160242b48: 0001 48be | b0fb 8241 | 7102 0000 | 8bbe cc00 | 0000 83c7 | 0289 becc | 0000 0081 | e7fe ff1f 
+  0x0000027160242b68: 0085 ff0f | 847a 0d00 | 008b 7228 | 48c1 e603 
+
+  0x0000027160242b78: ; implicit exception: dispatches to 0x000002716024390c
+  0x0000027160242b78: 483b 0648 
+
+  0x0000027160242b7c: ;   {metadata(method data for {method} {0x00000271417ca6a8} 'drawImGui' '()V' in 'fbla/game/GameRenderer')}
+  0x0000027160242b7c: 8bfe 48bb | b0fb 8241 | 7102 0000 | 4883 8328 | 0100 0001 | 488b d60f 
+
+  0x0000027160242b94: ;   {optimized virtual_call}
+  0x0000027160242b94: 1f40 00e8 
+
+  0x0000027160242b98: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokevirtual newFrame {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::drawImGui@4 (line 326)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+  0x0000027160242b98: 2452 f2ff 
+
+  0x0000027160242b9c: ;   {other}
+  0x0000027160242b9c: 0f1f 8400 | 0c05 0000 | 488b 5424 | 488b 722c | 48c1 e603 
+
+  0x0000027160242bb0: ; implicit exception: dispatches to 0x0000027160243911
+  0x0000027160242bb0: 483b 0648 
+
+  0x0000027160242bb4: ;   {metadata(method data for {method} {0x00000271417ca6a8} 'drawImGui' '()V' in 'fbla/game/GameRenderer')}
+  0x0000027160242bb4: 8bfe 48bb | b0fb 8241 | 7102 0000 | 4883 8360 | 0100 0001 
+
+  0x0000027160242bc8: ;   {metadata(method data for {method} {0x000002714176ffa0} 'newFrame' '()V' in 'imgui/gl3/ImGuiImplGl3')}
+  0x0000027160242bc8: 48bf 80fd | 8241 7102 | 0000 8b9f | cc00 0000 | 83c3 0289 | 9fcc 0000 | 0081 e3fe | ff1f 0085 
+  0x0000027160242be8: db0f 8427 | 0d00 008b | 7e0c 48c1 | e703 8b7f 
+
+  0x0000027160242bf8: ;   {metadata(method data for {method} {0x000002714176ffa0} 'newFrame' '()V' in 'imgui/gl3/ImGuiImplGl3')}
+  0x0000027160242bf8: 1885 ff48 | bf80 fd82 | 4171 0200 | 0048 bb10 | 0100 0000 | 0000 0075 | 0a48 bb20 | 0100 0000 
+  0x0000027160242c18: 0000 0048 | 8b04 1f48 | 8d40 0148 | 8904 1f0f | 8544 0000 | 0048 8bfe 
+
+  0x0000027160242c30: ;   {metadata(method data for {method} {0x000002714176ffa0} 'newFrame' '()V' in 'imgui/gl3/ImGuiImplGl3')}
+  0x0000027160242c30: 48bb 80fd | 8241 7102 
+
+  0x0000027160242c38: ;   {metadata('imgui/gl3/ImGuiImplGl3')}
+  0x0000027160242c38: 0000 49ba | 286f 0c01 | 7102 0000 | 4c89 9340 | 0100 0048 | 8383 4801 | 0000 0148 | 8bd6 4889 
+  0x0000027160242c58: 7424 580f 
+
+  0x0000027160242c5c: ;   {optimized virtual_call}
+  0x0000027160242c5c: 1f40 00e8 
+
+  0x0000027160242c60: ; ImmutableOopMap {[72]=Oop [88]=Oop }
+                      ;*invokevirtual createDeviceObjects {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.gl3.ImGuiImplGl3::newFrame@11 (line 339)
+                      ; - fbla.game.GameRenderer::drawImGui@11 (line 327)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+  0x0000027160242c60: 1cc2 0d07 
+
+  0x0000027160242c64: ;   {other}
+  0x0000027160242c64: 0f1f 8400 | d405 0001 | 488b 7424 | 588b 560c | 48c1 e203 
+
+  0x0000027160242c78: ; implicit exception: dispatches to 0x000002716024393c
+  0x0000027160242c78: 8b52 1485 
+
+  0x0000027160242c7c: ;   {metadata(method data for {method} {0x000002714176ffa0} 'newFrame' '()V' in 'imgui/gl3/ImGuiImplGl3')}
+  0x0000027160242c7c: d248 ba80 | fd82 4171 | 0200 0048 | bf68 0100 | 0000 0000 | 0075 0a48 | bf78 0100 | 0000 0000 
+  0x0000027160242c9c: 0048 8b1c | 3a48 8d5b | 0148 891c | 3a0f 853d | 0000 0048 
+
+  0x0000027160242cb0: ;   {metadata(method data for {method} {0x000002714176ffa0} 'newFrame' '()V' in 'imgui/gl3/ImGuiImplGl3')}
+  0x0000027160242cb0: 8bd6 48bf | 80fd 8241 | 7102 0000 
+
+  0x0000027160242cbc: ;   {metadata('imgui/gl3/ImGuiImplGl3')}
+  0x0000027160242cbc: 49ba 286f | 0c01 7102 | 0000 4c89 | 9798 0100 | 0048 8387 | a001 0000 | 0148 8bd6 | 0f1f 8000 
+  0x0000027160242cdc: ;   {optimized virtual_call}
+  0x0000027160242cdc: 0000 00e8 
+
+  0x0000027160242ce0: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokevirtual createFontsTexture {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.gl3.ImGuiImplGl3::newFrame@26 (line 342)
+                      ; - fbla.game.GameRenderer::drawImGui@11 (line 327)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+  0x0000027160242ce0: 9cc1 0d07 
+
+  0x0000027160242ce4: ;   {other}
+  0x0000027160242ce4: 0f1f 8400 | 5406 0002 
+
+  0x0000027160242cec: ;   {metadata(method data for {method} {0x00000271417ca6a8} 'drawImGui' '()V' in 'fbla/game/GameRenderer')}
+  0x0000027160242cec: 48be b0fb | 8241 7102 | 0000 4883 | 8680 0100 
+
+  0x0000027160242cfc: ;   {metadata(method data for {method} {0x00000271416950b8} 'newFrame' '()V' in 'imgui/ImGui')}
+  0x0000027160242cfc: 0001 48be | 3030 8341 | 7102 0000 | 8bbe cc00 | 0000 83c7 | 0289 becc | 0000 0081 | e7fe ff1f 
+  0x0000027160242d1c: 0085 ff0f | 841c 0c00 
+
+  0x0000027160242d24: ;   {metadata(method data for {method} {0x00000271416950b8} 'newFrame' '()V' in 'imgui/ImGui')}
+  0x0000027160242d24: 0048 be30 | 3083 4171 | 0200 0048 | 8386 1001 
+
+  0x0000027160242d34: ;   {static_call}
+  0x0000027160242d34: 0000 01e8 
+
+  0x0000027160242d38: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nNewFrame {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::newFrame@0 (line 248)
+                      ; - fbla.game.GameRenderer::drawImGui@14 (line 328)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+  0x0000027160242d38: a4ad 8707 
+
+  0x0000027160242d3c: ;   {other}
+  0x0000027160242d3c: 0f1f 8400 | ac06 0003 | 448b 4c24 | 5444 8b44 | 2450 498b | c0be 0200 | 0000 3d00 | 0000 800f 
+  0x0000027160242d5c: 850b 0000 | 0033 d283 | feff 0f84 | 0300 0000 
+
+  0x0000027160242d6c: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160242d6c: 99f7 fe48 | be30 1583 | 4171 0200 | 0048 8386 | 4801 0000 | 012d 2c01 | 0000 c5fa | 2ac0 4181 
+  0x0000027160242d8c: e9fa 0000 | 00c4 c172 
+
+  0x0000027160242d94: ;   {metadata(method data for {method} {0x0000027141687150} 'setNextWindowPos' '(FF)V' in 'imgui/ImGui')}
+  0x0000027160242d94: 2ac9 48be | 8831 8341 | 7102 0000 | 8b9e cc00 | 0000 83c3 | 0289 9ecc | 0000 0081 | e3fe ff1f 
+  0x0000027160242db4: 0085 db0f | 84aa 0b00 
+
+  0x0000027160242dbc: ;   {metadata(method data for {method} {0x0000027141687150} 'setNextWindowPos' '(FF)V' in 'imgui/ImGui')}
+  0x0000027160242dbc: 0048 be88 | 3183 4171 | 0200 0048 | 8386 1001 
+
+  0x0000027160242dcc: ;   {static_call}
+  0x0000027160242dcc: 0000 01e8 
+
+  0x0000027160242dd0: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nSetNextWindowPos {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::setNextWindowPos@2 (line 1103)
+                      ; - fbla.game.GameRenderer::renderMessageBox@18 (line 223)
+  0x0000027160242dd0: 0cb1 8707 
+
+  0x0000027160242dd4: ;   {other}
+  0x0000027160242dd4: 0f1f 8400 | 4407 0004 
+
+  0x0000027160242ddc: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160242ddc: 48be 3015 | 8341 7102 | 0000 4883 | 8658 0100 
+
+  0x0000027160242dec: ;   {metadata(method data for {method} {0x0000027141687a10} 'setNextWindowSize' '(FF)V' in 'imgui/ImGui')}
+  0x0000027160242dec: 0001 48be | f032 8341 | 7102 0000 | 8bbe cc00 | 0000 83c7 | 0289 becc | 0000 0081 | e7fe ff1f 
+  0x0000027160242e0c: 0085 ff0f | 8473 0b00 
+
+  0x0000027160242e14: ;   {metadata(method data for {method} {0x0000027141687a10} 'setNextWindowSize' '(FF)V' in 'imgui/ImGui')}
+  0x0000027160242e14: 0048 bef0 | 3283 4171 | 0200 0048 | 8386 1001 
+
+  0x0000027160242e24: ;   {section_word}
+  0x0000027160242e24: 0000 01c5 | fa10 0551 
+
+  0x0000027160242e2c: ;   {section_word}
+  0x0000027160242e2c: fcff ffc5 | fa10 0d4d 
+
+  0x0000027160242e34: ;   {static_call}
+  0x0000027160242e34: fcff ffe8 
+
+  0x0000027160242e38: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nSetNextWindowSize {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::setNextWindowSize@2 (line 1181)
+                      ; - fbla.game.GameRenderer::renderMessageBox@27 (line 224)
+  0x0000027160242e38: 24b5 8707 
+
+  0x0000027160242e3c: ;   {other}
+  0x0000027160242e3c: 0f1f 8400 | ac07 0005 | 488b 5424 | 4844 8b42 | 2449 c1e0 | 0345 8b80 | d400 0000 | 49c1 e003 
+  0x0000027160242e5c: ; implicit exception: dispatches to 0x00000271602439ae
+  0x0000027160242e5c: 493b 0049 
+
+  0x0000027160242e60: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160242e60: 8bf0 48bf | 3015 8341 | 7102 0000 | 4883 8780 | 0100 0001 | 458b 4040 | 49c1 e003 
+
+  0x0000027160242e7c: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160242e7c: 48be 3015 | 8341 7102 | 0000 4883 | 86a0 0100 
+
+  0x0000027160242e8c: ;   {metadata(method data for {method} {0x00000271416974e8} 'begin' '(Ljava/lang/String;I)Z' in 'imgui/ImGui')}
+  0x0000027160242e8c: 0001 48be | 5834 8341 | 7102 0000 | 8bbe cc00 | 0000 83c7 | 0289 becc | 0000 0081 | e7fe ff1f 
+  0x0000027160242eac: 0085 ff0f | 84fe 0a00 
+
+  0x0000027160242eb4: ;   {metadata(method data for {method} {0x00000271416974e8} 'begin' '(Ljava/lang/String;I)Z' in 'imgui/ImGui')}
+  0x0000027160242eb4: 0048 be58 | 3483 4171 | 0200 0048 | 8386 1001 | 0000 0149 | 8bd0 41b8 | 2600 0000 | 0f1f 8000 
+  0x0000027160242ed4: ;   {static_call}
+  0x0000027160242ed4: 0000 00e8 
+
+  0x0000027160242ed8: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nBegin {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::begin@2 (line 581)
+                      ; - fbla.game.GameRenderer::renderMessageBox@42 (line 225)
+  0x0000027160242ed8: 04b9 8707 
+
+  0x0000027160242edc: ;   {other}
+  0x0000027160242edc: 0f1f 8400 | 4c08 0006 | 488b 5424 | 488b 7224 | 48c1 e603 
+
+  0x0000027160242ef0: ; implicit exception: dispatches to 0x00000271602439d4
+  0x0000027160242ef0: 8bb6 1401 | 0000 48c1 
+
+  0x0000027160242ef8: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160242ef8: e603 48bf | 3015 8341 | 7102 0000 | 4883 87b0 | 0100 0001 
+
+  0x0000027160242f0c: ;   {metadata(method data for {method} {0x00000271416a3b58} 'textWrapped' '(Ljava/lang/String;)V' in 'imgui/ImGui')}
+  0x0000027160242f0c: 48bf 70d4 | 8541 7102 | 0000 8b9f | cc00 0000 | 83c3 0289 | 9fcc 0000 | 0081 e3fe | ff1f 0085 
+  0x0000027160242f2c: db0f 84a6 
+
+  0x0000027160242f30: ;   {metadata(method data for {method} {0x00000271416a3b58} 'textWrapped' '(Ljava/lang/String;)V' in 'imgui/ImGui')}
+  0x0000027160242f30: 0a00 0048 | bf70 d485 | 4171 0200 | 0048 8387 | 1001 0000 | 0148 8bd6 | 0f1f 8000 
+
+  0x0000027160242f4c: ;   {static_call}
+  0x0000027160242f4c: 0000 00e8 
+
+  0x0000027160242f50: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nTextWrapped {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::textWrapped@1 (line 2972)
+                      ; - fbla.game.GameRenderer::renderMessageBox@53 (line 228)
+  0x0000027160242f50: 8cfe 8d07 
+
+  0x0000027160242f54: ;   {other}
+  0x0000027160242f54: 0f1f 8400 | c408 0007 
+
+  0x0000027160242f5c: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160242f5c: 48be 3015 | 8341 7102 | 0000 4883 | 86c0 0100 
+
+  0x0000027160242f6c: ;   {metadata(method data for {method} {0x00000271416a1078} 'separator' '()V' in 'imgui/ImGui')}
+  0x0000027160242f6c: 0001 48be | d0d5 8541 | 7102 0000 | 8bbe cc00 | 0000 83c7 | 0289 becc | 0000 0081 | e7fe ff1f 
+  0x0000027160242f8c: 0085 ff0f | 8465 0a00 
+
+  0x0000027160242f94: ;   {metadata(method data for {method} {0x00000271416a1078} 'separator' '()V' in 'imgui/ImGui')}
+  0x0000027160242f94: 0048 bed0 | d585 4171 | 0200 0048 | 8386 1001 
+
+  0x0000027160242fa4: ;   {static_call}
+  0x0000027160242fa4: 0000 01e8 
+
+  0x0000027160242fa8: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nSeparator {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::separator@0 (line 2550)
+                      ; - fbla.game.GameRenderer::renderMessageBox@56 (line 229)
+  0x0000027160242fa8: 3402 8e07 
+
+  0x0000027160242fac: ;   {other}
+  0x0000027160242fac: 0f1f 8400 | 1c09 0008 | 488b 5424 | 488b 7224 | 48c1 e603 
+
+  0x0000027160242fc0: ; implicit exception: dispatches to 0x0000027160243a1b
+  0x0000027160242fc0: 0fbe be8b | 0000 0085 
+
+  0x0000027160242fc8: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160242fc8: ff48 bf30 | 1583 4171 | 0200 0048 | bbd0 0100 | 0000 0000 | 0075 0a48 | bbe0 0100 | 0000 0000 
+  0x0000027160242fe8: 0048 8b04 | 1f48 8d40 | 0148 8904 | 1f0f 85c1 
+
+  0x0000027160242ff8: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160242ff8: 0100 0048 | be30 1583 | 4171 0200 | 0048 8386 | f001 0000 
+
+  0x000002716024300c: ;   {metadata(method data for {method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x000002716024300c: 0148 beb8 | 9b82 4171 | 0200 008b | becc 0000 | 0083 c702 | 89be cc00 | 0000 81e7 | feff 1f00 
+  0x000002716024302c: 85ff 0f84 | ec09 0000 
+
+  0x0000027160243034: ;   {metadata(method data for {method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x0000027160243034: 48be b89b | 8241 7102 | 0000 4883 | 8610 0100 
+
+  0x0000027160243044: ;   {oop("Close (E)"{0x0000000628975788})}
+  0x0000027160243044: 0001 48ba | 8857 9728 | 0600 0000 
+
+  0x0000027160243050: ;   {section_word}
+  0x0000027160243050: c5fa 1005 | 30fa ffff 
+
+  0x0000027160243058: ;   {section_word}
+  0x0000027160243058: c5fa 100d | 2cfa ffff | 0f1f 8000 
+
+  0x0000027160243064: ;   {static_call}
+  0x0000027160243064: 0000 00e8 
+
+  0x0000027160243068: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nButton {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::button@3 (line 3044)
+                      ; - fbla.game.GameRenderer::renderMessageBox@77 (line 233)
+  0x0000027160243068: 14c8 0d07 
+
+  0x000002716024306c: ;   {other}
+  0x000002716024306c: 0f1f 8400 | dc09 0009 | 83e0 0185 
+
+  0x0000027160243078: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243078: c048 ba30 | 1583 4171 | 0200 0048 | be00 0200 | 0000 0000 | 0074 0a48 | be10 0200 | 0000 0000 
+  0x0000027160243098: 0048 8b3c | 3248 8d7f | 0148 893c | 3248 8b54 | 2448 0f84 | 9406 0000 | 8b72 2448 | c1e6 0348 
+  0x00000271602430b8: 3b06 488b 
+
+  0x00000271602430bc: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x00000271602430bc: fe48 bb30 | 1583 4171 
+
+  0x00000271602430c4: ;   {metadata('fbla/game/main')}
+  0x00000271602430c4: 0200 0049 | ba00 0800 | 0171 0200 | 004c 8993 | 3002 0000 | 4883 8338 | 0200 0001 
+
+  0x00000271602430e0: ;   {metadata(method data for {method} {0x0000027141402488} 'closeMessage' '()V' in 'fbla/game/main')}
+  0x00000271602430e0: 48bf 28d7 | 8541 7102 | 0000 8b9f | cc00 0000 | 83c3 0289 | 9fcc 0000 | 0081 e3fe | ff1f 0085 
+  0x0000027160243100: db0f 843f | 0900 000f | bebe 8a00 | 0000 85ff 
+
+  0x0000027160243110: ;   {metadata(method data for {method} {0x0000027141402488} 'closeMessage' '()V' in 'fbla/game/main')}
+  0x0000027160243110: 48bf 28d7 | 8541 7102 | 0000 48bb | 2001 0000 | 0000 0000 | 740a 48bb | 1001 0000 | 0000 0000 
+  0x0000027160243130: 488b 041f | 488d 4001 | 4889 041f | 0f84 6500 | 0000 c686 | 8a00 0000 | 0041 0fbe | 7f40 85ff 
+  0x0000027160243150: 0f85 1109 
+
+  0x0000027160243154: ;   {oop(""{0x000000062885f3d8})}
+  0x0000027160243154: 0000 49ba | d8f3 8528 | 0600 0000 | 49c1 ea03 | 4489 9614 
+
+  0x0000027160243168: ;   {oop(""{0x000000062885f3d8})}
+  0x0000027160243168: 0100 0048 | bfd8 f385 | 2806 0000 | 0048 8bde | 4833 df48 | c1eb 1648 | 83fb 000f | 8500 0900 
+  0x0000027160243188: 00c6 868b | 0000 0000 | 410f be7f | 4085 ff0f | 8504 0900 | 00c7 86cc | 0000 0000 
+
+  0x00000271602431a4: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x00000271602431a4: 0000 0048 | be30 1583 | 4171 0200 | 00ff 8658 | 0200 00e9 | 8805 0000 | 8bb6 cc00 | 0000 48c1 
+  0x00000271602431c4: e603 4885 
+
+  0x00000271602431c8: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x00000271602431c8: f648 be30 | 1583 4171 | 0200 0048 | bf70 0200 | 0000 0000 | 0074 0a48 | bf80 0200 | 0000 0000 
+  0x00000271602431e8: 0048 8b1c | 3e48 8d5b | 0148 891c | 3e0f 84d7 | 0100 00be | 0000 0000 | e96b 0100 | 0066 6690 
+  0x0000027160243208: 4863 de8b | 7c9f 1048 
+
+  0x0000027160243210: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243210: c1e7 0348 | bb30 1583 | 4171 0200 | 0048 8383 | b002 0000 
+
+  0x0000027160243224: ;   {metadata(method data for {method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x0000027160243224: 0148 bbb8 | 9b82 4171 | 0200 008b | 83cc 0000 | 0083 c002 | 8983 cc00 | 0000 25fe | ff1f 0085 
+  0x0000027160243244: c00f 8478 
+
+  0x0000027160243248: ;   {metadata(method data for {method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x0000027160243248: 0800 0048 | bbb8 9b82 | 4171 0200 | 0048 8383 | 1001 0000 | 0148 8bd7 
+
+  0x0000027160243260: ;   {section_word}
+  0x0000027160243260: c5fa 1005 | 28f8 ffff 
+
+  0x0000027160243268: ;   {section_word}
+  0x0000027160243268: c5fa 100d | 24f8 ffff | 8974 2460 
+
+  0x0000027160243274: ;   {static_call}
+  0x0000027160243274: 6666 90e8 
+
+  0x0000027160243278: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nButton {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::button@3 (line 3044)
+                      ; - fbla.game.GameRenderer::renderMessageBox@132 (line 238)
+  0x0000027160243278: e474 8607 
+
+  0x000002716024327c: ;   {other}
+  0x000002716024327c: 0f1f 8400 | ec0b 000a | 83e0 0185 
+
+  0x0000027160243288: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243288: c049 b830 | 1583 4171 | 0200 0049 | b9c0 0200 | 0000 0000 | 0074 0a49 | b9d0 0200 | 0000 0000 
+  0x00000271602432a8: 004b 8b3c | 0848 8d7f | 014b 893c | 080f 8469 | 0000 008b | 7424 6048 | 8b54 2448 | 8b5a 2448 
+  0x00000271602432c8: c1e3 0389 | 7378 448b | 83d0 0000 | 0049 c1e0 | 038b bbd4 | 0000 0048 | c1e7 034c 
+
+  0x00000271602432e4: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x00000271602432e4: 8bcb 48b8 | 3015 8341 | 7102 0000 
+
+  0x00000271602432f0: ;   {metadata('fbla/game/main')}
+  0x00000271602432f0: 49ba 0008 | 0001 7102 | 0000 4c89 | 90f0 0200 | 0048 8380 | f802 0000 | 014c 8bce | 41ff c148 
+  0x0000027160243310: 8bd3 8974 
+
+  0x0000027160243314: ;   {optimized virtual_call}
+  0x0000027160243314: 2460 90e8 
+
+  0x0000027160243318: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokevirtual dialogueHandler {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::renderMessageBox@167 (line 240)
+  0x0000027160243318: 210a 0000 
+
+  0x000002716024331c: ;   {other}
+  0x000002716024331c: 0f1f 8400 | 8c0c 000b | 8b74 2460 
+
+  0x0000027160243328: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243328: ffc6 48ba | 3015 8341 | 7102 0000 | 8bba d000 | 0000 83c7 | 0289 bad0 | 0000 0081 | e7fe 3f00 
+  0x0000027160243348: 0085 ff0f | 8498 0700 | 004d 8b97 
+
+  0x0000027160243354: ; ImmutableOopMap {[72]=Oop }
+                      ;*goto {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) fbla.game.GameRenderer::renderMessageBox@173 (line 237)
+  0x0000027160243354: 5004 0000 
+
+  0x0000027160243358: ;   {poll}
+  0x0000027160243358: 4185 0248 | ba30 1583 | 4171 0200 | 00ff 8218 | 0300 0048 | 8b54 2448 | 8b7a 2448 | c1e7 038b 
+  0x0000027160243378: bfcc 0000 | 0048 c1e7 | 038b 5f0c 
+
+  0x0000027160243384: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243384: 3bf3 48bb | 3015 8341 | 7102 0000 | 48b8 a002 | 0000 0000 | 0000 7c0a | 48b8 9002 | 0000 0000 
+  0x00000271602433a4: 0000 488b | 0c03 488d | 4901 4889 | 0c03 0f8c | 50fe ffff 
+
+  0x00000271602433b8: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x00000271602433b8: 48ba 3015 | 8341 7102 | 0000 ff82 | 3003 0000 | 488b 5424 | 48e9 7203 
+
+  0x00000271602433d0: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x00000271602433d0: 0000 48ba | 3015 8341 | 7102 0000 | 4883 8248 | 0300 0001 
+
+  0x00000271602433e4: ;   {metadata(method data for {method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x00000271602433e4: 48ba b89b | 8241 7102 | 0000 8bb2 | cc00 0000 | 83c6 0289 | b2cc 0000 | 0081 e6fe | ff1f 0085 
+  0x0000027160243404: f60f 8409 
+
+  0x0000027160243408: ;   {metadata(method data for {method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x0000027160243408: 0700 0048 | bab8 9b82 | 4171 0200 | 0048 8382 | 1001 0000 
+
+  0x000002716024341c: ;   {oop("Close (E)"{0x0000000628975788})}
+  0x000002716024341c: 0148 ba88 | 5797 2806 
+
+  0x0000027160243424: ;   {section_word}
+  0x0000027160243424: 0000 00c5 | fa10 0569 
+
+  0x000002716024342c: ;   {section_word}
+  0x000002716024342c: f6ff ffc5 | fa10 0d65 
+
+  0x0000027160243434: ;   {static_call}
+  0x0000027160243434: f6ff ffe8 
+
+  0x0000027160243438: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nButton {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::button@3 (line 3044)
+                      ; - fbla.game.GameRenderer::renderMessageBox@187 (line 244)
+  0x0000027160243438: 44c4 0d07 
+
+  0x000002716024343c: ;   {other}
+  0x000002716024343c: 0f1f 8400 | ac0d 000d | 83e0 0185 
+
+  0x0000027160243448: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243448: c048 b830 | 1583 4171 | 0200 0048 | ba58 0300 | 0000 0000 | 0074 0a48 | ba68 0300 | 0000 0000 
+  0x0000027160243468: 0048 8b34 | 1048 8d76 | 0148 8934 | 1048 8b54 | 2448 0f84 | c402 0000 | 8b42 2448 | c1e0 0348 
+  0x0000027160243488: 3b00 488b 
+
+  0x000002716024348c: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x000002716024348c: f048 bf30 | 1583 4171 
+
+  0x0000027160243494: ;   {metadata('fbla/game/main')}
+  0x0000027160243494: 0200 0049 | ba00 0800 | 0171 0200 | 004c 8997 | 8803 0000 | 4883 8790 | 0300 0001 
+
+  0x00000271602434b0: ;   {metadata(method data for {method} {0x0000027141402488} 'closeMessage' '()V' in 'fbla/game/main')}
+  0x00000271602434b0: 48be 28d7 | 8541 7102 | 0000 8bbe | cc00 0000 | 83c7 0289 | becc 0000 | 0081 e7fe | ff1f 0085 
+  0x00000271602434d0: ff0f 8463 | 0600 000f | beb0 8a00 | 0000 85f6 
+
+  0x00000271602434e0: ;   {metadata(method data for {method} {0x0000027141402488} 'closeMessage' '()V' in 'fbla/game/main')}
+  0x00000271602434e0: 48be 28d7 | 8541 7102 | 0000 48bf | 2001 0000 | 0000 0000 | 740a 48bf | 1001 0000 | 0000 0000 
+  0x0000027160243500: 488b 1c3e | 488d 5b01 | 4889 1c3e | 0f84 3202 | 0000 c680 | 8a00 0000 | 0041 0fbe | 7740 85f6 
+  0x0000027160243520: 0f85 3506 
+
+  0x0000027160243524: ;   {oop(""{0x000000062885f3d8})}
+  0x0000027160243524: 0000 49ba | d8f3 8528 | 0600 0000 | 49c1 ea03 | 4489 9014 
+
+  0x0000027160243538: ;   {oop(""{0x000000062885f3d8})}
+  0x0000027160243538: 0100 0048 | bed8 f385 | 2806 0000 | 0048 8bf8 | 4833 fe48 | c1ef 1648 | 83ff 000f | 8524 0600 
+  0x0000027160243558: 00c6 808b | 0000 0000 | 410f be77 | 4085 f60f | 8528 0600 | 00c7 80cc | 0000 0000 | 0000 00e9 
+  0x0000027160243578: c801 0000 | 498b 87f8 | 0400 004d | 33d2 4d89 | 97f8 0400 | 004d 33d2 | 4d89 9700 
+
+  0x0000027160243594: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243594: 0500 0048 | be30 1583 | 4171 0200 | 0048 8386 | c803 0000 
+
+  0x00000271602435a8: ;   {metadata(method data for {method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x00000271602435a8: 0148 beb8 | 9b82 4171 | 0200 008b | becc 0000 | 0083 c702 | 89be cc00 | 0000 81e7 | feff 1f00 
+  0x00000271602435c8: 85ff 0f84 | e705 0000 
+
+  0x00000271602435d0: ;   {metadata(method data for {method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x00000271602435d0: 48be b89b | 8241 7102 | 0000 4883 | 8610 0100 
+
+  0x00000271602435e0: ;   {oop("Close (E)"{0x0000000628975788})}
+  0x00000271602435e0: 0001 48ba | 8857 9728 | 0600 0000 
+
+  0x00000271602435ec: ;   {section_word}
+  0x00000271602435ec: c5fa 1005 | acf4 ffff 
+
+  0x00000271602435f4: ;   {section_word}
+  0x00000271602435f4: c5fa 100d | a8f4 ffff 
+
+  0x00000271602435fc: ;   {static_call}
+  0x00000271602435fc: 6666 90e8 
+
+  0x0000027160243600: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nButton {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::button@3 (line 3044)
+                      ; - fbla.game.GameRenderer::renderMessageBox@212 (line 249)
+  0x0000027160243600: 5c71 8607 
+
+  0x0000027160243604: ;   {other}
+  0x0000027160243604: 0f1f 8400 | 740f 000e | 83e0 0185 
+
+  0x0000027160243610: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243610: c048 be30 | 1583 4171 | 0200 0048 | bfd8 0300 | 0000 0000 | 0074 0a48 | bfe8 0300 | 0000 0000 
+  0x0000027160243630: 0048 8b1c | 3e48 8d5b | 0148 891c | 3e0f 8411 | 0100 0048 | 8b54 2448 | 8b72 2448 | c1e6 0348 
+  0x0000027160243650: 3b06 488b 
+
+  0x0000027160243654: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243654: fe48 bb30 | 1583 4171 
+
+  0x000002716024365c: ;   {metadata('fbla/game/main')}
+  0x000002716024365c: 0200 0049 | ba00 0800 | 0171 0200 | 004c 8993 | 0804 0000 | 4883 8310 | 0400 0001 
+
+  0x0000027160243678: ;   {metadata(method data for {method} {0x0000027141402488} 'closeMessage' '()V' in 'fbla/game/main')}
+  0x0000027160243678: 48bf 28d7 | 8541 7102 | 0000 8b9f | cc00 0000 | 83c3 0289 | 9fcc 0000 | 0081 e3fe | ff1f 0085 
+  0x0000027160243698: db0f 843e | 0500 000f | bebe 8a00 | 0000 85ff 
+
+  0x00000271602436a8: ;   {metadata(method data for {method} {0x0000027141402488} 'closeMessage' '()V' in 'fbla/game/main')}
+  0x00000271602436a8: 48bf 28d7 | 8541 7102 | 0000 48bb | 2001 0000 | 0000 0000 | 740a 48bb | 1001 0000 | 0000 0000 
+  0x00000271602436c8: 488b 041f | 488d 4001 | 4889 041f | 0f84 7a00 | 0000 c686 | 8a00 0000 | 0041 0fbe | 7f40 85ff 
+  0x00000271602436e8: 0f85 1005 
+
+  0x00000271602436ec: ;   {oop(""{0x000000062885f3d8})}
+  0x00000271602436ec: 0000 49ba | d8f3 8528 | 0600 0000 | 49c1 ea03 | 4489 9614 
+
+  0x0000027160243700: ;   {oop(""{0x000000062885f3d8})}
+  0x0000027160243700: 0100 0048 | bfd8 f385 | 2806 0000 | 0048 8bde | 4833 df48 | c1eb 1648 | 83fb 000f | 85ff 0400 
+  0x0000027160243720: 00c6 868b | 0000 0000 | 410f be7f | 4085 ff0f | 8503 0500 | 00c7 86cc | 0000 0000 | 0000 00e9 
+  0x0000027160243740: 1000 0000 
+
+  0x0000027160243744: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243744: 48be 3015 | 8341 7102 | 0000 ff86 | b003 0000 
+
+  0x0000027160243754: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243754: 48be 3015 | 8341 7102 | 0000 4883 | 8630 0400 
+
+  0x0000027160243764: ;   {metadata(method data for {method} {0x0000027141697808} 'end' '()V' in 'imgui/ImGui')}
+  0x0000027160243764: 0001 48be | e037 8341 | 7102 0000 | 8bbe cc00 | 0000 83c7 | 0289 becc | 0000 0081 | e7fe ff1f 
+  0x0000027160243784: 0085 ff0f | 84cd 0400 
+
+  0x000002716024378c: ;   {metadata(method data for {method} {0x0000027141697808} 'end' '()V' in 'imgui/ImGui')}
+  0x000002716024378c: 0048 bee0 | 3783 4171 | 0200 0048 | 8386 1001 
+
+  0x000002716024379c: ;   {static_call}
+  0x000002716024379c: 0000 01e8 
+
+  0x00000271602437a0: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nEnd {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::end@0 (line 617)
+                      ; - fbla.game.GameRenderer::renderMessageBox@225 (line 254)
+  0x00000271602437a0: bcb4 8707 
+
+  0x00000271602437a4: ;   {other}
+  0x00000271602437a4: 0f1f 8400 | 1411 000f 
+
+  0x00000271602437ac: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x00000271602437ac: 48be 3015 | 8341 7102 | 0000 4883 | 8640 0400 
+
+  0x00000271602437bc: ;   {metadata(method data for {method} {0x0000027141695338} 'render' '()V' in 'imgui/ImGui')}
+  0x00000271602437bc: 0001 48be | 3839 8341 | 7102 0000 | 8bbe cc00 | 0000 83c7 | 0289 becc | 0000 0081 | e7fe ff1f 
+  0x00000271602437dc: 0085 ff0f | 8496 0400 
+
+  0x00000271602437e4: ;   {metadata(method data for {method} {0x0000027141695338} 'render' '()V' in 'imgui/ImGui')}
+  0x00000271602437e4: 0048 be38 | 3983 4171 | 0200 0048 | 8386 1001 
+
+  0x00000271602437f4: ;   {static_call}
+  0x00000271602437f4: 0000 01e8 
+
+  0x00000271602437f8: ; ImmutableOopMap {[72]=Oop }
+                      ;*invokestatic nRender {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::render@0 (line 271)
+                      ; - fbla.game.GameRenderer::renderMessageBox@228 (line 255)
+  0x00000271602437f8: 64b8 8707 
+
+  0x00000271602437fc: ;   {other}
+  0x00000271602437fc: 0f1f 8400 | 6c11 0010 | 488b 5424 | 488b 722c | 48c1 e603 
+
+  0x0000027160243810: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243810: 48bf 3015 | 8341 7102 | 0000 4883 | 8750 0400 
+
+  0x0000027160243820: ;   {metadata(method data for {method} {0x0000027141695480} 'getDrawData' '()Limgui/ImDrawData;' in 'imgui/ImGui')}
+  0x0000027160243820: 0001 48bf | 903a 8341 | 7102 0000 | 8b9f cc00 | 0000 83c3 | 0289 9fcc | 0000 0081 | e3fe ff1f 
+  0x0000027160243840: 0085 db0f | 8453 0400 
+
+  0x0000027160243848: ;   {metadata(method data for {method} {0x0000027141695480} 'getDrawData' '()Limgui/ImDrawData;' in 'imgui/ImGui')}
+  0x0000027160243848: 0048 bf90 | 3a83 4171 | 0200 0048 | 8387 1001 | 0000 0148 | 8974 2468 | 0f1f 8000 
+
+  0x0000027160243864: ;   {static_call}
+  0x0000027160243864: 0000 00e8 
+
+  0x0000027160243868: ; ImmutableOopMap {[104]=Oop }
+                      ;*invokestatic nGetDrawData {reexecute=0 rethrow=0 return_oop=0}
+                      ; - imgui.ImGui::getDrawData@3 (line 284)
+                      ; - fbla.game.GameRenderer::renderMessageBox@235 (line 256)
+  0x0000027160243868: f4bb 8707 
+
+  0x000002716024386c: ;   {other}
+  0x000002716024386c: 0f1f 8400 | dc11 0011 
+
+  0x0000027160243874: ;   {oop(a 'imgui/ImDrawData'{0x0000000628843308})}
+  0x0000027160243874: 49b8 0833 | 8428 0600 | 0000 4989 | 4010 488b | 7424 6848 | 3b06 488b 
+
+  0x000002716024388c: ;   {metadata(method data for {method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x000002716024388c: d648 bf30 | 1583 4171 | 0200 0048 | 8387 7804 | 0000 0148 | 8bd6 0f1f 
+
+  0x00000271602438a4: ;   {optimized virtual_call}
+  0x00000271602438a4: 4400 00e8 
+
+  0x00000271602438a8: ; ImmutableOopMap {}
+                      ;*invokevirtual renderDrawData {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::renderMessageBox@238 (line 256)
+  0x00000271602438a8: 5465 f3ff 
+
+  0x00000271602438ac: ;   {other}
+  0x00000271602438ac: 0f1f 8400 | 1c12 0012 | 4881 c480 | 0000 005d 
+
+  0x00000271602438bc: ;   {poll_return}
+  0x00000271602438bc: 493b a748 | 0400 000f | 87fe 0300 
+
+  0x00000271602438c8: ;   {metadata({method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x00000271602438c8: 00c3 49ba | 18a3 7c41 | 7102 0000 | 4c89 5424 | 0848 c704 | 24ff ffff 
+
+  0x00000271602438e0: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x00000271602438e0: ffe8 1a86 
+
+  0x00000271602438e4: ; ImmutableOopMap {rdx=Oop [72]=Oop }
+                      ;*synchronization entry
+                      ; - fbla.game.GameRenderer::renderMessageBox@-1 (line 222)
+  0x00000271602438e4: 1b07 e940 
+
+  0x00000271602438e8: ;   {metadata({method} {0x00000271417ca6a8} 'drawImGui' '()V' in 'fbla/game/GameRenderer')}
+  0x00000271602438e8: f2ff ff49 | baa0 a67c | 4171 0200 | 004c 8954 | 2408 48c7 | 0424 ffff 
+
+  0x0000027160243900: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243900: ffff e8f9 
+
+  0x0000027160243904: ; ImmutableOopMap {rdx=Oop [72]=Oop }
+                      ;*synchronization entry
+                      ; - fbla.game.GameRenderer::drawImGui@-1 (line 326)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+  0x0000027160243904: 851b 07e9 | 65f2 ffff 
+
+  0x000002716024390c: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x000002716024390c: e88f 051b 
+
+  0x0000027160243910: ; ImmutableOopMap {rdx=Oop rsi=Oop [72]=Oop }
+                      ;*invokevirtual newFrame {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::drawImGui@4 (line 326)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+                      ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243910: 07e8 8a05 
+
+  0x0000027160243914: ; ImmutableOopMap {rdx=Oop rsi=Oop [72]=Oop }
+                      ;*invokevirtual newFrame {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::drawImGui@11 (line 327)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+                      ;   {metadata({method} {0x000002714176ffa0} 'newFrame' '()V' in 'imgui/gl3/ImGuiImplGl3')}
+  0x0000027160243914: 1b07 49ba | 98ff 7641 | 7102 0000 | 4c89 5424 | 0848 c704 | 24ff ffff 
+
+  0x000002716024392c: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x000002716024392c: ffe8 ce85 
+
+  0x0000027160243930: ; ImmutableOopMap {rdx=Oop rsi=Oop [72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.gl3.ImGuiImplGl3::newFrame@-1 (line 338)
+                      ; - fbla.game.GameRenderer::drawImGui@11 (line 327)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+  0x0000027160243930: 1b07 e9b8 
+
+  0x0000027160243934: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243934: f2ff ffe8 
+
+  0x0000027160243938: ; ImmutableOopMap {rdx=Oop rsi=Oop [72]=Oop }
+                      ;*getfield shaderHandle {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) imgui.gl3.ImGuiImplGl3::newFrame@4 (line 338)
+                      ; - fbla.game.GameRenderer::drawImGui@11 (line 327)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+  0x0000027160243938: 6405 1b07 
+
+  0x000002716024393c: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x000002716024393c: e85f 051b 
+
+  0x0000027160243940: ; ImmutableOopMap {rsi=Oop [72]=Oop }
+                      ;*getfield fontTexture {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) imgui.gl3.ImGuiImplGl3::newFrame@19 (line 341)
+                      ; - fbla.game.GameRenderer::drawImGui@11 (line 327)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+                      ;   {metadata({method} {0x00000271416950b8} 'newFrame' '()V' in 'imgui/ImGui')}
+  0x0000027160243940: 0749 bab0 | 5069 4171 | 0200 004c | 8954 2408 | 48c7 0424 | ffff ffff 
+
+  0x0000027160243958: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243958: e8a3 851b 
+
+  0x000002716024395c: ; ImmutableOopMap {[72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::newFrame@-1 (line 248)
+                      ; - fbla.game.GameRenderer::drawImGui@14 (line 328)
+                      ; - fbla.game.GameRenderer::renderMessageBox@1 (line 222)
+  0x000002716024395c: 07e9 c3f3 
+
+  0x0000027160243960: ;   {runtime_call throw_div0_exception Runtime1 stub}
+  0x0000027160243960: ffff e839 
+
+  0x0000027160243964: ; ImmutableOopMap {[72]=Oop }
+                      ;*idiv {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::renderMessageBox@6 (line 223)
+                      ;   {metadata({method} {0x0000027141687150} 'setNextWindowPos' '(FF)V' in 'imgui/ImGui')}
+  0x0000027160243964: fc1a 0749 | ba48 7168 | 4171 0200 | 004c 8954 | 2408 48c7 | 0424 ffff 
+
+  0x000002716024397c: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x000002716024397c: ffff e87d 
+
+  0x0000027160243980: ; ImmutableOopMap {[72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::setNextWindowPos@-1 (line 1103)
+                      ; - fbla.game.GameRenderer::renderMessageBox@18 (line 223)
+  0x0000027160243980: 851b 07e9 | 35f4 ffff 
+
+  0x0000027160243988: ;   {metadata({method} {0x0000027141687a10} 'setNextWindowSize' '(FF)V' in 'imgui/ImGui')}
+  0x0000027160243988: 49ba 087a | 6841 7102 | 0000 4c89 | 5424 0848 | c704 24ff 
+
+  0x000002716024399c: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x000002716024399c: ffff ffe8 
+
+  0x00000271602439a0: ; ImmutableOopMap {[72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::setNextWindowSize@-1 (line 1181)
+                      ; - fbla.game.GameRenderer::renderMessageBox@27 (line 224)
+  0x00000271602439a0: 5c85 1b07 | e96c f4ff 
+
+  0x00000271602439a8: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x00000271602439a8: ffe8 f204 
+
+  0x00000271602439ac: ; ImmutableOopMap {rdx=Oop [72]=Oop }
+                      ;*getfield currentNPC {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) fbla.game.GameRenderer::renderMessageBox@34 (line 225)
+                      ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x00000271602439ac: 1b07 e8ed 
+
+  0x00000271602439b0: ; ImmutableOopMap {rdx=Oop r8=Oop [72]=Oop }
+                      ;*invokevirtual getName {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::renderMessageBox@37 (line 225)
+                      ;   {metadata({method} {0x00000271416974e8} 'begin' '(Ljava/lang/String;I)Z' in 'imgui/ImGui')}
+  0x00000271602439b0: 041b 0749 | bae0 7469 | 4171 0200 | 004c 8954 | 2408 48c7 | 0424 ffff 
+
+  0x00000271602439c8: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x00000271602439c8: ffff e831 
+
+  0x00000271602439cc: ; ImmutableOopMap {rdx=Oop r8=Oop [72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::begin@-1 (line 581)
+                      ; - fbla.game.GameRenderer::renderMessageBox@42 (line 225)
+  0x00000271602439cc: 851b 07e9 | e1f4 ffff 
+
+  0x00000271602439d4: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x00000271602439d4: e8c7 041b 
+
+  0x00000271602439d8: ; ImmutableOopMap {rdx=Oop [72]=Oop }
+                      ;*getfield currentFullMessage {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) fbla.game.GameRenderer::renderMessageBox@50 (line 228)
+                      ;   {metadata({method} {0x00000271416a3b58} 'textWrapped' '(Ljava/lang/String;)V' in 'imgui/ImGui')}
+  0x00000271602439d8: 0749 ba50 | 3b6a 4171 | 0200 004c | 8954 2408 | 48c7 0424 | ffff ffff 
+
+  0x00000271602439f0: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x00000271602439f0: e80b 851b 
+
+  0x00000271602439f4: ; ImmutableOopMap {rdx=Oop rsi=Oop [72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::textWrapped@-1 (line 2972)
+                      ; - fbla.game.GameRenderer::renderMessageBox@53 (line 228)
+  0x00000271602439f4: 07e9 39f5 
+
+  0x00000271602439f8: ;   {metadata({method} {0x00000271416a1078} 'separator' '()V' in 'imgui/ImGui')}
+  0x00000271602439f8: ffff 49ba | 7010 6a41 | 7102 0000 | 4c89 5424 | 0848 c704 | 24ff ffff 
+
+  0x0000027160243a10: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243a10: ffe8 ea84 
+
+  0x0000027160243a14: ; ImmutableOopMap {[72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::separator@-1 (line 2550)
+                      ; - fbla.game.GameRenderer::renderMessageBox@56 (line 229)
+  0x0000027160243a14: 1b07 e97a 
+
+  0x0000027160243a18: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243a18: f5ff ffe8 
+
+  0x0000027160243a1c: ; ImmutableOopMap {rdx=Oop rsi=Oop [72]=Oop }
+                      ;*getfield messageBoxOptionsDisplayed {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) fbla.game.GameRenderer::renderMessageBox@63 (line 232)
+  0x0000027160243a1c: 8004 1b07 
+
+  0x0000027160243a20: ;   {metadata({method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x0000027160243a20: 49ba 1842 | 6a41 7102 | 0000 4c89 | 5424 0848 | c704 24ff 
+
+  0x0000027160243a34: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243a34: ffff ffe8 
+
+  0x0000027160243a38: ; ImmutableOopMap {[72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::button@-1 (line 3044)
+                      ; - fbla.game.GameRenderer::renderMessageBox@77 (line 233)
+  0x0000027160243a38: c484 1b07 | e9f3 f5ff 
+
+  0x0000027160243a40: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243a40: ffe8 5a04 
+
+  0x0000027160243a44: ; ImmutableOopMap {rdx=Oop rsi=Oop [72]=Oop }
+                      ;*invokevirtual closeMessage {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::renderMessageBox@87 (line 234)
+                      ;   {metadata({method} {0x0000027141402488} 'closeMessage' '()V' in 'fbla/game/main')}
+  0x0000027160243a44: 1b07 49ba | 8024 4041 | 7102 0000 | 4c89 5424 | 0848 c704 | 24ff ffff 
+
+  0x0000027160243a5c: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243a5c: ffe8 9e84 
+
+  0x0000027160243a60: ; ImmutableOopMap {rdx=Oop rsi=Oop [72]=Oop }
+                      ;*synchronization entry
+                      ; - fbla.game.main::closeMessage@-1 (line 827)
+                      ; - fbla.game.GameRenderer::renderMessageBox@87 (line 234)
+  0x0000027160243a60: 1b07 e9a0 | f6ff ff8b | be14 0100 | 0048 c1e7 | 0348 83ff | 000f 84db | f6ff ff48 
+
+  0x0000027160243a7c: ;   {runtime_call g1_pre_barrier_slow}
+  0x0000027160243a7c: 893c 24e8 | fc91 1b07 | e9cd f6ff | ff48 83ff | 000f 84f6 | f6ff ff48 
+
+  0x0000027160243a94: ;   {runtime_call g1_post_barrier_slow}
+  0x0000027160243a94: 8934 24e8 | 6495 1b07 | e9e8 f6ff | ff8b becc | 0000 0048 | c1e7 0348 | 83ff 000f | 84e8 f6ff 
+  0x0000027160243ab4: ff48 893c 
+
+  0x0000027160243ab8: ;   {runtime_call g1_pre_barrier_slow}
+  0x0000027160243ab8: 24e8 c291 | 1b07 e9da 
+
+  0x0000027160243ac0: ;   {metadata({method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x0000027160243ac0: f6ff ff49 | ba18 426a | 4171 0200 | 004c 8954 | 2408 48c7 | 0424 ffff 
+
+  0x0000027160243ad8: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243ad8: ffff e821 
+
+  0x0000027160243adc: ; ImmutableOopMap {rdi=Oop [72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::button@-1 (line 3044)
+                      ; - fbla.game.GameRenderer::renderMessageBox@132 (line 238)
+  0x0000027160243adc: 841b 07e9 | 67f7 ffff 
+
+  0x0000027160243ae4: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243ae4: e8b7 031b 
+
+  0x0000027160243ae8: ; ImmutableOopMap {rdx=Oop rbx=Oop [72]=Oop }
+                      ;*putfield selectedResponseIndex {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) fbla.game.GameRenderer::renderMessageBox@143 (line 239)
+                      ;   {metadata({method} {0x00000271417ca320} 'renderMessageBox' '(II)V' in 'fbla/game/GameRenderer')}
+  0x0000027160243ae8: 0749 ba18 | a37c 4171 | 0200 004c | 8954 2408 | 48c7 0424 | ad00 0000 
+
+  0x0000027160243b00: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243b00: e8fb 831b 
+
+  0x0000027160243b04: ; ImmutableOopMap {[72]=Oop }
+                      ;*goto {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) fbla.game.GameRenderer::renderMessageBox@173 (line 237)
+  0x0000027160243b04: 07e9 47f8 
+
+  0x0000027160243b08: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243b08: ffff e891 
+
+  0x0000027160243b0c: ; ImmutableOopMap {rdx=Oop [72]=Oop }
+                      ;*getfield currentResponseOptions {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) fbla.game.GameRenderer::renderMessageBox@110 (line 237)
+                      ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243b0c: 031b 07e8 
+
+  0x0000027160243b10: ; ImmutableOopMap {rdx=Oop rdi=Oop [72]=Oop }
+                      ;*arraylength {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::renderMessageBox@113 (line 237)
+  0x0000027160243b10: 8c03 1b07 
+
+  0x0000027160243b14: ;   {metadata({method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x0000027160243b14: 49ba 1842 | 6a41 7102 | 0000 4c89 | 5424 0848 | c704 24ff 
+
+  0x0000027160243b28: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243b28: ffff ffe8 
+
+  0x0000027160243b2c: ; ImmutableOopMap {[72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::button@-1 (line 3044)
+                      ; - fbla.game.GameRenderer::renderMessageBox@187 (line 244)
+  0x0000027160243b2c: d083 1b07 | e9d6 f8ff 
+
+  0x0000027160243b34: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243b34: ffe8 6603 
+
+  0x0000027160243b38: ; ImmutableOopMap {rdx=Oop rax=Oop [72]=Oop }
+                      ;*invokevirtual closeMessage {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::renderMessageBox@197 (line 245)
+                      ;   {metadata({method} {0x0000027141402488} 'closeMessage' '()V' in 'fbla/game/main')}
+  0x0000027160243b38: 1b07 49ba | 8024 4041 | 7102 0000 | 4c89 5424 | 0848 c704 | 24ff ffff 
+
+  0x0000027160243b50: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243b50: ffe8 aa83 
+
+  0x0000027160243b54: ; ImmutableOopMap {rdx=Oop rax=Oop [72]=Oop }
+                      ;*synchronization entry
+                      ; - fbla.game.main::closeMessage@-1 (line 827)
+                      ; - fbla.game.GameRenderer::renderMessageBox@197 (line 245)
+  0x0000027160243b54: 1b07 e97c | f9ff ff8b | b014 0100 | 0048 c1e6 | 0348 83fe | 000f 84b7 | f9ff ff48 
+
+  0x0000027160243b70: ;   {runtime_call g1_pre_barrier_slow}
+  0x0000027160243b70: 8934 24e8 | 0891 1b07 | e9a9 f9ff | ff48 83fe | 000f 84d2 | f9ff ff48 
+
+  0x0000027160243b88: ;   {runtime_call g1_post_barrier_slow}
+  0x0000027160243b88: 8904 24e8 | 7094 1b07 | e9c4 f9ff | ff8b b0cc | 0000 0048 | c1e6 0348 | 83fe 000f | 84c4 f9ff 
+  0x0000027160243ba8: ff48 8934 
+
+  0x0000027160243bac: ;   {runtime_call g1_pre_barrier_slow}
+  0x0000027160243bac: 24e8 ce90 | 1b07 e9b6 
+
+  0x0000027160243bb4: ;   {metadata({method} {0x00000271416a4220} 'button' '(Ljava/lang/String;FF)Z' in 'imgui/ImGui')}
+  0x0000027160243bb4: f9ff ff49 | ba18 426a | 4171 0200 | 004c 8954 | 2408 48c7 | 0424 ffff 
+
+  0x0000027160243bcc: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243bcc: ffff e82d 
+
+  0x0000027160243bd0: ; ImmutableOopMap {[72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::button@-1 (line 3044)
+                      ; - fbla.game.GameRenderer::renderMessageBox@212 (line 249)
+  0x0000027160243bd0: 831b 07e9 | f8f9 ffff 
+
+  0x0000027160243bd8: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243bd8: e8c3 021b 
+
+  0x0000027160243bdc: ; ImmutableOopMap {rdx=Oop rsi=Oop [72]=Oop }
+                      ;*invokevirtual closeMessage {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::renderMessageBox@222 (line 250)
+                      ;   {metadata({method} {0x0000027141402488} 'closeMessage' '()V' in 'fbla/game/main')}
+  0x0000027160243bdc: 0749 ba80 | 2440 4171 | 0200 004c | 8954 2408 | 48c7 0424 | ffff ffff 
+
+  0x0000027160243bf4: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243bf4: e807 831b 
+
+  0x0000027160243bf8: ; ImmutableOopMap {rdx=Oop rsi=Oop [72]=Oop }
+                      ;*synchronization entry
+                      ; - fbla.game.main::closeMessage@-1 (line 827)
+                      ; - fbla.game.GameRenderer::renderMessageBox@222 (line 250)
+  0x0000027160243bf8: 07e9 a1fa | ffff 8bbe | 1401 0000 | 48c1 e703 | 4883 ff00 | 0f84 dcfa | ffff 4889 
+
+  0x0000027160243c14: ;   {runtime_call g1_pre_barrier_slow}
+  0x0000027160243c14: 3c24 e865 | 901b 07e9 | cefa ffff | 4883 ff00 | 0f84 f7fa | ffff 4889 
+
+  0x0000027160243c2c: ;   {runtime_call g1_post_barrier_slow}
+  0x0000027160243c2c: 3424 e8cd | 931b 07e9 | e9fa ffff | 8bbe cc00 | 0000 48c1 | e703 4883 | ff00 0f84 | e9fa ffff 
+  0x0000027160243c4c: 4889 3c24 
+
+  0x0000027160243c50: ;   {runtime_call g1_pre_barrier_slow}
+  0x0000027160243c50: e82b 901b | 07e9 dbfa 
+
+  0x0000027160243c58: ;   {metadata({method} {0x0000027141697808} 'end' '()V' in 'imgui/ImGui')}
+  0x0000027160243c58: ffff 49ba | 0078 6941 | 7102 0000 | 4c89 5424 | 0848 c704 | 24ff ffff 
+
+  0x0000027160243c70: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243c70: ffe8 8a82 
+
+  0x0000027160243c74: ; ImmutableOopMap {[72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::end@-1 (line 617)
+                      ; - fbla.game.GameRenderer::renderMessageBox@225 (line 254)
+  0x0000027160243c74: 1b07 e912 
+
+  0x0000027160243c78: ;   {metadata({method} {0x0000027141695338} 'render' '()V' in 'imgui/ImGui')}
+  0x0000027160243c78: fbff ff49 | ba30 5369 | 4171 0200 | 004c 8954 | 2408 48c7 | 0424 ffff 
+
+  0x0000027160243c90: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243c90: ffff e869 
+
+  0x0000027160243c94: ; ImmutableOopMap {[72]=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::render@-1 (line 271)
+                      ; - fbla.game.GameRenderer::renderMessageBox@228 (line 255)
+  0x0000027160243c94: 821b 07e9 | 49fb ffff 
+
+  0x0000027160243c9c: ;   {metadata({method} {0x0000027141695480} 'getDrawData' '()Limgui/ImDrawData;' in 'imgui/ImGui')}
+  0x0000027160243c9c: 49ba 7854 | 6941 7102 | 0000 4c89 | 5424 0848 | c704 24ff 
+
+  0x0000027160243cb0: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x0000027160243cb0: ffff ffe8 
+
+  0x0000027160243cb4: ; ImmutableOopMap {rsi=Oop }
+                      ;*synchronization entry
+                      ; - imgui.ImGui::getDrawData@-1 (line 284)
+                      ; - fbla.game.GameRenderer::renderMessageBox@235 (line 256)
+  0x0000027160243cb4: 4882 1b07 | e98c fbff 
+
+  0x0000027160243cbc: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243cbc: ffe8 de01 
+
+  0x0000027160243cc0: ; ImmutableOopMap {r8=Oop [104]=Oop }
+                      ;*putfield ptr {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) imgui.ImGui::getDrawData@6 (line 284)
+                      ; - fbla.game.GameRenderer::renderMessageBox@235 (line 256)
+                      ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x0000027160243cc0: 1b07 e8d9 
+
+  0x0000027160243cc4: ; ImmutableOopMap {r8=Oop rsi=Oop }
+                      ;*invokevirtual renderDrawData {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::renderMessageBox@238 (line 256)
+                      ;   {internal_word}
+  0x0000027160243cc4: 011b 0749 | babc 3824 | 6071 0200 | 004d 8997 | 6004 0000 
+
+  0x0000027160243cd8: ;   {runtime_call SafepointBlob}
+  0x0000027160243cd8: e9a3 2e0e | 0749 8b87 | f804 0000 | 49c7 87f8 | 0400 0000 | 0000 0049 | c787 0005 | 0000 0000 
+  0x0000027160243cf8: 0000 4881 | c480 0000 
+
+  0x0000027160243d00: ;   {runtime_call unwind_exception Runtime1 stub}
+  0x0000027160243d00: 005d e979 | e61a 07f4 
+[Stub Code]
+  0x0000027160243d08: ;   {no_reloc}
+  0x0000027160243d08: 0f1f 4400 
+
+  0x0000027160243d0c: ;   {static_stub}
+  0x0000027160243d0c: 0048 bb00 | 0000 0000 
+
+  0x0000027160243d14: ;   {runtime_call}
+  0x0000027160243d14: 0000 00e9 | fbff ffff 
+
+  0x0000027160243d1c: ;   {static_stub}
+  0x0000027160243d1c: 9048 bb00 | 0000 0000 
+
+  0x0000027160243d24: ;   {runtime_call}
+  0x0000027160243d24: 0000 00e9 | fbff ffff 
+
+  0x0000027160243d2c: ;   {static_stub}
+  0x0000027160243d2c: 9048 bb00 | 0000 0000 
+
+  0x0000027160243d34: ;   {runtime_call}
+  0x0000027160243d34: 0000 00e9 | fbff ffff 
+
+  0x0000027160243d3c: ;   {static_stub}
+  0x0000027160243d3c: 9048 bbd8 | 3240 4171 
+
+  0x0000027160243d44: ;   {runtime_call I2C/C2I adapters}
+  0x0000027160243d44: 0200 00e9 | 431d 1007 
+
+  0x0000027160243d4c: ;   {static_stub}
+  0x0000027160243d4c: 9048 bb00 | 0000 0000 
+
+  0x0000027160243d54: ;   {runtime_call}
+  0x0000027160243d54: 0000 00e9 | fbff ffff 
+
+  0x0000027160243d5c: ;   {static_stub}
+  0x0000027160243d5c: 48bb 0000 | 0000 0000 
+
+  0x0000027160243d64: ;   {runtime_call}
+  0x0000027160243d64: 0000 e9fb 
+
+  0x0000027160243d68: ;   {static_stub}
+  0x0000027160243d68: ffff ff48 | bb00 0000 | 0000 0000 
+
+  0x0000027160243d74: ;   {runtime_call}
+  0x0000027160243d74: 00e9 fbff 
+
+  0x0000027160243d78: ;   {static_stub}
+  0x0000027160243d78: ffff 48bb | 0000 0000 | 0000 0000 
+
+  0x0000027160243d84: ;   {runtime_call}
+  0x0000027160243d84: e9fb ffff 
+
+  0x0000027160243d88: ;   {static_stub}
+  0x0000027160243d88: ff48 bb00 | 0000 0000 
+
+  0x0000027160243d90: ;   {runtime_call}
+  0x0000027160243d90: 0000 00e9 | fbff ffff 
+
+  0x0000027160243d98: ;   {static_stub}
+  0x0000027160243d98: 48bb 0000 | 0000 0000 
+
+  0x0000027160243da0: ;   {runtime_call}
+  0x0000027160243da0: 0000 e9fb 
+
+  0x0000027160243da4: ;   {static_stub}
+  0x0000027160243da4: ffff ff48 | bb00 0000 | 0000 0000 
+
+  0x0000027160243db0: ;   {runtime_call}
+  0x0000027160243db0: 00e9 fbff 
+
+  0x0000027160243db4: ;   {static_stub}
+  0x0000027160243db4: ffff 48bb | 0000 0000 | 0000 0000 
+
+  0x0000027160243dc0: ;   {runtime_call}
+  0x0000027160243dc0: e9fb ffff 
+
+  0x0000027160243dc4: ;   {static_stub}
+  0x0000027160243dc4: ff48 bb00 | 0000 0000 
+
+  0x0000027160243dcc: ;   {runtime_call}
+  0x0000027160243dcc: 0000 00e9 | fbff ffff 
+
+  0x0000027160243dd4: ;   {static_stub}
+  0x0000027160243dd4: 48bb 0000 | 0000 0000 
+
+  0x0000027160243ddc: ;   {runtime_call}
+  0x0000027160243ddc: 0000 e9fb 
+
+  0x0000027160243de0: ;   {static_stub}
+  0x0000027160243de0: ffff ff48 | bb00 0000 | 0000 0000 
+
+  0x0000027160243dec: ;   {runtime_call}
+  0x0000027160243dec: 00e9 fbff 
+
+  0x0000027160243df0: ;   {runtime_call handle_exception_from_callee Runtime1 stub}
+  0x0000027160243df0: ffff e889 
+
+  0x0000027160243df4: ;   {external_word}
+  0x0000027160243df4: 3e1b 0748 | b9b0 485c | b7fe 7f00 | 0048 83e4 
+
+  0x0000027160243e04: ;   {runtime_call}
+  0x0000027160243e04: f048 b820 | 2f24 b7fe | 7f00 00ff 
+
+  0x0000027160243e10: ;   {section_word}
+  0x0000027160243e10: d0f4 49ba | 123e 2460 | 7102 0000 
+
+  0x0000027160243e1c: ;   {runtime_call DeoptimizationBlob}
+  0x0000027160243e1c: 4152 e9fd | 410e 07f4 | f4f4 f4f4 
+[/MachCode]
+
+
+Compiled method (c1)   12067 1713       3       fbla.game.GameRenderer::render (198 bytes)
+ total in heap  [0x000002716015f390,0x0000027160160538] = 4520
+ relocation     [0x000002716015f4f0,0x000002716015f6c8] = 472
+ constants      [0x000002716015f6e0,0x000002716015f720] = 64
+ main code      [0x000002716015f720,0x0000027160160058] = 2360
+ stub code      [0x0000027160160058,0x0000027160160178] = 288
+ oops           [0x0000027160160178,0x0000027160160180] = 8
+ metadata       [0x0000027160160180,0x00000271601601b0] = 48
+ scopes data    [0x00000271601601b0,0x0000027160160328] = 376
+ scopes pcs     [0x0000027160160328,0x0000027160160508] = 480
+ dependencies   [0x0000027160160508,0x0000027160160510] = 8
+ nul chk table  [0x0000027160160510,0x0000027160160538] = 40
+
+
+[Constant Pool]
+             Address          hex4                    hex8      
+  0x000002716015f6e0:   0x00000000      0x0000000000000000      
+  0x000002716015f6e4:   0x00000000                              
+  0x000002716015f6e8:   0x00000000      0x0000000000000000      
+  0x000002716015f6ec:   0x00000000                              
+  0x000002716015f6f0:   0x00000000      0xbff0000000000000      
+  0x000002716015f6f4:   0xbff00000                              
+  0x000002716015f6f8:   0x00000000      0x3ff0000000000000      
+  0x000002716015f6fc:   0x3ff00000                              
+  0x000002716015f700:   0x00000000      0x0000000000000000      
+  0x000002716015f704:   0x00000000                              
+  0x000002716015f708:   0x00000000      0x0000000000000000      
+  0x000002716015f70c:   0x00000000                              
+  0x000002716015f710:   0xf4f4f4f4      0xf4f4f4f4f4f4f4f4      
+  0x000002716015f714:   0xf4f4f4f4                              
+  0x000002716015f718:   0xf4f4f4f4      0xf4f4f4f4f4f4f4f4      
+  0x000002716015f71c:   0xf4f4f4f4                              
+
+[MachCode]
+[Entry Point]
+  # {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer'
+  # this:     rdx:rdx   = 'fbla/game/GameRenderer'
+  # parm0:    r8        = int
+  # parm1:    r9        = int
+  # parm2:    rdi:rdi   = 'java/awt/image/BufferedImage'
+  # parm3:    rsi       = int
+  # parm4:    rcx:rcx   = 'java/awt/image/BufferedImage'
+  # parm5:    [sp+0xb0]   = 'java/awt/image/BufferedImage'  (sp of caller)
+  # parm6:    [sp+0xb8]   = int
+  # parm7:    [sp+0xc0]   = 'java/awt/image/BufferedImage'
+  # parm8:    [sp+0xc8]   = int
+  # parm9:    [sp+0xd0]   = 'java/awt/image/BufferedImage'
+  # parm10:   [sp+0xd8]   = int
+  0x000002716015f720: ;   {no_reloc}
+  0x000002716015f720: 448b 5208 | 49bb 0000 | 0000 7102 | 0000 4d03 | d34c 3bd0 
+
+  0x000002716015f734: ;   {runtime_call ic_miss_stub}
+  0x000002716015f734: 0f85 46f2 | 1b07 660f | 1f44 0000 
+[Verified Entry Point]
+  0x000002716015f740: 8984 2400 | 80ff ff55 | 4881 eca0 | 0000 0090 | 4181 7f20 | 0100 0000 
+
+  0x000002716015f758: ;   {runtime_call StubRoutines (final stubs)}
+  0x000002716015f758: 7405 e821 | 661a 0748 | 8994 2480 | 0000 0044 | 8984 2488 | 0000 0044 | 898c 248c 
+
+  0x000002716015f774: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015f774: 0000 0048 | bb38 ee82 | 4171 0200 | 008b 83cc | 0000 0083 | c002 8983 | cc00 0000 | 25fe 0700 
+  0x000002716015f794: 0085 c00f | 8455 0700 | 0089 b424 | 9000 0000 
+
+  0x000002716015f7a4: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015f7a4: 48bf 38ee | 8241 7102 | 0000 4883 | 8710 0100 
+
+  0x000002716015f7b4: ;   {metadata(method data for {method} {0x000002714161ee38} 'glClear' '(I)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015f7b4: 0001 48bf | a0f3 8241 | 7102 0000 | 8b9f cc00 | 0000 83c3 | 0289 9fcc | 0000 0081 | e3fe ff1f 
+  0x000002716015f7d4: 0085 db0f | 8436 0700 
+
+  0x000002716015f7dc: ;   {metadata(method data for {method} {0x000002714161ee38} 'glClear' '(I)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015f7dc: 0048 bfa0 | f382 4171 | 0200 0048 | 8387 1001 | 0000 01ba | 0041 0000 
+
+  0x000002716015f7f4: ;   {static_call}
+  0x000002716015f7f4: 6666 90e8 
+
+  0x000002716015f7f8: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokestatic glClear {reexecute=0 rethrow=0 return_oop=0}
+                      ; - org.lwjgl.opengl.GL11::glClear@1 (line 992)
+                      ; - fbla.game.GameRenderer::render@3 (line 81)
+  0x000002716015f7f8: e48f 9507 
+
+  0x000002716015f7fc: ;   {other}
+  0x000002716015f7fc: 0f1f 8400 | 6c04 0000 
+
+  0x000002716015f804: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015f804: 48ba 38ee | 8241 7102 | 0000 4883 | 8220 0100 
+
+  0x000002716015f814: ;   {metadata(method data for {method} {0x000002714161dc08} 'glEnable' '(I)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015f814: 0001 48ba | 4090 8241 | 7102 0000 | 8bb2 cc00 | 0000 83c6 | 0289 b2cc | 0000 0081 | e6fe ff1f 
+  0x000002716015f834: 0085 f60f | 84f7 0600 
+
+  0x000002716015f83c: ;   {metadata(method data for {method} {0x000002714161dc08} 'glEnable' '(I)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015f83c: 0048 ba40 | 9082 4171 | 0200 0048 | 8382 1001 | 0000 01ba | 710b 0000 
+
+  0x000002716015f854: ;   {static_call}
+  0x000002716015f854: 6666 90e8 
+
+  0x000002716015f858: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokestatic glEnable {reexecute=0 rethrow=0 return_oop=0}
+                      ; - org.lwjgl.opengl.GL11::glEnable@1 (line 724)
+                      ; - fbla.game.GameRenderer::render@9 (line 82)
+  0x000002716015f858: 0475 9407 
+
+  0x000002716015f85c: ;   {other}
+  0x000002716015f85c: 0f1f 8400 | cc04 0001 
+
+  0x000002716015f864: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015f864: 48ba 38ee | 8241 7102 | 0000 4883 | 8230 0100 
+
+  0x000002716015f874: ;   {metadata(method data for {method} {0x000002714161dc08} 'glEnable' '(I)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015f874: 0001 48ba | 4090 8241 | 7102 0000 | 8bb2 cc00 | 0000 83c6 | 0289 b2cc | 0000 0081 | e6fe ff1f 
+  0x000002716015f894: 0085 f60f | 84b8 0600 
+
+  0x000002716015f89c: ;   {metadata(method data for {method} {0x000002714161dc08} 'glEnable' '(I)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015f89c: 0048 ba40 | 9082 4171 | 0200 0048 | 8382 1001 | 0000 01ba | e20b 0000 
+
+  0x000002716015f8b4: ;   {static_call}
+  0x000002716015f8b4: 6666 90e8 
+
+  0x000002716015f8b8: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokestatic glEnable {reexecute=0 rethrow=0 return_oop=0}
+                      ; - org.lwjgl.opengl.GL11::glEnable@1 (line 724)
+                      ; - fbla.game.GameRenderer::render@15 (line 83)
+  0x000002716015f8b8: a474 9407 
+
+  0x000002716015f8bc: ;   {other}
+  0x000002716015f8bc: 0f1f 8400 | 2c05 0002 
+
+  0x000002716015f8c4: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015f8c4: 48ba 38ee | 8241 7102 | 0000 4883 | 8240 0100 
+
+  0x000002716015f8d4: ;   {metadata(method data for {method} {0x000002714161e888} 'glBlendFunc' '(II)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015f8d4: 0001 48ba | 00f5 8241 | 7102 0000 | 448b 82cc | 0000 0041 | 83c0 0244 | 8982 cc00 | 0000 4181 
+  0x000002716015f8f4: e0fe ff1f | 0045 85c0 | 0f84 7406 
+
+  0x000002716015f900: ;   {metadata(method data for {method} {0x000002714161e888} 'glBlendFunc' '(II)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015f900: 0000 48ba | 00f5 8241 | 7102 0000 | 4883 8210 | 0100 0001 | ba02 0300 | 0041 b803 
+
+  0x000002716015f91c: ;   {static_call}
+  0x000002716015f91c: 0300 00e8 
+
+  0x000002716015f920: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokestatic glBlendFunc {reexecute=0 rethrow=0 return_oop=0}
+                      ; - org.lwjgl.opengl.GL11::glBlendFunc@2 (line 912)
+                      ; - fbla.game.GameRenderer::render@24 (line 84)
+  0x000002716015f920: bc92 9507 
+
+  0x000002716015f924: ;   {other}
+  0x000002716015f924: 0f1f 8400 | 9405 0003 | 488b 9424 | 8000 0000 | c742 18ff 
+
+  0x000002716015f938: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015f938: ffff ff48 | be38 ee82 | 4171 0200 | 0048 8386 | 5001 0000 | 01ba 0117 | 0000 0f1f 
+
+  0x000002716015f954: ;   {static_call}
+  0x000002716015f954: 4400 00e8 
+
+  0x000002716015f958: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokestatic glMatrixMode {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@35 (line 88)
+  0x000002716015f958: 04d9 9407 
+
+  0x000002716015f95c: ;   {other}
+  0x000002716015f95c: 0f1f 8400 | cc05 0004 
+
+  0x000002716015f964: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015f964: 48be 38ee | 8241 7102 | 0000 4883 | 8660 0100 
+
+  0x000002716015f974: ;   {static_call}
+  0x000002716015f974: 0001 90e8 
+
+  0x000002716015f978: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokestatic glLoadIdentity {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@38 (line 89)
+  0x000002716015f978: e4dc 9407 
+
+  0x000002716015f97c: ;   {other}
+  0x000002716015f97c: 0f1f 8400 | ec05 0005 
+
+  0x000002716015f984: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015f984: 48be 38ee | 8241 7102 | 0000 4883 | 8670 0100 | 0001 448b | 8424 8800 | 0000 c4c1 | 732a c844 
+  0x000002716015f9a4: 8b8c 248c | 0000 00c4 | c16b 2ad1 
+
+  0x000002716015f9b0: ;   {section_word}
+  0x000002716015f9b0: c5fb 1005 | 28fd ffff 
+
+  0x000002716015f9b8: ;   {section_word}
+  0x000002716015f9b8: c5fb 101d | 28fd ffff 
+
+  0x000002716015f9c0: ;   {section_word}
+  0x000002716015f9c0: c5fb 1025 | 28fd ffff 
+
+  0x000002716015f9c8: ;   {section_word}
+  0x000002716015f9c8: c5fb 102d | 28fd ffff | 0f1f 8000 
+
+  0x000002716015f9d4: ;   {static_call}
+  0x000002716015f9d4: 0000 00e8 
+
+  0x000002716015f9d8: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokestatic glOrtho {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@51 (line 90)
+  0x000002716015f9d8: 0496 9507 
+
+  0x000002716015f9dc: ;   {other}
+  0x000002716015f9dc: 0f1f 8400 | 4c06 0006 
+
+  0x000002716015f9e4: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015f9e4: 48ba 38ee | 8241 7102 | 0000 4883 | 8280 0100 | 0001 ba00 | 1700 000f 
+
+  0x000002716015f9fc: ;   {static_call}
+  0x000002716015f9fc: 1f40 00e8 
+
+  0x000002716015fa00: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokestatic glMatrixMode {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@57 (line 91)
+  0x000002716015fa00: 5cd8 9407 
+
+  0x000002716015fa04: ;   {other}
+  0x000002716015fa04: 0f1f 8400 | 7406 0007 
+
+  0x000002716015fa0c: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fa0c: 48be 38ee | 8241 7102 | 0000 4883 | 8690 0100 
+
+  0x000002716015fa1c: ;   {static_call}
+  0x000002716015fa1c: 0001 90e8 
+
+  0x000002716015fa20: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokestatic glLoadIdentity {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@60 (line 92)
+  0x000002716015fa20: 3cdc 9407 
+
+  0x000002716015fa24: ;   {other}
+  0x000002716015fa24: 0f1f 8400 | 9406 0008 | 488b 9424 | 8000 0000 | 448b 4224 | 49c1 e003 
+
+  0x000002716015fa3c: ; implicit exception: dispatches to 0x000002716015ff97
+  0x000002716015fa3c: 493b 004d 
+
+  0x000002716015fa40: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fa40: 8bc8 48bf | 38ee 8241 | 7102 0000 
+
+  0x000002716015fa4c: ;   {metadata('fbla/game/main')}
+  0x000002716015fa4c: 49ba 0008 | 0001 7102 | 0000 4c89 | 97b0 0100 | 0048 8387 | b801 0000 | 0145 8b80 | e800 0000 
+  0x000002716015fa6c: 49c1 e003 
+
+  0x000002716015fa70: ; implicit exception: dispatches to 0x000002716015ff9c
+  0x000002716015fa70: 493b 004d 
+
+  0x000002716015fa74: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fa74: 8bc8 48bf | 38ee 8241 | 7102 0000 | 4883 87d8 | 0100 0001 | 458b 400c | 41b9 0400 
+
+  0x000002716015fa90: ;   {oop([I{0x0000000628855f28})}
+  0x000002716015fa90: 0000 48bf | 285f 8528 | 0600 0000 | 453b c80f | 86fc 0400 | 004d 63c0 
+
+  0x000002716015faa8: ; implicit exception: dispatches to 0x000002716015ffaf
+  0x000002716015faa8: 468b 4487 
+
+  0x000002716015faac: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015faac: 1049 b938 | ee82 4171 | 0200 0048 | bf18 0200 | 0000 0000 | 0041 83f8 | 0148 8bf7 | 48bf 2802 
+  0x000002716015facc: 0000 0000 | 0000 480f | 45fe 4183 | f802 488b | f748 bf38 | 0200 0000 | 0000 0048 | 0f45 fe41 
+  0x000002716015faec: 83f8 0348 | 8bf7 48bf | 4802 0000 | 0000 0000 | 480f 45fe | 4183 f804 | 488b f748 | bf58 0200 
+  0x000002716015fb0c: 0000 0000 | 0048 0f45 | fe49 8b34 | 3949 ba01 | 0000 0000 | 0000 0049 | 03f2 4989 | 3439 4183 
+  0x000002716015fb2c: f801 0f84 | a702 0000 | 4183 f802 | 0f84 2a00 | 0000 4183 | f803 0f84 | 2a02 0000 | 4183 f804 
+  0x000002716015fb4c: 0f84 0901 | 0000 4881 | c4a0 0000 
+
+  0x000002716015fb58: ;   {poll_return}
+  0x000002716015fb58: 005d 493b | a748 0400 | 000f 874d | 0400 00c3 | 8b9c 24b8 | 0000 008b | b424 9000 | 0000 4c8b 
+  0x000002716015fb78: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fb78: c249 b938 | ee82 4171 | 0200 0049 | 8381 3003 | 0000 0144 | 8b84 2488 | 0000 0044 | 8b8c 248c 
+  0x000002716015fb98: 0000 0048 | 8bfe 488b | f348 8bda 
+
+  0x000002716015fba4: ;   {optimized virtual_call}
+  0x000002716015fba4: 488b d3e8 
+
+  0x000002716015fba8: ; ImmutableOopMap {[128]=Oop }
+                      ;*invokevirtual renderInGame {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@140 (line 103)
+  0x000002716015fba8: 74d0 0c00 
+
+  0x000002716015fbac: ;   {other}
+  0x000002716015fbac: 0f1f 8400 | 1c08 0009 | 488b 9424 | 8000 0000 | 448b 4224 | 49c1 e003 
+
+  0x000002716015fbc4: ; implicit exception: dispatches to 0x000002716015ffca
+  0x000002716015fbc4: 450f be80 | 8a00 0000 
+
+  0x000002716015fbcc: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fbcc: 4585 c049 | b838 ee82 | 4171 0200 | 0049 b968 | 0300 0000 | 0000 0074 | 0a49 b978 | 0300 0000 
+  0x000002716015fbec: 0000 004b | 8b34 0848 | 8d76 014b | 8934 080f | 84db 0200 | 004c 8bc2 
+
+  0x000002716015fc04: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fc04: 49b9 38ee | 8241 7102 | 0000 4983 | 8188 0300 | 0001 448b | 8424 8800 | 0000 448b | 8c24 8c00 
+  0x000002716015fc24: ;   {optimized virtual_call}
+  0x000002716015fc24: 0000 90e8 
+
+  0x000002716015fc28: ; ImmutableOopMap {}
+                      ;*invokevirtual renderMessageBox {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@156 (line 105)
+  0x000002716015fc28: b42e 0e00 
+
+  0x000002716015fc2c: ;   {other}
+  0x000002716015fc2c: 0f1f 8400 | 9c08 000a 
+
+  0x000002716015fc34: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fc34: 49b8 38ee | 8241 7102 | 0000 41ff | 80c0 0300 | 0048 81c4 | a000 0000 
+
+  0x000002716015fc4c: ;   {poll_return}
+  0x000002716015fc4c: 5d49 3ba7 | 4804 0000 | 0f87 7503 | 0000 c38b | b424 c800 | 0000 448b | 8c24 8c00 | 0000 448b 
+  0x000002716015fc6c: 8424 8800 | 0000 488b 
+
+  0x000002716015fc74: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fc74: da48 b838 | ee82 4171 
+
+  0x000002716015fc7c: ;   {metadata('fbla/game/GameRenderer')}
+  0x000002716015fc7c: 0200 0049 | ba88 fc0c | 0171 0200 | 004c 8990 | 3804 0000 | 4883 8040 | 0400 0001 | c4c1 6a2a 
+  0x000002716015fc9c: d0c4 c162 | 2ad9 4c8b 
+
+  0x000002716015fca4: ;   {section_word}
+  0x000002716015fca4: c6c5 fa10 | 0553 faff 
+
+  0x000002716015fcac: ;   {section_word}
+  0x000002716015fcac: ffc5 fa10 | 0d4f faff | ff48 8bc2 | 488b d00f 
+
+  0x000002716015fcbc: ;   {optimized virtual_call}
+  0x000002716015fcbc: 1f40 00e8 
+
+  0x000002716015fcc0: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokevirtual draw2D {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@180 (line 112)
+  0x000002716015fcc0: bcf1 1b07 
+
+  0x000002716015fcc4: ;   {other}
+  0x000002716015fcc4: 0f1f 8400 | 3409 000b | 488b 9424 | 8000 0000 
+
+  0x000002716015fcd4: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fcd4: 48be 38ee | 8241 7102 
+
+  0x000002716015fcdc: ;   {metadata('fbla/game/GameRenderer')}
+  0x000002716015fcdc: 0000 49ba | 88fc 0c01 | 7102 0000 | 4c89 9670 | 0400 0048 | 8386 7804 | 0000 0148 | 8b94 2480 
+  0x000002716015fcfc: ;   {optimized virtual_call}
+  0x000002716015fcfc: 0000 00e8 
+
+  0x000002716015fd00: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*invokevirtual flushBatch {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@184 (line 113)
+  0x000002716015fd00: 7cf1 1b07 
+
+  0x000002716015fd04: ;   {other}
+  0x000002716015fd04: 0f1f 8400 | 7409 000c | 488b 9424 | 8000 0000 
+
+  0x000002716015fd14: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fd14: 49b8 38ee | 8241 7102 | 0000 4983 | 8098 0400 | 0001 448b | 8424 8800 | 0000 448b | 8c24 8c00 
+  0x000002716015fd34: 0000 8bbc | 24c8 0000 | 0048 8bb4 | 24c0 0000 | 0048 8b94 | 2480 0000 
+
+  0x000002716015fd4c: ;   {optimized virtual_call}
+  0x000002716015fd4c: 0066 90e8 
+
+  0x000002716015fd50: ; ImmutableOopMap {}
+                      ;*invokevirtual renderOptions {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@194 (line 114)
+  0x000002716015fd50: 2cf1 1b07 
+
+  0x000002716015fd54: ;   {other}
+  0x000002716015fd54: 0f1f 8400 | c409 000d | 4881 c4a0 | 0000 005d 
+
+  0x000002716015fd64: ;   {poll_return}
+  0x000002716015fd64: 493b a748 | 0400 000f | 8774 0200 | 00c3 488b | 9424 8000 
+
+  0x000002716015fd78: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fd78: 0000 49b8 | 38ee 8241 | 7102 0000 | 4983 80d8 | 0300 0001 | 448b 8424 | 8800 0000 | 448b 8c24 
+  0x000002716015fd98: 8c00 0000 | 488b 9424 | 8000 0000 
+
+  0x000002716015fda4: ;   {optimized virtual_call}
+  0x000002716015fda4: 6666 90e8 
+
+  0x000002716015fda8: ; ImmutableOopMap {}
+                      ;*invokevirtual renderPauseMenu {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@165 (line 109)
+  0x000002716015fda8: d4f0 1b07 
+
+  0x000002716015fdac: ;   {other}
+  0x000002716015fdac: 0f1f 8400 | 1c0a 000e 
+
+  0x000002716015fdb4: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fdb4: 49b8 38ee | 8241 7102 | 0000 41ff | 8010 0400 | 0048 81c4 | a000 0000 
+
+  0x000002716015fdcc: ;   {poll_return}
+  0x000002716015fdcc: 5d49 3ba7 | 4804 0000 | 0f87 2102 | 0000 c38b | b424 c800 | 0000 448b | 8c24 8c00 | 0000 448b 
+  0x000002716015fdec: 8424 8800 | 0000 488b 
+
+  0x000002716015fdf4: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fdf4: fa48 bb38 | ee82 4171 
+
+  0x000002716015fdfc: ;   {metadata('fbla/game/GameRenderer')}
+  0x000002716015fdfc: 0200 0049 | ba88 fc0c | 0171 0200 | 004c 8993 | 8002 0000 | 4883 8388 | 0200 0001 | c4c1 6a2a 
+  0x000002716015fe1c: d0c4 c162 | 2ad9 4c8b 
+
+  0x000002716015fe24: ;   {section_word}
+  0x000002716015fe24: c6c5 fa10 | 05db f8ff 
+
+  0x000002716015fe2c: ;   {section_word}
+  0x000002716015fe2c: ffc5 fa10 | 0dd7 f8ff | ff48 8bf2 | 488b d60f 
+
+  0x000002716015fe3c: ;   {optimized virtual_call}
+  0x000002716015fe3c: 1f40 00e8 
+
+  0x000002716015fe40: ; ImmutableOopMap {[128]=Oop }
+                      ;*invokevirtual draw2D {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@117 (line 98)
+  0x000002716015fe40: 9c59 0000 
+
+  0x000002716015fe44: ;   {other}
+  0x000002716015fe44: 0f1f 8400 | b40a 000f | 488b 9424 | 8000 0000 
+
+  0x000002716015fe54: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fe54: 48be 38ee | 8241 7102 
+
+  0x000002716015fe5c: ;   {metadata('fbla/game/GameRenderer')}
+  0x000002716015fe5c: 0000 49ba | 88fc 0c01 | 7102 0000 | 4c89 96b8 | 0200 0048 | 8386 c002 | 0000 0148 | 8b94 2480 
+  0x000002716015fe7c: ;   {optimized virtual_call}
+  0x000002716015fe7c: 0000 00e8 
+
+  0x000002716015fe80: ; ImmutableOopMap {[128]=Oop }
+                      ;*invokevirtual flushBatch {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@121 (line 99)
+  0x000002716015fe80: 3ce7 ffff 
+
+  0x000002716015fe84: ;   {other}
+  0x000002716015fe84: 0f1f 8400 | f40a 0010 | 488b 9424 | 8000 0000 
+
+  0x000002716015fe94: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fe94: 49b8 38ee | 8241 7102 | 0000 4983 | 80e0 0200 | 0001 448b | 8424 8800 | 0000 448b | 8c24 8c00 
+  0x000002716015feb4: 0000 488b | 9424 8000 
+
+  0x000002716015febc: ;   {optimized virtual_call}
+  0x000002716015febc: 0000 90e8 
+
+  0x000002716015fec0: ; ImmutableOopMap {}
+                      ;*invokevirtual renderTitleScreenUI {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@127 (line 100)
+  0x000002716015fec0: dc3d 0000 
+
+  0x000002716015fec4: ;   {other}
+  0x000002716015fec4: 0f1f 8400 | 340b 0011 
+
+  0x000002716015fecc: ;   {metadata(method data for {method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fecc: 48be 38ee | 8241 7102 | 0000 ff86 | 1803 0000 | 4881 c4a0 | 0000 005d 
+
+  0x000002716015fee4: ;   {poll_return}
+  0x000002716015fee4: 493b a748 | 0400 000f | 8720 0100 
+
+  0x000002716015fef0: ;   {metadata({method} {0x00000271417c9d80} 'render' '(IILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;ILjava/awt/image/BufferedImage;I)V' in 'fbla/game/GameRenderer')}
+  0x000002716015fef0: 00c3 49ba | 789d 7c41 | 7102 0000 | 4c89 5424 | 0848 c704 | 24ff ffff 
+
+  0x000002716015ff08: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x000002716015ff08: ffe8 f2bf 
+
+  0x000002716015ff0c: ; ImmutableOopMap {rdx=Oop rdi=Oop rcx=Oop [128]=Oop [176]=Oop [192]=Oop [208]=Oop }
+                      ;*synchronization entry
+                      ; - fbla.game.GameRenderer::render@-1 (line 81)
+  0x000002716015ff0c: 2907 e98a 
+
+  0x000002716015ff10: ;   {metadata({method} {0x000002714161ee38} 'glClear' '(I)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015ff10: f8ff ff49 | ba30 ee61 | 4171 0200 | 004c 8954 | 2408 48c7 | 0424 ffff 
+
+  0x000002716015ff28: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x000002716015ff28: ffff e8d1 
+
+  0x000002716015ff2c: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*synchronization entry
+                      ; - org.lwjgl.opengl.GL11::glClear@-1 (line 992)
+                      ; - fbla.game.GameRenderer::render@3 (line 81)
+  0x000002716015ff2c: bf29 07e9 | a9f8 ffff 
+
+  0x000002716015ff34: ;   {metadata({method} {0x000002714161dc08} 'glEnable' '(I)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015ff34: 49ba 00dc | 6141 7102 | 0000 4c89 | 5424 0848 | c704 24ff 
+
+  0x000002716015ff48: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x000002716015ff48: ffff ffe8 
+
+  0x000002716015ff4c: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*synchronization entry
+                      ; - org.lwjgl.opengl.GL11::glEnable@-1 (line 724)
+                      ; - fbla.game.GameRenderer::render@9 (line 82)
+  0x000002716015ff4c: b0bf 2907 | e9e8 f8ff 
+
+  0x000002716015ff54: ;   {metadata({method} {0x000002714161dc08} 'glEnable' '(I)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015ff54: ff49 ba00 | dc61 4171 | 0200 004c | 8954 2408 | 48c7 0424 | ffff ffff 
+
+  0x000002716015ff6c: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x000002716015ff6c: e88f bf29 
+
+  0x000002716015ff70: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*synchronization entry
+                      ; - org.lwjgl.opengl.GL11::glEnable@-1 (line 724)
+                      ; - fbla.game.GameRenderer::render@15 (line 83)
+  0x000002716015ff70: 07e9 27f9 
+
+  0x000002716015ff74: ;   {metadata({method} {0x000002714161e888} 'glBlendFunc' '(II)V' in 'org/lwjgl/opengl/GL11')}
+  0x000002716015ff74: ffff 49ba | 80e8 6141 | 7102 0000 | 4c89 5424 | 0848 c704 | 24ff ffff 
+
+  0x000002716015ff8c: ;   {runtime_call counter_overflow Runtime1 stub}
+  0x000002716015ff8c: ffe8 6ebf 
+
+  0x000002716015ff90: ; ImmutableOopMap {[128]=Oop [192]=Oop }
+                      ;*synchronization entry
+                      ; - org.lwjgl.opengl.GL11::glBlendFunc@-1 (line 912)
+                      ; - fbla.game.GameRenderer::render@24 (line 84)
+  0x000002716015ff90: 2907 e96b 
+
+  0x000002716015ff94: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x000002716015ff94: f9ff ffe8 
+
+  0x000002716015ff98: ; ImmutableOopMap {rdx=Oop r8=Oop [128]=Oop [192]=Oop }
+                      ;*invokevirtual getCurrentGameState {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@70 (line 94)
+  0x000002716015ff98: 043f 2907 
+
+  0x000002716015ff9c: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x000002716015ff9c: e8ff 3e29 
+
+  0x000002716015ffa0: ; ImmutableOopMap {rdx=Oop r8=Oop [128]=Oop [192]=Oop }
+                      ;*invokevirtual ordinal {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@73 (line 94)
+  0x000002716015ffa0: 074c 8904 | 2448 897c 
+
+  0x000002716015ffa8: ;   {runtime_call throw_range_check_failed Runtime1 stub}
+  0x000002716015ffa8: 2408 e8f1 
+
+  0x000002716015ffac: ; ImmutableOopMap {rdx=Oop rdi=Oop [128]=Oop [192]=Oop }
+                      ;*iaload {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@76 (line 94)
+                      ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x000002716015ffac: 2f29 07e8 
+
+  0x000002716015ffb0: ; ImmutableOopMap {rdx=Oop [128]=Oop [192]=Oop }
+                      ;*iaload {reexecute=0 rethrow=0 return_oop=0}
+                      ; - fbla.game.GameRenderer::render@76 (line 94)
+  0x000002716015ffb0: ec3e 2907 
+
+  0x000002716015ffb4: ;   {internal_word}
+  0x000002716015ffb4: 49ba 5afb | 1560 7102 | 0000 4d89 | 9760 0400 
+
+  0x000002716015ffc4: ;   {runtime_call SafepointBlob}
+  0x000002716015ffc4: 00e9 b66b 
+
+  0x000002716015ffc8: ;   {runtime_call throw_null_pointer_exception Runtime1 stub}
+  0x000002716015ffc8: 1c07 e8d1 
+
+  0x000002716015ffcc: ; ImmutableOopMap {rdx=Oop [128]=Oop }
+                      ;*getfield messageBoxDisplayed {reexecute=1 rethrow=0 return_oop=0}
+                      ; - (reexecute) fbla.game.GameRenderer::render@147 (line 104)
+                      ;   {internal_word}
+  0x000002716015ffcc: 3e29 0749 | ba4d fc15 | 6071 0200 | 004d 8997 | 6004 0000 
+
+  0x000002716015ffe0: ;   {runtime_call SafepointBlob}
+  0x000002716015ffe0: e99b 6b1c 
+
+  0x000002716015ffe4: ;   {internal_word}
+  0x000002716015ffe4: 0749 ba64 | fd15 6071 | 0200 004d | 8997 6004 
+
+  0x000002716015fff4: ;   {runtime_call SafepointBlob}
+  0x000002716015fff4: 0000 e985 
+
+  0x000002716015fff8: ;   {internal_word}
+  0x000002716015fff8: 6b1c 0749 | bacd fd15 | 6071 0200 | 004d 8997 | 6004 0000 
+
+  0x000002716016000c: ;   {runtime_call SafepointBlob}
+  0x000002716016000c: e96f 6b1c 
+
+  0x0000027160160010: ;   {internal_word}
+  0x0000027160160010: 0749 bae4 | fe15 6071 | 0200 004d | 8997 6004 
+
+  0x0000027160160020: ;   {runtime_call SafepointBlob}
+  0x0000027160160020: 0000 e959 | 6b1c 0749 | 8b87 f804 | 0000 49c7 | 87f8 0400 | 0000 0000 | 0049 c787 | 0005 0000 
+  0x0000027160160040: 0000 0000 | 4881 c4a0 | 0000 005d 
+
+  0x000002716016004c: ;   {runtime_call unwind_exception Runtime1 stub}
+  0x000002716016004c: e92f 2329 | 07f4 f4f4 | f4f4 f4f4 
+[Stub Code]
+  0x0000027160160058: ;   {no_reloc}
+  0x0000027160160058: 0f1f 4400 
+
+  0x000002716016005c: ;   {static_stub}
+  0x000002716016005c: 0048 bb00 | 0000 0000 
+
+  0x0000027160160064: ;   {runtime_call}
+  0x0000027160160064: 0000 00e9 | fbff ffff 
+
+  0x000002716016006c: ;   {static_stub}
+  0x000002716016006c: 9048 bb00 | 0000 0000 
+
+  0x0000027160160074: ;   {runtime_call}
+  0x0000027160160074: 0000 00e9 | fbff ffff 
+
+  0x000002716016007c: ;   {static_stub}
+  0x000002716016007c: 9048 bb00 | 0000 0000 
+
+  0x0000027160160084: ;   {runtime_call}
+  0x0000027160160084: 0000 00e9 | fbff ffff 
+
+  0x000002716016008c: ;   {static_stub}
+  0x000002716016008c: 9048 bb00 | 0000 0000 
+
+  0x0000027160160094: ;   {runtime_call}
+  0x0000027160160094: 0000 00e9 | fbff ffff 
+
+  0x000002716016009c: ;   {static_stub}
+  0x000002716016009c: 48bb 0000 | 0000 0000 
+
+  0x00000271601600a4: ;   {runtime_call}
+  0x00000271601600a4: 0000 e9fb 
+
+  0x00000271601600a8: ;   {static_stub}
+  0x00000271601600a8: ffff ff48 | bb00 0000 | 0000 0000 
+
+  0x00000271601600b4: ;   {runtime_call}
+  0x00000271601600b4: 00e9 fbff 
+
+  0x00000271601600b8: ;   {static_stub}
+  0x00000271601600b8: ffff 48bb | 0000 0000 | 0000 0000 
+
+  0x00000271601600c4: ;   {runtime_call}
+  0x00000271601600c4: e9fb ffff 
+
+  0x00000271601600c8: ;   {static_stub}
+  0x00000271601600c8: ff48 bb00 | 0000 0000 
+
+  0x00000271601600d0: ;   {runtime_call}
+  0x00000271601600d0: 0000 00e9 | fbff ffff 
+
+  0x00000271601600d8: ;   {static_stub}
+  0x00000271601600d8: 48bb 0000 | 0000 0000 
+
+  0x00000271601600e0: ;   {runtime_call}
+  0x00000271601600e0: 0000 e9fb 
+
+  0x00000271601600e4: ;   {static_stub}
+  0x00000271601600e4: ffff ff48 | bb00 0000 | 0000 0000 
+
+  0x00000271601600f0: ;   {runtime_call}
+  0x00000271601600f0: 00e9 fbff 
+
+  0x00000271601600f4: ;   {static_stub}
+  0x00000271601600f4: ffff 48bb | 0000 0000 | 0000 0000 
+
+  0x0000027160160100: ;   {runtime_call}
+  0x0000027160160100: e9fb ffff 
+
+  0x0000027160160104: ;   {static_stub}
+  0x0000027160160104: ff48 bbf8 | a07c 4171 
+
+  0x000002716016010c: ;   {runtime_call I2C/C2I adapters}
+  0x000002716016010c: 0200 00e9 | fdcf 1d07 
+
+  0x0000027160160114: ;   {static_stub}
+  0x0000027160160114: 48bb 18a3 | 7c41 7102 
+
+  0x000002716016011c: ;   {runtime_call I2C/C2I adapters}
+  0x000002716016011c: 0000 e9e8 
+
+  0x0000027160160120: ;   {static_stub}
+  0x0000027160160120: d319 0748 | bb00 0000 | 0000 0000 
+
+  0x000002716016012c: ;   {runtime_call}
+  0x000002716016012c: 00e9 fbff 
+
+  0x0000027160160130: ;   {static_stub}
+  0x0000027160160130: ffff 48bb | 0000 0000 | 0000 0000 
+
+  0x000002716016013c: ;   {runtime_call}
+  0x000002716016013c: e9fb ffff 
+
+  0x0000027160160140: ;   {runtime_call handle_exception_from_callee Runtime1 stub}
+  0x0000027160160140: ffe8 3a7b 
+
+  0x0000027160160144: ;   {external_word}
+  0x0000027160160144: 2907 48b9 | b048 5cb7 | fe7f 0000 | 4883 e4f0 
+
+  0x0000027160160154: ;   {runtime_call}
+  0x0000027160160154: 48b8 202f | 24b7 fe7f | 0000 ffd0 
+
+  0x0000027160160160: ;   {section_word}
+  0x0000027160160160: f449 ba61 | 0116 6071 | 0200 0041 
+
+  0x000002716016016c: ;   {runtime_call DeoptimizationBlob}
+  0x000002716016016c: 52e9 ae7e | 1c07 f4f4 | f4f4 f4f4 
+[/MachCode]
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x000002714557a0d0, length=15, elements={
+0x00000271579fb1c0, 0x000002717c497220, 0x000002717c49bf40, 0x000002717c49edd0,
+0x000002717c49fa80, 0x000002717c4a3a00, 0x000002717c4c6950, 0x000002717c4c7bb0,
+0x000002717c4d31c0, 0x000002717c623df0, 0x000002717c624b10, 0x000002717c624480,
+0x000002717c6251a0, 0x000002717c625830, 0x000002717c623760
+}
+
+Java Threads: ( => current thread )
+=>0x00000271579fb1c0 JavaThread "main"                              [_thread_in_native, id=40100, stack(0x000000d230a00000,0x000000d230b00000) (1024K)]
+  0x000002717c497220 JavaThread "Reference Handler"          daemon [_thread_blocked, id=25220, stack(0x000000d231200000,0x000000d231300000) (1024K)]
+  0x000002717c49bf40 JavaThread "Finalizer"                  daemon [_thread_blocked, id=47396, stack(0x000000d231300000,0x000000d231400000) (1024K)]
+  0x000002717c49edd0 JavaThread "Signal Dispatcher"          daemon [_thread_blocked, id=28808, stack(0x000000d231400000,0x000000d231500000) (1024K)]
+  0x000002717c49fa80 JavaThread "Attach Listener"            daemon [_thread_blocked, id=46444, stack(0x000000d231500000,0x000000d231600000) (1024K)]
+  0x000002717c4a3a00 JavaThread "Service Thread"             daemon [_thread_blocked, id=46860, stack(0x000000d231600000,0x000000d231700000) (1024K)]
+  0x000002717c4c6950 JavaThread "Monitor Deflation Thread"   daemon [_thread_blocked, id=39672, stack(0x000000d231700000,0x000000d231800000) (1024K)]
+  0x000002717c4c7bb0 JavaThread "C2 CompilerThread0"         daemon [_thread_blocked, id=10244, stack(0x000000d231800000,0x000000d231900000) (1024K)]
+  0x000002717c4d31c0 JavaThread "C1 CompilerThread0"         daemon [_thread_blocked, id=38104, stack(0x000000d231900000,0x000000d231a00000) (1024K)]
+  0x000002717c623df0 JavaThread "Notification Thread"        daemon [_thread_blocked, id=10228, stack(0x000000d231b00000,0x000000d231c00000) (1024K)]
+  0x000002717c624b10 JavaThread "Common-Cleaner"             daemon [_thread_blocked, id=46972, stack(0x000000d231c00000,0x000000d231d00000) (1024K)]
+  0x000002717c624480 JavaThread "Java2D Disposer"            daemon [_thread_blocked, id=7628, stack(0x000000d231f00000,0x000000d232000000) (1024K)]
+  0x000002717c6251a0 JavaThread "Java Sound Event Dispatcher" daemon [_thread_blocked, id=33612, stack(0x000000d232000000,0x000000d232100000) (1024K)]
+  0x000002717c625830 JavaThread "Direct Clip"                daemon [_thread_blocked, id=41288, stack(0x000000d233700000,0x000000d233800000) (1024K)]
+  0x000002717c623760 JavaThread "Direct Clip"                daemon [_thread_blocked, id=21324, stack(0x000000d233900000,0x000000d233a00000) (1024K)]
+Total: 15
+
+Other Threads:
+  0x00000271795616d0 VMThread "VM Thread"                           [id=28624, stack(0x000000d231100000,0x000000d231200000) (1024K)]
+  0x000002717954fa70 WatcherThread "VM Periodic Task Thread"        [id=6188, stack(0x000000d231000000,0x000000d231100000) (1024K)]
+  0x0000027157a9e2d0 WorkerThread "GC Thread#0"                     [id=44964, stack(0x000000d230b00000,0x000000d230c00000) (1024K)]
+  0x000002714571fff0 WorkerThread "GC Thread#1"                     [id=43216, stack(0x000000d232b00000,0x000000d232c00000) (1024K)]
+  0x0000027145720390 WorkerThread "GC Thread#2"                     [id=3452, stack(0x000000d232c00000,0x000000d232d00000) (1024K)]
+  0x0000027145557c10 WorkerThread "GC Thread#3"                     [id=38112, stack(0x000000d232d00000,0x000000d232e00000) (1024K)]
+  0x00000271455583c0 WorkerThread "GC Thread#4"                     [id=20216, stack(0x000000d232e00000,0x000000d232f00000) (1024K)]
+  0x0000027145558760 WorkerThread "GC Thread#5"                     [id=37708, stack(0x000000d232f00000,0x000000d233000000) (1024K)]
+  0x0000027145595320 WorkerThread "GC Thread#6"                     [id=5472, stack(0x000000d233000000,0x000000d233100000) (1024K)]
+  0x00000271455956c0 WorkerThread "GC Thread#7"                     [id=45372, stack(0x000000d233100000,0x000000d233200000) (1024K)]
+  0x0000027145595a60 WorkerThread "GC Thread#8"                     [id=33220, stack(0x000000d233200000,0x000000d233300000) (1024K)]
+  0x00000271457611c0 WorkerThread "GC Thread#9"                     [id=44648, stack(0x000000d233300000,0x000000d233400000) (1024K)]
+  0x00000271457606e0 WorkerThread "GC Thread#10"                    [id=40652, stack(0x000000d233400000,0x000000d233500000) (1024K)]
+  0x0000027145761900 WorkerThread "GC Thread#11"                    [id=25196, stack(0x000000d233500000,0x000000d233600000) (1024K)]
+  0x0000027179373f10 ConcurrentGCThread "G1 Main Marker"            [id=23612, stack(0x000000d230c00000,0x000000d230d00000) (1024K)]
+  0x0000027179374ac0 WorkerThread "G1 Conc#0"                       [id=47484, stack(0x000000d230d00000,0x000000d230e00000) (1024K)]
+  0x00000271794226c0 ConcurrentGCThread "G1 Refine#0"               [id=17228, stack(0x000000d230e00000,0x000000d230f00000) (1024K)]
+  0x0000027179423040 ConcurrentGCThread "G1 Service"                [id=37052, stack(0x000000d230f00000,0x000000d231000000) (1024K)]
+Total: 18
+
+Threads with active compile tasks:
+Total: 0
+
+VM state: not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap address: 0x000000060bc00000, size: 8004 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
+
+CDS archive(s) mapped at: [0x0000027100000000-0x0000027100c90000-0x0000027100c90000), size 13172736, SharedBaseAddress: 0x0000027100000000, ArchiveRelocationMode: 1.
+Compressed class space mapped at: 0x0000027101000000-0x0000027141000000, reserved size: 1073741824
+Narrow klass base: 0x0000027100000000, Narrow klass shift: 0, Narrow klass range: 0x100000000
+
+GC Precious Log:
+ CardTable entry size: 512
+ Card Set container configuration: InlinePtr #cards 4 size 8 Array Of Cards #cards 32 size 80 Howl #buckets 8 coarsen threshold 7372 Howl Bitmap #cards 1024 size 144 coarsen threshold 921 Card regions per heap region 1 cards per card region 8192
+ CPUs: 16 total, 16 available
+ Memory: 32000M
+ Large Page Support: Disabled
+ NUMA Support: Disabled
+ Compressed Oops: Enabled (Zero based)
+ Heap Region Size: 4M
+ Heap Min Capacity: 8M
+ Heap Initial Capacity: 504M
+ Heap Max Capacity: 8004M
+ Pre-touch: Disabled
+ Parallel Workers: 13
+ Concurrent Workers: 3
+ Concurrent Refinement Workers: 13
+ Periodic GC: Disabled
+
+Heap:
+ garbage-first heap   total 516096K, used 41911K [0x000000060bc00000, 0x0000000800000000)
+  region size 4096K, 9 young (36864K), 2 survivors (8192K)
+ Metaspace       used 9440K, committed 9728K, reserved 1114112K
+  class space    used 680K, committed 832K, reserved 1048576K
+
+Heap Regions: E=young(eden), S=young(survivor), O=old, HS=humongous(starts), HC=humongous(continues), CS=collection set, F=free, TAMS=top-at-mark-start, PB=parsable bottom
+|   0|0x000000060bc00000, 0x000000060bc00000, 0x000000060c000000|  0%| F|  |TAMS 0x000000060bc00000| PB 0x000000060bc00000| Untracked 
+|   1|0x000000060c000000, 0x000000060c400000, 0x000000060c400000|100%|HS|  |TAMS 0x000000060c000000| PB 0x000000060c000000| Complete 
+|   2|0x000000060c400000, 0x000000060c800000, 0x000000060c800000|100%|HS|  |TAMS 0x000000060c400000| PB 0x000000060c400000| Complete 
+|   3|0x000000060c800000, 0x000000060c800000, 0x000000060cc00000|  0%| F|  |TAMS 0x000000060c800000| PB 0x000000060c800000| Untracked 
+|   4|0x000000060cc00000, 0x000000060cc00000, 0x000000060d000000|  0%| F|  |TAMS 0x000000060cc00000| PB 0x000000060cc00000| Untracked 
+|   5|0x000000060d000000, 0x000000060d000000, 0x000000060d400000|  0%| F|  |TAMS 0x000000060d000000| PB 0x000000060d000000| Untracked 
+|   6|0x000000060d400000, 0x000000060d800000, 0x000000060d800000|100%|HS|  |TAMS 0x000000060d400000| PB 0x000000060d400000| Complete 
+|   7|0x000000060d800000, 0x000000060d800000, 0x000000060dc00000|  0%| F|  |TAMS 0x000000060d800000| PB 0x000000060d800000| Untracked 
+|   8|0x000000060dc00000, 0x000000060dc00000, 0x000000060e000000|  0%| F|  |TAMS 0x000000060dc00000| PB 0x000000060dc00000| Untracked 
+|   9|0x000000060e000000, 0x000000060e000000, 0x000000060e400000|  0%| F|  |TAMS 0x000000060e000000| PB 0x000000060e000000| Untracked 
+|  10|0x000000060e400000, 0x000000060e400000, 0x000000060e800000|  0%| F|  |TAMS 0x000000060e400000| PB 0x000000060e400000| Untracked 
+|  11|0x000000060e800000, 0x000000060e800000, 0x000000060ec00000|  0%| F|  |TAMS 0x000000060e800000| PB 0x000000060e800000| Untracked 
+|  12|0x000000060ec00000, 0x000000060ec00000, 0x000000060f000000|  0%| F|  |TAMS 0x000000060ec00000| PB 0x000000060ec00000| Untracked 
+|  13|0x000000060f000000, 0x000000060f000000, 0x000000060f400000|  0%| F|  |TAMS 0x000000060f000000| PB 0x000000060f000000| Untracked 
+|  14|0x000000060f400000, 0x000000060f400000, 0x000000060f800000|  0%| F|  |TAMS 0x000000060f400000| PB 0x000000060f400000| Untracked 
+|  15|0x000000060f800000, 0x000000060f800000, 0x000000060fc00000|  0%| F|  |TAMS 0x000000060f800000| PB 0x000000060f800000| Untracked 
+|  16|0x000000060fc00000, 0x000000060fc00000, 0x0000000610000000|  0%| F|  |TAMS 0x000000060fc00000| PB 0x000000060fc00000| Untracked 
+|  17|0x0000000610000000, 0x0000000610000000, 0x0000000610400000|  0%| F|  |TAMS 0x0000000610000000| PB 0x0000000610000000| Untracked 
+|  18|0x0000000610400000, 0x0000000610400000, 0x0000000610800000|  0%| F|  |TAMS 0x0000000610400000| PB 0x0000000610400000| Untracked 
+|  19|0x0000000610800000, 0x0000000610800000, 0x0000000610c00000|  0%| F|  |TAMS 0x0000000610800000| PB 0x0000000610800000| Untracked 
+|  20|0x0000000610c00000, 0x0000000610c00000, 0x0000000611000000|  0%| F|  |TAMS 0x0000000610c00000| PB 0x0000000610c00000| Untracked 
+|  21|0x0000000611000000, 0x0000000611000000, 0x0000000611400000|  0%| F|  |TAMS 0x0000000611000000| PB 0x0000000611000000| Untracked 
+|  22|0x0000000611400000, 0x0000000611400000, 0x0000000611800000|  0%| F|  |TAMS 0x0000000611400000| PB 0x0000000611400000| Untracked 
+|  23|0x0000000611800000, 0x0000000611800000, 0x0000000611c00000|  0%| F|  |TAMS 0x0000000611800000| PB 0x0000000611800000| Untracked 
+|  24|0x0000000611c00000, 0x0000000611c00000, 0x0000000612000000|  0%| F|  |TAMS 0x0000000611c00000| PB 0x0000000611c00000| Untracked 
+|  25|0x0000000612000000, 0x0000000612000000, 0x0000000612400000|  0%| F|  |TAMS 0x0000000612000000| PB 0x0000000612000000| Untracked 
+|  26|0x0000000612400000, 0x0000000612400000, 0x0000000612800000|  0%| F|  |TAMS 0x0000000612400000| PB 0x0000000612400000| Untracked 
+|  27|0x0000000612800000, 0x0000000612800000, 0x0000000612c00000|  0%| F|  |TAMS 0x0000000612800000| PB 0x0000000612800000| Untracked 
+|  28|0x0000000612c00000, 0x0000000612c00000, 0x0000000613000000|  0%| F|  |TAMS 0x0000000612c00000| PB 0x0000000612c00000| Untracked 
+|  29|0x0000000613000000, 0x0000000613000000, 0x0000000613400000|  0%| F|  |TAMS 0x0000000613000000| PB 0x0000000613000000| Untracked 
+|  30|0x0000000613400000, 0x0000000613400000, 0x0000000613800000|  0%| F|  |TAMS 0x0000000613400000| PB 0x0000000613400000| Untracked 
+|  31|0x0000000613800000, 0x0000000613800000, 0x0000000613c00000|  0%| F|  |TAMS 0x0000000613800000| PB 0x0000000613800000| Untracked 
+|  32|0x0000000613c00000, 0x0000000613c00000, 0x0000000614000000|  0%| F|  |TAMS 0x0000000613c00000| PB 0x0000000613c00000| Untracked 
+|  33|0x0000000614000000, 0x0000000614000000, 0x0000000614400000|  0%| F|  |TAMS 0x0000000614000000| PB 0x0000000614000000| Untracked 
+|  34|0x0000000614400000, 0x0000000614400000, 0x0000000614800000|  0%| F|  |TAMS 0x0000000614400000| PB 0x0000000614400000| Untracked 
+|  35|0x0000000614800000, 0x0000000614800000, 0x0000000614c00000|  0%| F|  |TAMS 0x0000000614800000| PB 0x0000000614800000| Untracked 
+|  36|0x0000000614c00000, 0x0000000614c00000, 0x0000000615000000|  0%| F|  |TAMS 0x0000000614c00000| PB 0x0000000614c00000| Untracked 
+|  37|0x0000000615000000, 0x0000000615000000, 0x0000000615400000|  0%| F|  |TAMS 0x0000000615000000| PB 0x0000000615000000| Untracked 
+|  38|0x0000000615400000, 0x0000000615400000, 0x0000000615800000|  0%| F|  |TAMS 0x0000000615400000| PB 0x0000000615400000| Untracked 
+|  39|0x0000000615800000, 0x0000000615800000, 0x0000000615c00000|  0%| F|  |TAMS 0x0000000615800000| PB 0x0000000615800000| Untracked 
+|  40|0x0000000615c00000, 0x0000000615c00000, 0x0000000616000000|  0%| F|  |TAMS 0x0000000615c00000| PB 0x0000000615c00000| Untracked 
+|  41|0x0000000616000000, 0x0000000616000000, 0x0000000616400000|  0%| F|  |TAMS 0x0000000616000000| PB 0x0000000616000000| Untracked 
+|  42|0x0000000616400000, 0x0000000616400000, 0x0000000616800000|  0%| F|  |TAMS 0x0000000616400000| PB 0x0000000616400000| Untracked 
+|  43|0x0000000616800000, 0x0000000616800000, 0x0000000616c00000|  0%| F|  |TAMS 0x0000000616800000| PB 0x0000000616800000| Untracked 
+|  44|0x0000000616c00000, 0x0000000616c00000, 0x0000000617000000|  0%| F|  |TAMS 0x0000000616c00000| PB 0x0000000616c00000| Untracked 
+|  45|0x0000000617000000, 0x0000000617000000, 0x0000000617400000|  0%| F|  |TAMS 0x0000000617000000| PB 0x0000000617000000| Untracked 
+|  46|0x0000000617400000, 0x0000000617400000, 0x0000000617800000|  0%| F|  |TAMS 0x0000000617400000| PB 0x0000000617400000| Untracked 
+|  47|0x0000000617800000, 0x0000000617800000, 0x0000000617c00000|  0%| F|  |TAMS 0x0000000617800000| PB 0x0000000617800000| Untracked 
+|  48|0x0000000617c00000, 0x0000000617c00000, 0x0000000618000000|  0%| F|  |TAMS 0x0000000617c00000| PB 0x0000000617c00000| Untracked 
+|  49|0x0000000618000000, 0x0000000618000000, 0x0000000618400000|  0%| F|  |TAMS 0x0000000618000000| PB 0x0000000618000000| Untracked 
+|  50|0x0000000618400000, 0x0000000618400000, 0x0000000618800000|  0%| F|  |TAMS 0x0000000618400000| PB 0x0000000618400000| Untracked 
+|  51|0x0000000618800000, 0x0000000618800000, 0x0000000618c00000|  0%| F|  |TAMS 0x0000000618800000| PB 0x0000000618800000| Untracked 
+|  52|0x0000000618c00000, 0x0000000618c00000, 0x0000000619000000|  0%| F|  |TAMS 0x0000000618c00000| PB 0x0000000618c00000| Untracked 
+|  53|0x0000000619000000, 0x0000000619000000, 0x0000000619400000|  0%| F|  |TAMS 0x0000000619000000| PB 0x0000000619000000| Untracked 
+|  54|0x0000000619400000, 0x0000000619400000, 0x0000000619800000|  0%| F|  |TAMS 0x0000000619400000| PB 0x0000000619400000| Untracked 
+|  55|0x0000000619800000, 0x0000000619800000, 0x0000000619c00000|  0%| F|  |TAMS 0x0000000619800000| PB 0x0000000619800000| Untracked 
+|  56|0x0000000619c00000, 0x0000000619c00000, 0x000000061a000000|  0%| F|  |TAMS 0x0000000619c00000| PB 0x0000000619c00000| Untracked 
+|  57|0x000000061a000000, 0x000000061a000000, 0x000000061a400000|  0%| F|  |TAMS 0x000000061a000000| PB 0x000000061a000000| Untracked 
+|  58|0x000000061a400000, 0x000000061a400000, 0x000000061a800000|  0%| F|  |TAMS 0x000000061a400000| PB 0x000000061a400000| Untracked 
+|  59|0x000000061a800000, 0x000000061a800000, 0x000000061ac00000|  0%| F|  |TAMS 0x000000061a800000| PB 0x000000061a800000| Untracked 
+|  60|0x000000061ac00000, 0x000000061ac00000, 0x000000061b000000|  0%| F|  |TAMS 0x000000061ac00000| PB 0x000000061ac00000| Untracked 
+|  61|0x000000061b000000, 0x000000061b000000, 0x000000061b400000|  0%| F|  |TAMS 0x000000061b000000| PB 0x000000061b000000| Untracked 
+|  62|0x000000061b400000, 0x000000061b400000, 0x000000061b800000|  0%| F|  |TAMS 0x000000061b400000| PB 0x000000061b400000| Untracked 
+|  63|0x000000061b800000, 0x000000061b800000, 0x000000061bc00000|  0%| F|  |TAMS 0x000000061b800000| PB 0x000000061b800000| Untracked 
+|  64|0x000000061bc00000, 0x000000061bc00000, 0x000000061c000000|  0%| F|  |TAMS 0x000000061bc00000| PB 0x000000061bc00000| Untracked 
+|  65|0x000000061c000000, 0x000000061c000000, 0x000000061c400000|  0%| F|  |TAMS 0x000000061c000000| PB 0x000000061c000000| Untracked 
+|  66|0x000000061c400000, 0x000000061c400000, 0x000000061c800000|  0%| F|  |TAMS 0x000000061c400000| PB 0x000000061c400000| Untracked 
+|  67|0x000000061c800000, 0x000000061c800000, 0x000000061cc00000|  0%| F|  |TAMS 0x000000061c800000| PB 0x000000061c800000| Untracked 
+|  68|0x000000061cc00000, 0x000000061cc00000, 0x000000061d000000|  0%| F|  |TAMS 0x000000061cc00000| PB 0x000000061cc00000| Untracked 
+|  69|0x000000061d000000, 0x000000061d000000, 0x000000061d400000|  0%| F|  |TAMS 0x000000061d000000| PB 0x000000061d000000| Untracked 
+|  70|0x000000061d400000, 0x000000061d400000, 0x000000061d800000|  0%| F|  |TAMS 0x000000061d400000| PB 0x000000061d400000| Untracked 
+|  71|0x000000061d800000, 0x000000061d800000, 0x000000061dc00000|  0%| F|  |TAMS 0x000000061d800000| PB 0x000000061d800000| Untracked 
+|  72|0x000000061dc00000, 0x000000061dc00000, 0x000000061e000000|  0%| F|  |TAMS 0x000000061dc00000| PB 0x000000061dc00000| Untracked 
+|  73|0x000000061e000000, 0x000000061e000000, 0x000000061e400000|  0%| F|  |TAMS 0x000000061e000000| PB 0x000000061e000000| Untracked 
+|  74|0x000000061e400000, 0x000000061e400000, 0x000000061e800000|  0%| F|  |TAMS 0x000000061e400000| PB 0x000000061e400000| Untracked 
+|  75|0x000000061e800000, 0x000000061e800000, 0x000000061ec00000|  0%| F|  |TAMS 0x000000061e800000| PB 0x000000061e800000| Untracked 
+|  76|0x000000061ec00000, 0x000000061ec00000, 0x000000061f000000|  0%| F|  |TAMS 0x000000061ec00000| PB 0x000000061ec00000| Untracked 
+|  77|0x000000061f000000, 0x000000061f000000, 0x000000061f400000|  0%| F|  |TAMS 0x000000061f000000| PB 0x000000061f000000| Untracked 
+|  78|0x000000061f400000, 0x000000061f400000, 0x000000061f800000|  0%| F|  |TAMS 0x000000061f400000| PB 0x000000061f400000| Untracked 
+|  79|0x000000061f800000, 0x000000061f800000, 0x000000061fc00000|  0%| F|  |TAMS 0x000000061f800000| PB 0x000000061f800000| Untracked 
+|  80|0x000000061fc00000, 0x000000061fc00000, 0x0000000620000000|  0%| F|  |TAMS 0x000000061fc00000| PB 0x000000061fc00000| Untracked 
+|  81|0x0000000620000000, 0x0000000620000000, 0x0000000620400000|  0%| F|  |TAMS 0x0000000620000000| PB 0x0000000620000000| Untracked 
+|  82|0x0000000620400000, 0x0000000620400000, 0x0000000620800000|  0%| F|  |TAMS 0x0000000620400000| PB 0x0000000620400000| Untracked 
+|  83|0x0000000620800000, 0x0000000620800000, 0x0000000620c00000|  0%| F|  |TAMS 0x0000000620800000| PB 0x0000000620800000| Untracked 
+|  84|0x0000000620c00000, 0x0000000620c00000, 0x0000000621000000|  0%| F|  |TAMS 0x0000000620c00000| PB 0x0000000620c00000| Untracked 
+|  85|0x0000000621000000, 0x0000000621000000, 0x0000000621400000|  0%| F|  |TAMS 0x0000000621000000| PB 0x0000000621000000| Untracked 
+|  86|0x0000000621400000, 0x0000000621400000, 0x0000000621800000|  0%| F|  |TAMS 0x0000000621400000| PB 0x0000000621400000| Untracked 
+|  87|0x0000000621800000, 0x0000000621800000, 0x0000000621c00000|  0%| F|  |TAMS 0x0000000621800000| PB 0x0000000621800000| Untracked 
+|  88|0x0000000621c00000, 0x0000000621c00000, 0x0000000622000000|  0%| F|  |TAMS 0x0000000621c00000| PB 0x0000000621c00000| Untracked 
+|  89|0x0000000622000000, 0x0000000622000000, 0x0000000622400000|  0%| F|  |TAMS 0x0000000622000000| PB 0x0000000622000000| Untracked 
+|  90|0x0000000622400000, 0x0000000622400000, 0x0000000622800000|  0%| F|  |TAMS 0x0000000622400000| PB 0x0000000622400000| Untracked 
+|  91|0x0000000622800000, 0x0000000622800000, 0x0000000622c00000|  0%| F|  |TAMS 0x0000000622800000| PB 0x0000000622800000| Untracked 
+|  92|0x0000000622c00000, 0x0000000622c00000, 0x0000000623000000|  0%| F|  |TAMS 0x0000000622c00000| PB 0x0000000622c00000| Untracked 
+|  93|0x0000000623000000, 0x0000000623000000, 0x0000000623400000|  0%| F|  |TAMS 0x0000000623000000| PB 0x0000000623000000| Untracked 
+|  94|0x0000000623400000, 0x0000000623400000, 0x0000000623800000|  0%| F|  |TAMS 0x0000000623400000| PB 0x0000000623400000| Untracked 
+|  95|0x0000000623800000, 0x0000000623800000, 0x0000000623c00000|  0%| F|  |TAMS 0x0000000623800000| PB 0x0000000623800000| Untracked 
+|  96|0x0000000623c00000, 0x0000000623c00000, 0x0000000624000000|  0%| F|  |TAMS 0x0000000623c00000| PB 0x0000000623c00000| Untracked 
+|  97|0x0000000624000000, 0x0000000624000000, 0x0000000624400000|  0%| F|  |TAMS 0x0000000624000000| PB 0x0000000624000000| Untracked 
+|  98|0x0000000624400000, 0x0000000624400000, 0x0000000624800000|  0%| F|  |TAMS 0x0000000624400000| PB 0x0000000624400000| Untracked 
+|  99|0x0000000624800000, 0x0000000624800000, 0x0000000624c00000|  0%| F|  |TAMS 0x0000000624800000| PB 0x0000000624800000| Untracked 
+| 100|0x0000000624c00000, 0x0000000624c00000, 0x0000000625000000|  0%| F|  |TAMS 0x0000000624c00000| PB 0x0000000624c00000| Untracked 
+| 101|0x0000000625000000, 0x0000000625000000, 0x0000000625400000|  0%| F|  |TAMS 0x0000000625000000| PB 0x0000000625000000| Untracked 
+| 102|0x0000000625400000, 0x0000000625400000, 0x0000000625800000|  0%| F|  |TAMS 0x0000000625400000| PB 0x0000000625400000| Untracked 
+| 103|0x0000000625800000, 0x0000000625800000, 0x0000000625c00000|  0%| F|  |TAMS 0x0000000625800000| PB 0x0000000625800000| Untracked 
+| 104|0x0000000625c00000, 0x0000000625c00000, 0x0000000626000000|  0%| F|  |TAMS 0x0000000625c00000| PB 0x0000000625c00000| Untracked 
+| 105|0x0000000626000000, 0x0000000626000000, 0x0000000626400000|  0%| F|  |TAMS 0x0000000626000000| PB 0x0000000626000000| Untracked 
+| 106|0x0000000626400000, 0x0000000626400000, 0x0000000626800000|  0%| F|  |TAMS 0x0000000626400000| PB 0x0000000626400000| Untracked 
+| 107|0x0000000626800000, 0x0000000626800000, 0x0000000626c00000|  0%| F|  |TAMS 0x0000000626800000| PB 0x0000000626800000| Untracked 
+| 108|0x0000000626c00000, 0x0000000626c00000, 0x0000000627000000|  0%| F|  |TAMS 0x0000000626c00000| PB 0x0000000626c00000| Untracked 
+| 109|0x0000000627000000, 0x0000000627000000, 0x0000000627400000|  0%| F|  |TAMS 0x0000000627000000| PB 0x0000000627000000| Untracked 
+| 110|0x0000000627400000, 0x0000000627400000, 0x0000000627800000|  0%| F|  |TAMS 0x0000000627400000| PB 0x0000000627400000| Untracked 
+| 111|0x0000000627800000, 0x0000000627800000, 0x0000000627c00000|  0%| F|  |TAMS 0x0000000627800000| PB 0x0000000627800000| Untracked 
+| 112|0x0000000627c00000, 0x0000000627c00000, 0x0000000628000000|  0%| F|  |TAMS 0x0000000627c00000| PB 0x0000000627c00000| Untracked 
+| 113|0x0000000628000000, 0x0000000628000000, 0x0000000628400000|  0%| F|  |TAMS 0x0000000628000000| PB 0x0000000628000000| Untracked 
+| 114|0x0000000628400000, 0x00000006284edfd0, 0x0000000628800000| 23%| S|CS|TAMS 0x0000000628400000| PB 0x0000000628400000| Complete 
+| 115|0x0000000628800000, 0x0000000628c00000, 0x0000000628c00000|100%| S|CS|TAMS 0x0000000628800000| PB 0x0000000628800000| Complete 
+| 116|0x0000000628c00000, 0x0000000628c00000, 0x0000000629000000|  0%| F|  |TAMS 0x0000000628c00000| PB 0x0000000628c00000| Untracked 
+| 117|0x0000000629000000, 0x0000000629000000, 0x0000000629400000|  0%| F|  |TAMS 0x0000000629000000| PB 0x0000000629000000| Untracked 
+| 118|0x0000000629400000, 0x0000000629400000, 0x0000000629800000|  0%| F|  |TAMS 0x0000000629400000| PB 0x0000000629400000| Untracked 
+| 119|0x0000000629800000, 0x0000000629b810d0, 0x0000000629c00000| 87%| E|  |TAMS 0x0000000629800000| PB 0x0000000629800000| Complete 
+| 120|0x0000000629c00000, 0x000000062a000000, 0x000000062a000000|100%| E|CS|TAMS 0x0000000629c00000| PB 0x0000000629c00000| Complete 
+| 121|0x000000062a000000, 0x000000062a400000, 0x000000062a400000|100%| E|CS|TAMS 0x000000062a000000| PB 0x000000062a000000| Complete 
+| 122|0x000000062a400000, 0x000000062a800000, 0x000000062a800000|100%| E|CS|TAMS 0x000000062a400000| PB 0x000000062a400000| Complete 
+| 123|0x000000062a800000, 0x000000062ac00000, 0x000000062ac00000|100%| E|CS|TAMS 0x000000062a800000| PB 0x000000062a800000| Complete 
+| 124|0x000000062ac00000, 0x000000062b000000, 0x000000062b000000|100%| E|CS|TAMS 0x000000062ac00000| PB 0x000000062ac00000| Complete 
+| 125|0x000000062b000000, 0x000000062b400000, 0x000000062b400000|100%| E|CS|TAMS 0x000000062b000000| PB 0x000000062b000000| Complete 
+
+Card table byte_map: [0x00000271706b0000,0x0000027171660000] _byte_map_base: 0x000002716d652000
+
+Marking Bits: (CMBitMap*) 0x0000027157a9e8d0
+ Bits: [0x0000027171660000, 0x0000027179370000)
+
+Polling page: 0x0000027155970000
+
+Metaspace:
+
+Usage:
+  Non-class:      8.55 MB used.
+      Class:    680.90 KB used.
+       Both:      9.22 MB used.
+
+Virtual space:
+  Non-class space:       64.00 MB reserved,       8.69 MB ( 14%) committed,  1 nodes.
+      Class space:        1.00 GB reserved,     832.00 KB ( <1%) committed,  1 nodes.
+             Both:        1.06 GB reserved,       9.50 MB ( <1%) committed. 
+
+Chunk freelists:
+   Non-Class:  6.64 MB
+       Class:  15.15 MB
+        Both:  21.79 MB
+
+MaxMetaspaceSize: unlimited
+CompressedClassSpaceSize: 1.00 GB
+Initial GC threshold: 21.00 MB
+Current GC threshold: 21.00 MB
+CDS: on
+ - commit_granule_bytes: 65536.
+ - commit_granule_words: 8192.
+ - virtual_space_node_default_size: 8388608.
+ - enlarge_chunks_in_place: 1.
+ - use_allocation_guard: 0.
+
+
+Internal statistics:
+
+num_allocs_failed_limit: 0.
+num_arena_births: 250.
+num_arena_deaths: 0.
+num_vsnodes_births: 2.
+num_vsnodes_deaths: 0.
+num_space_committed: 150.
+num_space_uncommitted: 0.
+num_chunks_returned_to_freelist: 0.
+num_chunks_taken_from_freelist: 485.
+num_chunk_merges: 0.
+num_chunk_splits: 313.
+num_chunks_enlarged: 179.
+num_inconsistent_stats: 0.
+
+CodeHeap 'non-profiled nmethods': size=119168Kb used=1048Kb max_used=1048Kb free=118119Kb
+ bounds [0x0000027167a20000, 0x0000027167c90000, 0x000002716ee80000]
+CodeHeap 'profiled nmethods': size=119104Kb used=3859Kb max_used=3859Kb free=115244Kb
+ bounds [0x000002715fe80000, 0x0000027160250000, 0x00000271672d0000]
+CodeHeap 'non-nmethods': size=7488Kb used=2859Kb max_used=4508Kb free=4628Kb
+ bounds [0x00000271672d0000, 0x0000027167740000, 0x0000027167a20000]
+ total_blobs=3603 nmethods=2240 adapters=1268
+ compilation: enabled
+              stopped_count=0, restarted_count=0
+ full_count=0
+
+Compilation events (20 events):
+Event: 11.011 Thread 0x000002717c4d31c0 2227       1       javax.sound.sampled.AudioFormat::getChannels (5 bytes)
+Event: 11.012 Thread 0x000002717c4d31c0 nmethod 2227 0x0000027167b22910 code [0x0000027167b22aa0, 0x0000027167b22b68]
+Event: 11.062 Thread 0x000002717c4d31c0 2228       1       fbla.game.Entity::getName (5 bytes)
+Event: 11.062 Thread 0x000002717c4d31c0 nmethod 2228 0x0000027167b23410 code [0x0000027167b235a0, 0x0000027167b23670]
+Event: 11.242 Thread 0x000002717c4c7bb0 2231       4       java.lang.ThreadLocal::get (35 bytes)
+Event: 11.244 Thread 0x000002717c4c7bb0 nmethod 2231 0x0000027167b23710 code [0x0000027167b238c0, 0x0000027167b23a78]
+Event: 11.326 Thread 0x000002717c4d31c0 2232       3       java.util.Random::next (47 bytes)
+Event: 11.326 Thread 0x000002717c4d31c0 nmethod 2232 0x0000027160242110 code [0x00000271602422c0, 0x0000027160242538]
+Event: 11.444 Thread 0x000002717c4c7bb0 2233       4       fbla.game.GameRenderer::draw2D (134 bytes)
+Event: 11.451 Thread 0x000002717c4c7bb0 nmethod 2233 0x0000027167b23c90 code [0x0000027167b23f00, 0x0000027167b24910]
+Event: 11.506 Thread 0x000002717c4d31c0 2234   !   3       fbla.game.GameRenderer::renderMessageBox (242 bytes)
+Event: 11.507 Thread 0x000002717c4d31c0 nmethod 2234 0x0000027160242690 code [0x0000027160242ac0, 0x0000027160243e28]
+Event: 11.646 Thread 0x000002717c4c7bb0 2236       4       java.util.ArrayList::iterator (9 bytes)
+Event: 11.647 Thread 0x000002717c4c7bb0 nmethod 2236 0x0000027167b25590 code [0x0000027167b25720, 0x0000027167b25828]
+Event: 11.995 Thread 0x000002717c4d31c0 2238       3       java.util.Properties::getProperty (50 bytes)
+Event: 11.996 Thread 0x000002717c4d31c0 nmethod 2238 0x0000027160244710 code [0x0000027160244900, 0x0000027160244e08]
+Event: 11.996 Thread 0x000002717c4d31c0 2239       1       javax.sound.sampled.AudioFormat::getSampleSizeInBits (5 bytes)
+Event: 11.996 Thread 0x000002717c4d31c0 nmethod 2239 0x0000027167b25d10 code [0x0000027167b25ea0, 0x0000027167b25f68]
+Event: 11.996 Thread 0x000002717c4d31c0 2240       1       javax.sound.sampled.AudioFormat::getFrameSize (5 bytes)
+Event: 11.996 Thread 0x000002717c4d31c0 nmethod 2240 0x0000027167b26010 code [0x0000027167b261a0, 0x0000027167b26268]
+
+GC Heap History (4 events):
+Event: 0.745 GC heap before
+{Heap before GC invocations=0 (full 0):
+ garbage-first heap   total 516096K, used 36864K [0x000000060bc00000, 0x0000000800000000)
+  region size 4096K, 6 young (24576K), 0 survivors (0K)
+ Metaspace       used 6302K, committed 6528K, reserved 1114112K
+  class space    used 518K, committed 576K, reserved 1048576K
+}
+Event: 0.747 GC heap after
+{Heap after GC invocations=1 (full 0):
+ garbage-first heap   total 516096K, used 15839K [0x000000060bc00000, 0x0000000800000000)
+  region size 4096K, 1 young (4096K), 1 survivors (4096K)
+ Metaspace       used 6302K, committed 6528K, reserved 1114112K
+  class space    used 518K, committed 576K, reserved 1048576K
+}
+Event: 4.517 GC heap before
+{Heap before GC invocations=1 (full 0):
+ garbage-first heap   total 516096K, used 73183K [0x000000060bc00000, 0x0000000800000000)
+  region size 4096K, 10 young (40960K), 1 survivors (4096K)
+ Metaspace       used 8957K, committed 9216K, reserved 1114112K
+  class space    used 617K, committed 768K, reserved 1048576K
+}
+Event: 4.518 GC heap after
+{Heap after GC invocations=2 (full 0):
+ garbage-first heap   total 516096K, used 17335K [0x000000060bc00000, 0x0000000800000000)
+  region size 4096K, 2 young (8192K), 2 survivors (8192K)
+ Metaspace       used 8957K, committed 9216K, reserved 1114112K
+  class space    used 617K, committed 768K, reserved 1048576K
+}
+
+Dll operation events (11 events):
+Event: 0.004 Loaded shared library C:\Program Files\Java\jdk-21\bin\java.dll
+Event: 0.022 Loaded shared library C:\Program Files\Java\jdk-21\bin\jsvml.dll
+Event: 0.055 Loaded shared library C:\Program Files\Java\jdk-21\bin\net.dll
+Event: 0.056 Loaded shared library C:\Program Files\Java\jdk-21\bin\nio.dll
+Event: 0.058 Loaded shared library C:\Program Files\Java\jdk-21\bin\zip.dll
+Event: 0.081 Loaded shared library C:\Program Files\Java\jdk-21\bin\jimage.dll
+Event: 0.167 Loaded shared library C:\Users\Bentley\AppData\Local\Temp\lwjgl_Bentley\3.3.6+1\x64\lwjgl.dll
+Event: 0.461 Loaded shared library C:\Users\Bentley\AppData\Local\Temp\lwjgl_Bentley\3.3.6+1\x64\lwjgl_opengl.dll
+Event: 0.644 Loaded shared library C:\Program Files\Java\jdk-21\bin\awt.dll
+Event: 0.871 Loaded shared library C:\Users\Bentley\AppData\Local\Temp\imgui-java-natives\1.90.0\imgui-java64.dll
+Event: 10.628 Loaded shared library C:\Program Files\Java\jdk-21\bin\jsound.dll
+
+Deoptimization events (20 events):
+Event: 4.619 Thread 0x00000271579fb1c0 DEOPT PACKING pc=0x0000027167a80714 sp=0x000000d230afef50
+Event: 4.619 Thread 0x00000271579fb1c0 DEOPT UNPACKING pc=0x0000027167327da2 sp=0x000000d230afee98 mode 2
+Event: 4.619 Thread 0x00000271579fb1c0 Uncommon trap: trap_request=0xffffff45 fr.pc=0x0000027167a84f18 relative=0x0000000000000298
+Event: 4.619 Thread 0x00000271579fb1c0 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000027167a84f18 method=java.awt.image.ComponentColorModel.getAlpha(Ljava/lang/Object;)I @ 4 c2
+Event: 4.619 Thread 0x00000271579fb1c0 DEOPT PACKING pc=0x0000027167a84f18 sp=0x000000d230aff040
+Event: 4.619 Thread 0x00000271579fb1c0 DEOPT UNPACKING pc=0x0000027167327da2 sp=0x000000d230afef40 mode 2
+Event: 4.620 Thread 0x00000271579fb1c0 Uncommon trap: trap_request=0xffffff45 fr.pc=0x0000027167af9634 relative=0x0000000000000f74
+Event: 4.620 Thread 0x00000271579fb1c0 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000027167af9634 method=java.awt.image.ComponentColorModel.getAlpha(Ljava/lang/Object;)I @ 4 c2
+Event: 4.620 Thread 0x00000271579fb1c0 DEOPT PACKING pc=0x0000027167af9634 sp=0x000000d230aff080
+Event: 4.620 Thread 0x00000271579fb1c0 DEOPT UNPACKING pc=0x0000027167327da2 sp=0x000000d230afef40 mode 2
+Event: 4.623 Thread 0x00000271579fb1c0 DEOPT PACKING pc=0x00000271602286e2 sp=0x000000d230aff130
+Event: 4.623 Thread 0x00000271579fb1c0 DEOPT UNPACKING pc=0x00000271673288e2 sp=0x000000d230afe640 mode 0
+Event: 10.623 Thread 0x000002717c625ec0 Uncommon trap: trap_request=0xffffff45 fr.pc=0x0000027167aee99c relative=0x0000000000003bfc
+Event: 10.623 Thread 0x000002717c625ec0 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000027167aee99c method=java.io.BufferedInputStream.fill()V @ 10 c2
+Event: 10.623 Thread 0x000002717c625ec0 DEOPT PACKING pc=0x0000027167aee99c sp=0x000000d231afef10
+Event: 10.623 Thread 0x000002717c625ec0 DEOPT UNPACKING pc=0x0000027167327da2 sp=0x000000d231afed68 mode 2
+Event: 11.011 Thread 0x000002717c625ec0 Uncommon trap: trap_request=0xffffff45 fr.pc=0x0000027167ac8f48 relative=0x0000000000001928
+Event: 11.011 Thread 0x000002717c625ec0 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000027167ac8f48 method=java.io.BufferedInputStream.read1([BII)I @ 34 c2
+Event: 11.011 Thread 0x000002717c625ec0 DEOPT PACKING pc=0x0000027167ac8f48 sp=0x000000d231aff0c0
+Event: 11.011 Thread 0x000002717c625ec0 DEOPT UNPACKING pc=0x0000027167327da2 sp=0x000000d231aff0d8 mode 2
+
+Classes loaded (20 events):
+Event: 11.011 Loading class javax/sound/sampled/FloatControl done
+Event: 11.011 Loading class com/sun/media/sound/DirectAudioDevice$DirectDL$Gain done
+Event: 11.011 Loading class com/sun/media/sound/DirectAudioDevice$DirectDL$Mute
+Event: 11.011 Loading class javax/sound/sampled/BooleanControl
+Event: 11.011 Loading class javax/sound/sampled/BooleanControl done
+Event: 11.011 Loading class com/sun/media/sound/DirectAudioDevice$DirectDL$Mute done
+Event: 11.011 Loading class javax/sound/sampled/BooleanControl$Type
+Event: 11.011 Loading class javax/sound/sampled/BooleanControl$Type done
+Event: 11.011 Loading class com/sun/media/sound/DirectAudioDevice$DirectDL$Balance
+Event: 11.011 Loading class com/sun/media/sound/DirectAudioDevice$DirectDL$Balance done
+Event: 11.011 Loading class com/sun/media/sound/DirectAudioDevice$DirectDL$Pan
+Event: 11.011 Loading class com/sun/media/sound/DirectAudioDevice$DirectDL$Pan done
+Event: 11.011 Loading class javax/sound/sampled/LineEvent
+Event: 11.011 Loading class java/util/EventObject
+Event: 11.012 Loading class java/util/EventObject done
+Event: 11.012 Loading class javax/sound/sampled/LineEvent done
+Event: 11.012 Loading class javax/sound/sampled/LineEvent$Type
+Event: 11.012 Loading class javax/sound/sampled/LineEvent$Type done
+Event: 11.012 Loading class com/sun/media/sound/EventDispatcher
+Event: 11.012 Loading class com/sun/media/sound/EventDispatcher done
+
+Classes unloaded (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (20 events):
+Event: 0.219 Thread 0x00000271579fb1c0 Exception <a 'sun/nio/fs/WindowsException'{0x000000062abc31a8}> (0x000000062abc31a8) 
+thrown [s\open\src\hotspot\share\prims\jni.cpp, line 520]
+Event: 0.224 Thread 0x00000271579fb1c0 Exception <a 'java/lang/NoSuchMethodError'{0x000000062abdd508}: 'int java.lang.invoke.Invokers$Holder.invokeExact_MT(java.lang.Object, java.lang.Object)'> (0x000000062abdd508) 
+thrown [s\open\src\hotspot\share\interpreter\linkResolver.cpp, line 773]
+Event: 0.457 Thread 0x00000271579fb1c0 Exception <a 'java/lang/NoSuchMethodError'{0x000000062a481e08}: 'void java.lang.System.load(java.lang.String, java.lang.Class)'> (0x000000062a481e08) 
+thrown [s\open\src\hotspot\share\interpreter\linkResolver.cpp, line 773]
+Event: 0.457 Thread 0x00000271579fb1c0 Exception <a 'java/lang/NoSuchMethodError'{0x000000062a4847c8}: 'void java.lang.System.loadLibrary(java.lang.String, java.lang.Class)'> (0x000000062a4847c8) 
+thrown [s\open\src\hotspot\share\interpreter\linkResolver.cpp, line 773]
+Event: 0.460 Thread 0x00000271579fb1c0 Exception <a 'sun/nio/fs/WindowsException'{0x000000062a494090}> (0x000000062a494090) 
+thrown [s\open\src\hotspot\share\prims\jni.cpp, line 520]
+Event: 0.460 Thread 0x00000271579fb1c0 Exception <a 'sun/nio/fs/WindowsException'{0x000000062a494448}> (0x000000062a494448) 
+thrown [s\open\src\hotspot\share\prims\jni.cpp, line 520]
+Event: 0.464 Thread 0x00000271579fb1c0 Exception <a 'sun/nio/fs/WindowsException'{0x000000062a4a1980}> (0x000000062a4a1980) 
+thrown [s\open\src\hotspot\share\prims\jni.cpp, line 520]
+Event: 0.464 Thread 0x00000271579fb1c0 Exception <a 'sun/nio/fs/WindowsException'{0x000000062a4a1c70}> (0x000000062a4a1c70) 
+thrown [s\open\src\hotspot\share\prims\jni.cpp, line 520]
+Event: 0.641 Thread 0x00000271579fb1c0 Exception <a 'java/lang/ClassNotFoundException'{0x000000062a5b0828}: sun/awt/resources/spi/awtProvider> (0x000000062a5b0828) 
+thrown [s\open\src\hotspot\share\classfile\systemDictionary.cpp, line 312]
+Event: 0.648 Thread 0x00000271579fb1c0 Exception <a 'java/io/FileNotFoundException'{0x000000062a5f83c8}> (0x000000062a5f83c8) 
+thrown [s\open\src\hotspot\share\prims\jni.cpp, line 520]
+Event: 0.650 Thread 0x00000271579fb1c0 Exception <a 'java/io/FileNotFoundException'{0x000000062a6222d8}> (0x000000062a6222d8) 
+thrown [s\open\src\hotspot\share\prims\jni.cpp, line 520]
+Event: 0.870 Thread 0x00000271579fb1c0 Exception <a 'sun/nio/fs/WindowsException'{0x000000062ad33088}> (0x000000062ad33088) 
+thrown [s\open\src\hotspot\share\prims\jni.cpp, line 520]
+Event: 0.890 Thread 0x00000271579fb1c0 Exception <a 'java/lang/NoSuchMethodError'{0x000000062af1c5e0}: 'void java.lang.invoke.DirectMethodHandle$Holder.invokeVirtual(java.lang.Object, java.lang.Object, long, double, double)'> (0x000000062af1c5e0) 
+thrown [s\open\src\hotspot\share\interpreter\linkResolver.cpp, line 773]
+Event: 0.891 Thread 0x00000271579fb1c0 Exception <a 'java/lang/NoSuchMethodError'{0x000000062af21890}: 'void java.lang.invoke.DirectMethodHandle$Holder.invokeVirtual(java.lang.Object, java.lang.Object, long, int, int, int)'> (0x000000062af21890) 
+thrown [s\open\src\hotspot\share\interpreter\linkResolver.cpp, line 773]
+Event: 0.892 Thread 0x00000271579fb1c0 Exception <a 'java/lang/NoSuchMethodError'{0x000000062af2a5e0}: 'void java.lang.invoke.DirectMethodHandle$Holder.invokeVirtual(java.lang.Object, java.lang.Object, long, int, int, int, int)'> (0x000000062af2a5e0) 
+thrown [s\open\src\hotspot\share\interpreter\linkResolver.cpp, line 773]
+Event: 4.351 Thread 0x00000271579fb1c0 Exception <a 'java/lang/NoSuchMethodError'{0x000000062a435e30}: 'java.lang.Object java.lang.invoke.DirectMethodHandle$Holder.invokeStatic(java.lang.Object, int, java.lang.Object)'> (0x000000062a435e30) 
+thrown [s\open\src\hotspot\share\interpreter\linkResolver.cpp, line 773]
+Event: 4.354 Thread 0x00000271579fb1c0 Exception <a 'sun/nio/fs/WindowsException'{0x000000062a4521d8}> (0x000000062a4521d8) 
+thrown [s\open\src\hotspot\share\prims\jni.cpp, line 520]
+Event: 4.354 Thread 0x00000271579fb1c0 Exception <a 'sun/nio/fs/WindowsException'{0x000000062a4532c8}> (0x000000062a4532c8) 
+thrown [s\open\src\hotspot\share\prims\jni.cpp, line 520]
+Event: 11.994 Thread 0x00000271579fb1c0 Implicit null exception at 0x0000027160243381 to 0x0000027160243b0f
+Event: 11.994 Thread 0x00000271579fb1c0 Exception <a 'java/lang/NullPointerException'{0x0000000629f0cc88}> (0x0000000629f0cc88) 
+thrown [s\open\src\hotspot\share\runtime\sharedRuntime.cpp, line 625]
+
+ZGC Phase Switch (0 events):
+No events
+
+VM Operations (20 events):
+Event: 0.640 Executing VM operation: HandshakeAllThreads (Deoptimize)
+Event: 0.640 Executing VM operation: HandshakeAllThreads (Deoptimize) done
+Event: 0.658 Executing VM operation: HandshakeAllThreads (Deoptimize)
+Event: 0.658 Executing VM operation: HandshakeAllThreads (Deoptimize) done
+Event: 0.744 Executing VM operation: G1CollectForAllocation (G1 Evacuation Pause)
+Event: 0.747 Executing VM operation: G1CollectForAllocation (G1 Evacuation Pause) done
+Event: 2.748 Executing VM operation: Cleanup
+Event: 2.748 Executing VM operation: Cleanup done
+Event: 4.348 Executing VM operation: HandshakeAllThreads (Deoptimize)
+Event: 4.348 Executing VM operation: HandshakeAllThreads (Deoptimize) done
+Event: 4.348 Executing VM operation: Cleanup
+Event: 4.348 Executing VM operation: Cleanup done
+Event: 4.516 Executing VM operation: G1CollectForAllocation (G1 Evacuation Pause)
+Event: 4.518 Executing VM operation: G1CollectForAllocation (G1 Evacuation Pause) done
+Event: 5.519 Executing VM operation: Cleanup
+Event: 5.519 Executing VM operation: Cleanup done
+Event: 8.520 Executing VM operation: Cleanup
+Event: 8.520 Executing VM operation: Cleanup done
+Event: 11.521 Executing VM operation: Cleanup
+Event: 11.521 Executing VM operation: Cleanup done
+
+Events (20 events):
+Event: 4.385 Thread 0x0000027145962920 Thread added: 0x0000027145962920
+Event: 4.386 Thread 0x0000027145cfe050 Thread added: 0x0000027145cfe050
+Event: 4.388 Thread 0x000002714d125a00 Thread added: 0x000002714d125a00
+Event: 4.388 Thread 0x000002714d14e070 Thread added: 0x000002714d14e070
+Event: 4.770 Thread 0x000002714d14e070 Thread exited: 0x000002714d14e070
+Event: 4.770 Thread 0x0000027145cfe050 Thread exited: 0x0000027145cfe050
+Event: 4.770 Thread 0x000002714d125a00 Thread exited: 0x000002714d125a00
+Event: 4.819 Thread 0x0000027145962920 Thread exited: 0x0000027145962920
+Event: 4.833 Thread 0x0000027145570f20 Thread exited: 0x0000027145570f20
+Event: 4.833 Thread 0x0000027145962280 Thread exited: 0x0000027145962280
+Event: 7.075 Thread 0x000002717c759760 Thread exited: 0x000002717c759760
+Event: 8.028 Thread 0x000002717c759760 Thread added: 0x000002717c759760
+Event: 9.485 Thread 0x000002717c759760 Thread exited: 0x000002717c759760
+Event: 10.619 Thread 0x000002717c625ec0 Thread added: 0x000002717c625ec0
+Event: 11.012 Thread 0x000002717c6251a0 Thread added: 0x000002717c6251a0
+Event: 11.029 Thread 0x000002717c625830 Thread added: 0x000002717c625830
+Event: 11.030 Thread 0x000002717c625ec0 Thread exited: 0x000002717c625ec0
+Event: 11.994 Thread 0x000002717c625ec0 Thread added: 0x000002717c625ec0
+Event: 11.996 Thread 0x000002717c623760 Thread added: 0x000002717c623760
+Event: 11.996 Thread 0x000002717c625ec0 Thread exited: 0x000002717c625ec0
+
+
+Dynamic libraries:
+0x00007ff6677a0000 - 0x00007ff6677b0000 	C:\Program Files\Java\jdk-21\bin\java.exe
+0x00007fff46310000 - 0x00007fff46528000 	C:\Windows\SYSTEM32\ntdll.dll
+0x00007fff44ba0000 - 0x00007fff44c64000 	C:\Windows\System32\KERNEL32.DLL
+0x00007fff43ba0000 - 0x00007fff43f73000 	C:\Windows\System32\KERNELBASE.dll
+0x00007fff43a00000 - 0x00007fff43b11000 	C:\Windows\System32\ucrtbase.dll
+0x00007fff39bd0000 - 0x00007fff39be9000 	C:\Program Files\Java\jdk-21\bin\jli.dll
+0x00007fff32a60000 - 0x00007fff32a7b000 	C:\Program Files\Java\jdk-21\bin\VCRUNTIME140.dll
+0x00007fff44900000 - 0x00007fff449b1000 	C:\Windows\System32\ADVAPI32.dll
+0x00007fff44af0000 - 0x00007fff44b97000 	C:\Windows\System32\msvcrt.dll
+0x00007fff44240000 - 0x00007fff442e8000 	C:\Windows\System32\sechost.dll
+0x00007fff43f80000 - 0x00007fff43fa8000 	C:\Windows\System32\bcrypt.dll
+0x00007fff44120000 - 0x00007fff44238000 	C:\Windows\System32\RPCRT4.dll
+0x00007fff45340000 - 0x00007fff454f2000 	C:\Windows\System32\USER32.dll
+0x00007fff439d0000 - 0x00007fff439f6000 	C:\Windows\System32\win32u.dll
+0x00007fff448d0000 - 0x00007fff448f9000 	C:\Windows\System32\GDI32.dll
+0x00007fff39410000 - 0x00007fff396ac000 	C:\Windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.22621.6060_none_2712eda17382d24b\COMCTL32.dll
+0x00007fff43420000 - 0x00007fff4353b000 	C:\Windows\System32\gdi32full.dll
+0x00007fff43930000 - 0x00007fff439ca000 	C:\Windows\System32\msvcp_win.dll
+0x00007fff3c2f0000 - 0x00007fff3c2fa000 	C:\Windows\SYSTEM32\VERSION.dll
+0x00007fff46180000 - 0x00007fff461b1000 	C:\Windows\System32\IMM32.DLL
+0x00007fff3dd90000 - 0x00007fff3dd9c000 	C:\Program Files\Java\jdk-21\bin\vcruntime140_1.dll
+0x00007fff15f20000 - 0x00007fff15fae000 	C:\Program Files\Java\jdk-21\bin\msvcp140.dll
+0x00007ffeb6c20000 - 0x00007ffeb793a000 	C:\Program Files\Java\jdk-21\bin\server\jvm.dll
+0x00007fff43fc0000 - 0x00007fff44031000 	C:\Windows\System32\WS2_32.dll
+0x00007fff432f0000 - 0x00007fff4333d000 	C:\Windows\SYSTEM32\POWRPROF.dll
+0x00007fff3c590000 - 0x00007fff3c5c4000 	C:\Windows\SYSTEM32\WINMM.dll
+0x00007fff43220000 - 0x00007fff43233000 	C:\Windows\SYSTEM32\UMPDC.dll
+0x00007fff423c0000 - 0x00007fff423d8000 	C:\Windows\SYSTEM32\kernel.appcore.dll
+0x00007fff3c230000 - 0x00007fff3c23a000 	C:\Program Files\Java\jdk-21\bin\jimage.dll
+0x00007fff40b60000 - 0x00007fff40d93000 	C:\Windows\SYSTEM32\DBGHELP.DLL
+0x00007fff44300000 - 0x00007fff44691000 	C:\Windows\System32\combase.dll
+0x00007fff45690000 - 0x00007fff45768000 	C:\Windows\System32\OLEAUT32.dll
+0x00007fff38aa0000 - 0x00007fff38ad2000 	C:\Windows\SYSTEM32\dbgcore.DLL
+0x00007fff43680000 - 0x00007fff436fb000 	C:\Windows\System32\bcryptPrimitives.dll
+0x00007fff2e640000 - 0x00007fff2e65f000 	C:\Program Files\Java\jdk-21\bin\java.dll
+0x00007fff458d0000 - 0x00007fff4616c000 	C:\Windows\System32\SHELL32.dll
+0x00007fff43540000 - 0x00007fff4367f000 	C:\Windows\System32\wintypes.dll
+0x00007fff412d0000 - 0x00007fff41bea000 	C:\Windows\SYSTEM32\windows.storage.dll
+0x00007fff45500000 - 0x00007fff45604000 	C:\Windows\System32\SHCORE.dll
+0x00007fff44860000 - 0x00007fff448c9000 	C:\Windows\System32\shlwapi.dll
+0x00007fff43350000 - 0x00007fff43375000 	C:\Windows\SYSTEM32\profapi.dll
+0x00007fff04210000 - 0x00007fff042e7000 	C:\Program Files\Java\jdk-21\bin\jsvml.dll
+0x00007fff3c180000 - 0x00007fff3c190000 	C:\Program Files\Java\jdk-21\bin\net.dll
+0x00007fff3e730000 - 0x00007fff3e85c000 	C:\Windows\SYSTEM32\WINHTTP.dll
+0x00007fff42880000 - 0x00007fff428e9000 	C:\Windows\system32\mswsock.dll
+0x00007fff2a640000 - 0x00007fff2a656000 	C:\Program Files\Java\jdk-21\bin\nio.dll
+0x00007fff26c70000 - 0x00007fff26c88000 	C:\Program Files\Java\jdk-21\bin\zip.dll
+0x00007fff15e60000 - 0x00007fff15ede000 	C:\Users\Bentley\AppData\Local\Temp\lwjgl_Bentley\3.3.6+1\x64\lwjgl.dll
+0x00007fff15dd0000 - 0x00007fff15e59000 	C:\Users\Bentley\AppData\Local\Temp\lwjgl_Bentley\3.3.6+1\x64\glfw.dll
+0x00007fff1c130000 - 0x00007fff1c176000 	C:\Windows\SYSTEM32\dinput8.dll
+0x00007fff3df80000 - 0x00007fff3df91000 	C:\Windows\SYSTEM32\xinput1_4.dll
+0x00007fff430b0000 - 0x00007fff430fe000 	C:\Windows\SYSTEM32\cfgmgr32.dll
+0x00007fff43060000 - 0x00007fff4308c000 	C:\Windows\SYSTEM32\DEVOBJ.dll
+0x00007fff3fc80000 - 0x00007fff3fcab000 	C:\Windows\SYSTEM32\dwmapi.dll
+0x00007fff17370000 - 0x00007fff17585000 	C:\Windows\SYSTEM32\inputhost.dll
+0x00007fff3b4e0000 - 0x00007fff3b613000 	C:\Windows\SYSTEM32\CoreMessaging.dll
+0x00007fff3fb10000 - 0x00007fff3fbc3000 	C:\Windows\system32\uxtheme.dll
+0x00007ffed6180000 - 0x00007ffed62b3000 	C:\ProgramData\A-Volute\A-Volute.Nahimic\Modules\Scheduled\x64\AudioDevProps2.dll
+0x00007fff45190000 - 0x00007fff45331000 	C:\Windows\System32\ole32.dll
+0x00007fff42bb0000 - 0x00007fff42bbc000 	C:\Windows\SYSTEM32\CRYPTBASE.DLL
+0x00007fff45770000 - 0x00007fff458d0000 	C:\Windows\System32\MSCTF.dll
+0x00007fff10680000 - 0x00007fff10780000 	C:\Windows\SYSTEM32\opengl32.dll
+0x00007fff34fe0000 - 0x00007fff3500d000 	C:\Windows\SYSTEM32\GLU32.dll
+0x00007fff40140000 - 0x00007fff40177000 	C:\Windows\SYSTEM32\dxcore.dll
+0x00007fff44a20000 - 0x00007fff44ad0000 	C:\Windows\System32\clbcatq.dll
+0x00007fff3d1a0000 - 0x00007fff3d2ea000 	C:\Windows\System32\AppXDeploymentClient.dll
+0x00007fff333a0000 - 0x00007fff3349b000 	C:\Windows\System32\Windows.ApplicationModel.dll
+0x00007fff3f360000 - 0x00007fff3f468000 	C:\Windows\system32\propsys.dll
+0x00007fff3b840000 - 0x00007fff3b8d7000 	C:\Windows\SYSTEM32\apphelp.dll
+0x00007fff0fbe0000 - 0x00007fff0fbfa000 	C:\Windows\system32\NetworkExplorer.dll
+0x00007fff0f4e0000 - 0x00007fff0f506000 	C:\Windows\system32\mssprxy.dll
+0x00007fff39cc0000 - 0x00007fff39d09000 	C:\Windows\SYSTEM32\directxdatabasehelper.dll
+0x00007ffe540f0000 - 0x00007ffe56a44000 	C:\Windows\System32\DriverStore\FileRepository\nvmii.inf_amd64_0466b94dfaa18b1b\nvoglv64.dll
+0x00007fff44c70000 - 0x00007fff450e4000 	C:\Windows\System32\SETUPAPI.dll
+0x00007fff42190000 - 0x00007fff421a4000 	C:\Windows\SYSTEM32\WTSAPI32.dll
+0x00007fff43040000 - 0x00007fff43052000 	C:\Windows\SYSTEM32\msasn1.dll
+0x00007fff3aa30000 - 0x00007fff3aa62000 	C:\Windows\SYSTEM32\cryptnet.dll
+0x00007fff437c0000 - 0x00007fff43928000 	C:\Windows\System32\CRYPT32.dll
+0x00007fff42b00000 - 0x00007fff42b50000 	C:\Windows\SYSTEM32\wldp.dll
+0x00007fff3a8d0000 - 0x00007fff3aa2a000 	C:\Windows\SYSTEM32\drvstore.dll
+0x00007fff43b20000 - 0x00007fff43b9c000 	C:\Windows\System32\WINTRUST.dll
+0x00007fff424d0000 - 0x00007fff42504000 	C:\Windows\SYSTEM32\ntmarta.dll
+0x00007fff44ad0000 - 0x00007fff44aef000 	C:\Windows\System32\imagehlp.dll
+0x00007fff42bd0000 - 0x00007fff42beb000 	C:\Windows\SYSTEM32\CRYPTSP.dll
+0x00007fff42320000 - 0x00007fff42357000 	C:\Windows\system32\rsaenh.dll
+0x00007ffe95730000 - 0x00007ffe994c4000 	C:\Windows\System32\DriverStore\FileRepository\nvmii.inf_amd64_0466b94dfaa18b1b\nvgpucomp64.dll
+0x00007ffe9f960000 - 0x00007ffe9fc31000 	C:\Windows\system32\nvspcap64.dll
+0x00007fff42df0000 - 0x00007fff42e5c000 	C:\Windows\SYSTEM32\WINSTA.dll
+0x00007fff233e0000 - 0x00007fff23525000 	C:\Windows\SYSTEM32\textinputframework.dll
+0x00007fff19b60000 - 0x00007fff19bbd000 	C:\Users\Bentley\AppData\Local\Temp\lwjgl_Bentley\3.3.6+1\x64\lwjgl_opengl.dll
+0x00007ffeddf40000 - 0x00007ffede0cf000 	C:\Program Files\Java\jdk-21\bin\awt.dll
+0x00007ffea4610000 - 0x00007ffea4e17000 	C:\Users\Bentley\AppData\Local\Temp\imgui-java-natives\1.90.0\imgui-java64.dll
+0x00007fff229e0000 - 0x00007fff22d4c000 	C:\Windows\SYSTEM32\CoreUIComponents.dll
+0x00007fff20240000 - 0x00007fff20252000 	C:\Program Files\Java\jdk-21\bin\jsound.dll
+0x00007ffeb1280000 - 0x00007ffeb1322000 	C:\Windows\SYSTEM32\DSOUND.dll
+0x00007fff1c290000 - 0x00007fff1c2b9000 	C:\Windows\SYSTEM32\winmmbase.dll
+0x00007ffeb11c0000 - 0x00007ffeb1271000 	C:\Windows\SYSTEM32\ResampleDmo.DLL
+0x00007fff1c3a0000 - 0x00007fff1c3ab000 	C:\Windows\SYSTEM32\msdmo.dll
+0x00007fff36bb0000 - 0x00007fff36c4c000 	C:\Windows\System32\MMDevApi.dll
+0x00007fff2aa80000 - 0x00007fff2ac6e000 	C:\Windows\SYSTEM32\AudioSes.dll
+0x00007fff126d0000 - 0x00007fff12737000 	C:\ProgramData\A-Volute\A-Volute.Nahimic\Modules\Scheduled\x64\ProductInfo.dll
+0x00007ffebf8c0000 - 0x00007ffebf903000 	C:\ProgramData\A-Volute\A-Volute.Nahimic\Modules\Scheduled\x64\ASM.Plugin.AudioDevProps2.dll
+0x00007fff20290000 - 0x00007fff202d6000 	C:\Windows\SYSTEM32\wdmaud.drv
+0x00007fff40da0000 - 0x00007fff40dab000 	C:\Windows\SYSTEM32\AVRT.dll
+0x00007fff39a70000 - 0x00007fff39a79000 	C:\Windows\SYSTEM32\ksuser.dll
+0x00007fff391e0000 - 0x00007fff391ee000 	C:\Windows\SYSTEM32\msacm32.drv
+0x00007fff391c0000 - 0x00007fff391de000 	C:\Windows\SYSTEM32\MSACM32.dll
+0x00007fff20b60000 - 0x00007fff20b6b000 	C:\Windows\SYSTEM32\midimap.dll
+0x00007fff20650000 - 0x00007fff207ce000 	C:\Windows\System32\Windows.UI.dll
+0x00007fff3fef0000 - 0x00007fff3ff05000 	C:\Windows\SYSTEM32\resourcepolicyclient.dll
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;C:\Program Files\Java\jdk-21\bin;C:\Windows\SYSTEM32;C:\Windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.22621.6060_none_2712eda17382d24b;C:\Program Files\Java\jdk-21\bin\server;C:\Users\Bentley\AppData\Local\Temp\lwjgl_Bentley\3.3.6+1\x64;C:\ProgramData\A-Volute\A-Volute.Nahimic\Modules\Scheduled\x64;C:\Windows\System32\DriverStore\FileRepository\nvmii.inf_amd64_0466b94dfaa18b1b;C:\Users\Bentley\AppData\Local\Temp\imgui-java-natives\1.90.0
+
+VM Arguments:
+jvm_args: -Dfile.encoding=UTF-8 -Duser.country=US -Duser.language=en -Duser.variant 
+java_command: fbla.game.main
+java_class_path (initial): C:\Users\Bentley\Documents\FBLA-game\FBLA-Game\app\build\classes\java\main;C:\Users\Bentley\Documents\FBLA-game\FBLA-Game\app\build\resources\main;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.joml\joml\1.10.8\fc0a71dad90a2cf41d82a76156a0e700af8e4f8d\joml-1.10.8.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\com.google.code.gson\gson\2.12.1\4e773a317740b83b43cfc3d652962856041697cb\gson-2.12.1.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\com.google.guava\guava\33.0.0-jre\161ba27964a62f241533807a46b8711b13c1d94b\guava-33.0.0-jre.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-app\1.90.0\f39a8f18081f83571f73485fc74c4caff83e16e7\imgui-java-app-1.90.0.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-lwjgl3\1.90.0\f7adf38b3a461e44e6b2fd16dc291d7866482738\imgui-java-lwjgl3-1.90.0.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjglx\lwjgl3-awt\0.1.8\245db5fbcece710ebceb0a0f200bf11333504e4\lwjgl3-awt-0.1.8.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-assimp\3.3.6\931a8de55dd5ee546689119c85ed4d4af7fa68f2\lwjgl-assimp-3.3.6.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-assimp\3.3.6\486fa1e2db9fc903a0cab984604cef1a895b0e28\lwjgl-assimp-3.3.6-natives-windows.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-glfw\3.3.6\7119f7d0eeb1e5502ff0ca71d2b4d47317da015\lwjgl-glfw-3.3.6.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-glfw\3.3.6\99ef08056feb9627f90425a4d2a22cd9fae8e39b\lwjgl-glfw-3.3.6-natives-windows.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-glfw\3.3.6\797e0965709ad180d9b00c88a086dbda15002203\lwjgl-glfw-3.3.6-natives-linux.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-glfw\3.3.6\82c8d748a654241b5961ddd1c098e8b648e38a48\lwjgl-glfw-3.3.6-natives-macos.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-glfw\3.3.6\399b42b491c5dfa6595ae6fd79dcba61b93538a7\lwjgl-glfw-3.3.6-natives-macos-arm64.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-nuklear\3.3.6\a1fa66130955a3371cc2af58f268b90b033acbe6\lwjgl-nuklear-3.3.6.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-nuklear\3.3.6\c25f05065d7b13593e94bb3ce27d448ce8564650\lwjgl-nuklear-3.3.6-natives-windows.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-openal\3.3.6\ad313317ff399fd2a7f4dd74716a68cf3976c6ad\lwjgl-openal-3.3.6.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-openal\3.3.6\9c2b9b660e085bb0b47a4453dc0e26f24a5475e4\lwjgl-openal-3.3.6-natives-windows.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-opengl\3.3.6\ac2532612a4df374e9a9282bcf8ce2573018ebbb\lwjgl-opengl-3.3.6.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-opengl\3.3.6\18dc639ebc94aa5202c2157f7490d28997b697c5\lwjgl-opengl-3.3.6-natives-windows.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-opengl\3.3.6\b8dc6467fe232d552793c53dc56f9fa8a385299c\lwjgl-opengl-3.3.6-natives-linux.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-opengl\3.3.6\59f708eb4bf0be0204bbc9c06807911724673db6\lwjgl-opengl-3.3.6-natives-macos.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-opengl\3.3.6\fee4fb2ee786af6530b6f9188205a76bc4e05268\lwjgl-opengl-3.3.6-natives-macos-arm64.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-stb\3.3.6\e2d3739dcfe7b672b626ded66d94f6587083306e\lwjgl-stb-3.3.6.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-stb\3.3.6\334cf885b39e2db9070c39e70e65efb136435f10\lwjgl-stb-3.3.6-natives-windows.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl-jawt\3.3.6\43299e222bd7db5e99254a8e620330954b73c2a6\lwjgl-jawt-3.3.6.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl\3.3.6\ce7721d30cfaf47feaed10213e0c43eb55c49d68\lwjgl-3.3.6.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl\3.3.6\9a29b6a22fc5184604b8cb434ee5d5ecc4bfcbee\lwjgl-3.3.6-natives-windows.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl\3.3.6\dc7db8fc4f1e6563867f9155b9a42d9c73d8992f\lwjgl-3.3.6-natives-linux.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl\3.3.6\f14e7a5289d2355822f4f83b3fd38d158c939acd\lwjgl-3.3.6-natives-macos.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.lwjgl\lwjgl\3.3.6\832e2964ce74e02e768814a29c06d60645115b9a\lwjgl-3.3.6-natives-macos-arm64.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.json\json\20251224\758adfe5ff5c3cc286d62c9d097cbca84f870536\json-20251224.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk8\1.8.20\73576ddf378c5b4f1f6b449fe6b119b8183fc078\kotlin-stdlib-jdk8-1.8.20.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\com.google.errorprone\error_prone_annotations\2.36.0\227d4d4957ccc3dc5761bd897e3a0ee587e750a7\error_prone_annotations-2.36.0.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\com.google.guava\failureaccess\1.0.2\c4a06a64e650562f30b7bf9aaec1bfed43aca12b\failureaccess-1.0.2.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\com.google.guava\listenablefuture\9999.0-empty-to-avoid-conflict-with-guava\b421526c5f297295adef1c886e5246c39d4ac629\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\com.google.code.findbugs\jsr305\3.0.2\25ea2e8b0c338a877313bd4672d3fe056ea78f0d\jsr305-3.0.2.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.checkerframework\checker-qual\3.41.0\8be6df7f1e9bccb19f8f351b3651f0bac2f5e0c\checker-qual-3.41.0.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\io.github.spair\imgui-java-binding\1.90.0\5be1d6a471c97f90de18d2cbe14754dd132ee8ab\imgui-java-binding-1.90.0.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-jdk7\1.8.20\3aa51faf20aae8b31e1a4bc54f8370673d7b7df4\kotlin-stdlib-jdk7-1.8.20.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib\1.8.20\e72fc5e03ec6c064c678a6bd0d955c88d55b0c4a\kotlin-stdlib-1.8.20.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.jetbrains.kotlin\kotlin-stdlib-common\1.8.20\5eddaaf234c8c49d03eebeb6a14feb7f90faca71\kotlin-stdlib-common-1.8.20.jar;C:\Users\Bentley\.gradle\caches\modules-2\files-2.1\org.jetbrains\annotations\13.0\919f0dfe192fb4e063e7dacadee7f8bb9a2672a9\annotations-13.0.jar
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     intx CICompilerCount                          = 12                                        {product} {ergonomic}
+     uint ConcGCThreads                            = 3                                         {product} {ergonomic}
+     uint G1ConcRefinementThreads                  = 13                                        {product} {ergonomic}
+   size_t G1HeapRegionSize                         = 4194304                                   {product} {ergonomic}
+    uintx GCDrainStackTargetSize                   = 64                                        {product} {ergonomic}
+   size_t InitialHeapSize                          = 528482304                                 {product} {ergonomic}
+   size_t MarkStackSize                            = 4194304                                   {product} {ergonomic}
+   size_t MaxHeapSize                              = 8392802304                                {product} {ergonomic}
+   size_t MaxNewSize                               = 5033164800                                {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 4194304                                   {product} {ergonomic}
+   size_t MinHeapSize                              = 8388608                                   {product} {ergonomic}
+    uintx NonNMethodCodeHeapSize                   = 7602480                                {pd product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 122027880                              {pd product} {ergonomic}
+    uintx ProfiledCodeHeapSize                     = 122027880                              {pd product} {ergonomic}
+    uintx ReservedCodeCacheSize                    = 251658240                              {pd product} {ergonomic}
+     bool SegmentedCodeCache                       = true                                      {product} {ergonomic}
+   size_t SoftMaxHeapSize                          = 8392802304                             {manageable} {ergonomic}
+     bool UseCompressedOops                        = true                           {product lp64_product} {ergonomic}
+     bool UseG1GC                                  = true                                      {product} {ergonomic}
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags foldmultilines=false
+ #1: stderr all=off uptime,level,tags foldmultilines=false
+
+Environment Variables:
+JAVA_HOME=C:\\Program Files\\Java\\jdk-21
+CLASSPATH=C:\Users\Bentley\Documents\FBLA-game\FBLA-Game\\gradle\wrapper\gradle-wrapper.jar
+PATH=C:\Program Files\National Instruments\Shared\OpenVINO\;C:\Python314\Scripts\;C:\Python314\;C:\Program Files\Oculus\Support\oculus-runtime;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\libnvvp;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\Tailscale\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2022.3.0\;C:\Program Files\dotnet\;C:\Program Files\gsudo\Current;C:\Program Files\Neovim\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\PuTTY\;C:\Program Files\Git\cmd;C:\Program Files\CMake\bin;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Elmer 9.0-Release\bin;C:\Program Files (x86)\GnuWin32\bin;C:\Program Files (x86)\GnuWin32\bin\make.exe;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Users\Bentley\AppData\Local\Muse Hub\lib;C:\Program Files\platform-tools;C:\Ruby32-x64\bin;C:\Users\Bentley\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\Bentley\AppData\Local\Programs\Python\Python39\;C:\Users\Bentley\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\Bentley\AppData\Local\Programs\Python\Python311\;C:\Users\Bentley\AppData\Local\Microsoft\WindowsApps;C:\Users\Bentley\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Bentley\AppData\Local\GitHubDesktop\bin;C:\Users\Bentley\AppData\Local\Microsoft\WinGet\Links;C:\Users\Bentley\.dotnet\tools;C:\Users\Bentley\AppData\Local\Programs\Ollama;C:\Gradle\gradle-8.12.1\bin;C:\Users\Bentley\AppData\Local\Programs\cursor\resources\app\bin;C:\Program Files (x86)\GnuWin32\bin;C:\Program Files (x86)\GnuWin32\bin\make.exe;C:\Users\Bentley\AppData\Roaming\npm;C:\users\Bentley\vcpkg;
+USERNAME=Bentley
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD
+TMP=C:\Users\Bentley\AppData\Local\Temp
+TEMP=C:\Users\Bentley\AppData\Local\Temp
+
+
+
+
+Periodic native trim disabled
+
+---------------  S Y S T E M  ---------------
+
+OS:
+ Windows 11 , 64 bit Build 22621 (10.0.22621.5415)
+OS uptime: 10 days 2:57 hours
+Hyper-V role detected
+
+CPU: total 16 (initial active 16) (16 cores per cpu, 2 threads per core) family 25 model 117 stepping 2 microcode 0x0, cx8, cmov, fxsr, ht, mmx, 3dnowpref, sse, sse2, sse3, ssse3, sse4a, sse4.1, sse4.2, popcnt, lzcnt, tsc, tscinvbit, avx, avx2, aes, erms, clmul, bmi1, bmi2, adx, avx512f, avx512dq, avx512cd, avx512bw, avx512vl, sha, fma, vzeroupper, avx512_vpopcntdq, avx512_vpclmulqdq, avx512_vaes, avx512_vnni, clflush, clflushopt, avx512_vbmi2, avx512_vbmi, hv, rdtscp, rdpid, fsrm, gfni, avx512_bitalg, f16c, cet_ss, avx512_ifma
+Processor Information for all 16 processors :
+  Max Mhz: 3801, Current Mhz: 3801, Mhz Limit: 3801
+
+Memory: 4k page, system-wide physical 32000M (13642M free)
+TotalPageFile size 43690M (AvailPageFile size 8003M)
+current process WorkingSet (physical memory assigned to process): 225M, peak: 244M
+current process commit charge ("private bytes"): 796M, peak: 803M
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (21.0.7+8-LTS-245) for windows-amd64 JRE (21.0.7+8-LTS-245), built on 2025-02-21T05:11:27Z by "mach5one" with MS VC++ 17.6 (VS2022)
+
+END.

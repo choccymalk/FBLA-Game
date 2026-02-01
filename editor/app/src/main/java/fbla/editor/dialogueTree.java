@@ -50,6 +50,15 @@ import java.util.List;
     @SerializedName("npc_action")
     private String npcAction;
 
+    public dialogueTree(boolean doesntmatter){
+        List<Response> emptyResponse = List.of();
+        this.npcText = "";
+        this.npcAction = "";
+        this.responses = emptyResponse;
+    }
+
+    public dialogueTree() {}
+
     public String getNpcText() {
         return npcText;
     }
@@ -65,5 +74,4 @@ import java.util.List;
     public boolean isTreeEmpty(){
         return npcText == null && (responses == null || responses.isEmpty()) && npcAction == null;
     }
-
 }
