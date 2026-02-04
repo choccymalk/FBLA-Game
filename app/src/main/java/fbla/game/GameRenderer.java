@@ -408,12 +408,6 @@ public class GameRenderer {
         quadCount = 0;
     }
 
-    private void setupPerspective(float fov, float aspect, float zNear, float zFar) {
-        float fh = (float) Math.tan(Math.toRadians(fov / 2.0f)) * zNear;
-        float fw = fh * aspect;
-        glFrustum(-fw, fw, -fh, fh, zNear, zFar);
-    }
-
     public int loadTexture(String filePath) {
         try {
             BufferedImage img = ImageIO.read(new File(filePath));
@@ -447,6 +441,13 @@ public class GameRenderer {
     }
 
     // ========== 3D OBJECT METHODS ==========
+
+    private void setupPerspective(float fov, float aspect, float zNear, float zFar) {
+        float fh = (float) Math.tan(Math.toRadians(fov / 2.0f)) * zNear;
+        float fw = fh * aspect;
+        glFrustum(-fw, fw, -fh, fh, zNear, zFar);
+    }
+
     /**
      * Loads a 3D object from an OBJ file
      * Parses vertices, texture coordinates, and faces

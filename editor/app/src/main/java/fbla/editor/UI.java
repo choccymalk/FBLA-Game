@@ -14,6 +14,7 @@ import imgui.ImVec2;
 import imgui.type.ImString;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
+import imgui.type.ImInt;
 import imgui.ImGui.*;
 import imgui.flag.*;
 import imgui.flag.ImGuiWindowFlags.*;
@@ -71,6 +72,22 @@ public class UI {
     private boolean showCollisionGrid = true;
     private boolean showEntities = true;
     private boolean showDoors = true;
+    private boolean show3DObjects = true;
+
+    private ImString object3DName = new ImString("3d object");
+    private ImString object3DModelPath = new ImString();
+    private ImString objectTexturePath = new ImString();
+    // C:\Users\Bentley\Desktop\FBLA-Game\game_resources\textures\fish_texture.png
+    // C:\Users\Bentley\Desktop\FBLA-Game\game_resources\models\fish.obj
+    private ImFloat objectX = new ImFloat(0);
+    private ImFloat objectY = new ImFloat(0);
+    private ImFloat objectZ = new ImFloat(0);
+    private ImFloat objectScaleX = new ImFloat(1);
+    private ImFloat objectScaleY = new ImFloat(1);
+    private ImFloat objectScaleZ = new ImFloat(1);
+    private ImFloat objectRotationX = new ImFloat(0);
+    private ImFloat objectRotationY = new ImFloat(0);
+    private ImFloat objectRotationZ = new ImFloat(0);
 
     // Door creation state
     private ImString doorTargetLevel = new ImString("0", 256);
@@ -84,6 +101,7 @@ public class UI {
 
     private boolean showDialogueEditor = false;
     private boolean showAnimationEditor = false;
+    private boolean showEntityEditor = false;
     private int editingEntityIndex = -1;
     private dialogueTree editingDialogueNode = null;
     private List<dialogueTree> dialogueNodeStack = new ArrayList<>();
@@ -97,32 +115,53 @@ public class UI {
     private ImString newFramePathWalkingLeft = new ImString();
     private ImString newFramePathWalkingRight = new ImString();
     private ImString newFramePathWalkingDown = new ImString();
+    private ImString newEntityType = new ImString();
+    private ImString newEntityName = new ImString();
+    private ImFloat newDoorTargetLevel = new ImFloat();
+
+    private ImString newObject3DName = new ImString();
+    private ImFloat newObjectX = new ImFloat(0);
+    private ImFloat newObjectY = new ImFloat(0);
+    private ImFloat newObjectZ = new ImFloat(0);
+    private ImFloat newObjectScaleX = new ImFloat(1);
+    private ImFloat newObjectScaleY = new ImFloat(1);
+    private ImFloat newObjectScaleZ = new ImFloat(1);
+    private ImFloat newObjectRotationX = new ImFloat(0);
+    private ImFloat newObjectRotationY = new ImFloat(0);
+    private ImFloat newObjectRotationZ = new ImFloat(0);
+
+    private int editingObject3DIndex = -1;
+    private boolean showObject3DEditor = false;
 
     private String RESOURCE_PATH = LevelEditor.RESOURCE_PATH;
 
     private LevelEditor editor;
 
-    public UI(LevelEditor editor){
+    private ImFloat cameraPosTransformX = new ImFloat();
+    private ImFloat cameraPosTransformY = new ImFloat();
+    private ImFloat cameraPosTransformZ = new ImFloat();
+
+    public UI(LevelEditor editor) {
         this.editor = editor;
     }
 
-    public boolean getPaintMode(){
+    public boolean getPaintMode() {
         return paintMode.get();
     }
 
-    public boolean getEraserMode(){
+    public boolean getEraserMode() {
         return eraserMode.get();
     }
 
-    public boolean getShowDoors(){
+    public boolean getShowDoors() {
         return this.showDoors;
     }
 
-    public boolean getShowEntities(){
+    public boolean getShowEntities() {
         return this.showEntities;
     }
 
-    public boolean getShowCollisionGrid(){
+    public boolean getShowCollisionGrid() {
         return this.showCollisionGrid;
     }
 
@@ -152,11 +191,11 @@ public class UI {
         editingResponseIndex = -1;
     }
 
-    void renderUI() {
+    public void renderUI() {
         // Main control panel
         ImGui.setNextWindowPos(10, 20, 0);
-        ImGui.setNextWindowSize(300, 860, 0);
-        
+        ImGui.setNextWindowSize(400, 1045, 0);
+
         ImGui.begin("Level Editor");
 
         // Level info
@@ -165,11 +204,13 @@ public class UI {
 
         // Navigation
         if (ImGui.button("< Prev", 90, 30)) {
-            if (editor.getCurrentLevelIndex() > 0) editor.loadLevel(editor.getCurrentLevelIndex() - 1);
+            if (editor.getCurrentLevelIndex() > 0)
+                editor.loadLevel(editor.getCurrentLevelIndex() - 1);
         }
         ImGui.sameLine();
         if (ImGui.button("Next >", 90, 30)) {
-            if (editor.getCurrentLevelIndex() < editor.getLevels().size() - 1) editor.loadLevel(editor.getCurrentLevelIndex() + 1);
+            if (editor.getCurrentLevelIndex() < editor.getLevels().size() - 1)
+                editor.loadLevel(editor.getCurrentLevelIndex() + 1);
         }
         ImGui.sameLine();
         if (ImGui.button("Save", 90, 30)) {
@@ -210,7 +251,7 @@ public class UI {
         ImGui.checkbox("Paint", paintMode);
         ImGui.sameLine();
         ImGui.checkbox("Erase", eraserMode);
-        
+
         if (paintMode.get() && eraserMode.get()) {
             eraserMode.set(false);
         }
@@ -228,6 +269,9 @@ public class UI {
         if (ImGui.checkbox("Doors", new ImBoolean(showDoors))) {
             showDoors = !showDoors;
         }
+        if (ImGui.checkbox("3D Objects", new ImBoolean(show3DObjects))) {
+            show3DObjects = !show3DObjects;
+        }
 
         ImGui.separator();
 
@@ -239,7 +283,8 @@ public class UI {
         ImGui.inputFloat("Y##ent", entityY);
         ImGui.inputText("Entity Image##ent", entityImage);
         if (ImGui.button("Add Entity##btn", 150, 25)) {
-            editor.addEntity((int)entityX.get(), (int)entityY.get(), selectedEntityType.get(), entityName.get(), entityImage.get());
+            editor.addEntity((int) entityX.get(), (int) entityY.get(), selectedEntityType.get(), entityName.get(),
+                    entityImage.get());
             entityX.set(0f);
             entityY.set(0f);
         }
@@ -280,6 +325,10 @@ public class UI {
                 openAnimationEditor(i);
             }
             ImGui.sameLine();
+            if (ImGui.button("E##anim" + i, 25, 20)) {
+                openEntityEditor(i);
+            }
+            ImGui.sameLine();
             if (ImGui.button("X##ent" + i, 25, 20)) {
                 editor.clearEntityFromCollisionGrid(editor.getEntities().get(i));
                 editor.getEntities().remove(i);
@@ -304,6 +353,101 @@ public class UI {
 
         ImGui.end();
 
+        // Main control panel
+        ImGui.setNextWindowPos(415, 750, 0);
+        ImGui.setNextWindowSize(1272, 315, 0);
+
+        // 3d objects section
+
+        ImGui.begin("3D Objects");
+
+        // Add entity
+        ImGui.text("Add 3D Object:");
+        ImGui.inputText("Name##ent", object3DName);
+        ImGui.inputFloat("X##ent", objectX);
+        ImGui.inputFloat("Y##ent", objectY);
+        ImGui.inputFloat("Z##ent", objectZ);
+        ImGui.inputFloat("Scale X##ent", objectScaleX);
+        ImGui.inputFloat("Scale Y##ent", objectScaleY);
+        ImGui.inputFloat("Scale Z##ent", objectScaleZ);
+        ImGui.inputFloat("Rotation X##ent", objectRotationX);
+        ImGui.inputFloat("Rotation Y##ent", objectRotationY);
+        ImGui.inputFloat("Rotation Z##ent", objectRotationZ);
+        ImGui.inputText("Object Texture##ent", objectTexturePath);
+        ImGui.inputText("Object Model##ent", object3DModelPath);
+        if (ImGui.button("Add Object##btn", 150, 25)) {
+            int textureId = editor.getRenderer().loadTexture(objectTexturePath.get());
+            editor.add3DObject(objectX.get(), objectY.get(), objectZ.get(), objectScaleX.get(), objectScaleY.get(),
+                    objectScaleZ.get(), objectRotationX.get(), objectRotationY.get(), objectRotationZ.get(),
+                    object3DName.get(), object3DModelPath.get(), textureId, objectTexturePath.get());
+
+        }
+
+        ImGui.separator();
+
+        // Entity list with edit buttons
+        if (editor.getObject3ds() != null) {
+            ImGui.text("3D Objects (" + editor.getObject3ds().size() + "):");
+            for (int i = 0; i < editor.getObject3ds().size(); i++) {
+                Object3D o3d = editor.getObject3ds().get(i);
+                String label = "[" + i + "] " + o3d.getName() + " @" + o3d.getX() + "," + o3d.getY() + "," + o3d.getZ();
+                ImGui.text(label);
+                ImGui.sameLine();
+                if (ImGui.button("O##dial" + i, 25, 20)) {
+                    openObject3DEditor(i);
+                }
+                ImGui.sameLine();
+                if (ImGui.button("X##ent" + i, 25, 20)) {
+                    editor.getObject3ds().remove(i);
+                    editor.getLevels().get(editor.getCurrentLevelIndex()).getObject3DList().remove(i);
+                    break;
+                }
+            }
+        }
+
+        ImGui.end();
+
+        ImGui.setNextWindowPos(1702, 20, 0);
+        ImGui.setNextWindowSize(200, 350, 0);
+
+        ImGui.begin("Camera Position");
+
+        if(ImGui.button("camera pos x add 0.5")){
+            editor.getRenderer().setCameraPos(editor.getRenderer().getCameraPosX() + 0.5f, editor.getRenderer().getCameraPosY(), editor.getRenderer().getCameraPosZ());
+        }
+
+        if(ImGui.button("camera pos x sub 0.5")){
+            editor.getRenderer().setCameraPos(editor.getRenderer().getCameraPosX() - 0.5f, editor.getRenderer().getCameraPosY(), editor.getRenderer().getCameraPosZ());
+        }
+
+        if(ImGui.button("camera pos y add 0.5")){
+            editor.getRenderer().setCameraPos(editor.getRenderer().getCameraPosX(), editor.getRenderer().getCameraPosY() + 0.5f, editor.getRenderer().getCameraPosZ());
+        }
+
+        if(ImGui.button("camera pos y sub 0.5")){
+            editor.getRenderer().setCameraPos(editor.getRenderer().getCameraPosX(), editor.getRenderer().getCameraPosY() - 0.5f, editor.getRenderer().getCameraPosZ());
+        }
+
+        if(ImGui.button("camera pos z add 0.5")){
+            editor.getRenderer().setCameraPos(editor.getRenderer().getCameraPosX(), editor.getRenderer().getCameraPosY(), editor.getRenderer().getCameraPosZ() + 0.5f);
+        }
+
+        if(ImGui.button("camera pos z sub 0.5")){
+            editor.getRenderer().setCameraPos(editor.getRenderer().getCameraPosX(), editor.getRenderer().getCameraPosY(), editor.getRenderer().getCameraPosZ() - 0.5f);
+        }
+
+        if(ImGui.button("camera pos reset to 0")){
+            editor.getRenderer().setCameraPos(0, 0, 0);
+        }
+
+        ImGui.text("X: " + editor.getRenderer().getCameraPosX());
+        ImGui.text("Y: " + editor.getRenderer().getCameraPosY());
+        ImGui.text("Z: " + editor.getRenderer().getCameraPosZ());
+
+        ImGui.text("Camera will be fixed at (0,0,-6.0) in game");
+
+        ImGui.end();
+
         // Render dialogue editor window if open
         if (showDialogueEditor) {
             renderDialogueEditor();
@@ -313,6 +457,15 @@ public class UI {
         if (showAnimationEditor) {
             renderAnimationEditor();
         }
+
+        if (showEntityEditor) {
+            renderEntityEditior();
+        }
+
+        if(showObject3DEditor){
+            renderObject3DEditor();
+        }
+
     }
 
     private void renderDialogueEditor() {
@@ -488,6 +641,132 @@ public class UI {
         ImGui.end();
     }
 
+    private void openEntityEditor(int entityIndex) {
+        editingEntityIndex = entityIndex;
+        showEntityEditor = true;
+    }
+
+    public void renderEntityEditior() {
+        ImGui.setNextWindowPos(650, 20, 0);
+        ImGui.setNextWindowSize(500, 500, 0);
+
+        if (!ImGui.begin("Entity Editor", new ImBoolean(true))) {
+            ImGui.end();
+            return;
+        }
+
+        if (editingEntityIndex >= 0 && editingEntityIndex < editor.getEntities().size()) {
+            Entity entity = editor.getEntities().get(editingEntityIndex);
+            if (entity.getName() == null) {
+                ImGui.text("Editing: " + entity.getType());
+                // newEntityName.set("No name defined");
+            } else {
+                ImGui.text("Editing: " + entity.getName());
+                // newEntityName.set(entity.getName());
+            }
+            ImGui.separator();
+
+            ImGui.inputText("Name", newEntityName);
+            ImGui.sameLine();
+            if (ImGui.button("Set Name")) {
+                entity.setName(newEntityName.get());
+                System.out.println(newEntityName.get());
+                newEntityName.clear();
+            }
+
+            if (ImGui.button("Save & Close", 100, 25)) {
+                showEntityEditor = false;
+                editingEntityIndex = -1;
+            }
+        }
+
+        ImGui.end();
+    }
+
+    private void openObject3DEditor(int object3DIndex){
+        editingObject3DIndex = object3DIndex;
+        showObject3DEditor = true;
+    }
+
+    public void renderObject3DEditor(){
+        ImGui.setNextWindowPos(650, 20, 0);
+        ImGui.setNextWindowSize(500, 500, 0);
+
+        if (!ImGui.begin("3d Object Editor", new ImBoolean(true))) {
+            ImGui.end();
+            return;
+        }
+
+        if (editingObject3DIndex >= 0 && editingObject3DIndex < editor.getObject3ds().size()) {
+            Object3D o3d = editor.getObject3ds().get(editingObject3DIndex);
+            if (o3d.getName() == null) {
+                ImGui.text("Editing: undefined name");
+            } else {
+                ImGui.text("Editing: " + o3d.getName());
+            }
+            ImGui.separator();
+
+            ImGui.inputText("Name", newObject3DName);
+            ImGui.sameLine();
+            if (ImGui.button("Set Name")) {
+                o3d.setName(newEntityName.get());
+                newEntityName.clear();
+            }
+            ImGui.inputFloat("Pos X", newObjectX);
+            ImGui.sameLine();
+            if (ImGui.button("Set Pos X")) {
+                editor.getRenderer().getRenderer3d().move3DObject(o3d, newObjectX.get(), o3d.getY(), o3d.getZ());
+            }
+            ImGui.inputFloat("Pos Y", newObjectY);
+            ImGui.sameLine();
+            if (ImGui.button("Set Pos Y")) {
+                editor.getRenderer().getRenderer3d().move3DObject(o3d, o3d.getY(), newObjectY.get(), o3d.getZ());
+            }
+            ImGui.inputFloat("Pos Z", newObjectZ);
+            ImGui.sameLine();
+            if (ImGui.button("Set Pos Z")) {
+                editor.getRenderer().getRenderer3d().move3DObject(o3d, newObjectX.get(), o3d.getY(), newObjectZ.get());
+            }
+            ImGui.inputFloat("Rot X", newObjectRotationX);
+            ImGui.sameLine();
+            if (ImGui.button("Set Rot X")) {
+                editor.getRenderer().getRenderer3d().rotate3DObject(o3d, newObjectRotationX.get(), o3d.getRotationY(), o3d.getRotationZ());
+            }
+            ImGui.inputFloat("Rot Y", newObjectRotationY);
+            ImGui.sameLine();
+            if (ImGui.button("Set Rot Y")) {
+                editor.getRenderer().getRenderer3d().rotate3DObject(o3d, o3d.getRotationY(), newObjectRotationY.get(), o3d.getRotationZ());
+            }
+            ImGui.inputFloat("Rot Z", newObjectRotationZ);
+            ImGui.sameLine();
+            if (ImGui.button("Set Rot Z")) {
+                editor.getRenderer().getRenderer3d().rotate3DObject(o3d, o3d.getRotationY(), o3d.getRotationY(), newObjectRotationZ.get());
+            }
+            ImGui.inputFloat("Scale X", newObjectScaleX);
+            ImGui.sameLine();
+            if (ImGui.button("Set Scale X")) {
+                editor.getRenderer().getRenderer3d().scale3DObject(o3d, newObjectScaleX.get(), o3d.getScaleY(), o3d.getScaleZ());
+            }
+            ImGui.inputFloat("Scale Y", newObjectScaleY);
+            ImGui.sameLine();
+            if (ImGui.button("Set Scale Y")) {
+                editor.getRenderer().getRenderer3d().scale3DObject(o3d, o3d.getScaleX(), newObjectScaleY.get(), o3d.getScaleZ());
+            }
+            ImGui.inputFloat("Scale Z", newObjectScaleZ);
+            ImGui.sameLine();
+            if (ImGui.button("Set Scale Z")) {
+                editor.getRenderer().getRenderer3d().scale3DObject(o3d, o3d.getScaleX(), o3d.getScaleY(), newObjectScaleZ.get());
+            }
+
+            if (ImGui.button("Save & Close", 100, 25)) {
+                showObject3DEditor = false;
+                editingObject3DIndex = -1;
+            }
+        }
+
+        ImGui.end();
+    }
+
     private void editAnimationStateList(String stateName, List<String> imagePaths, Entity entity, String stateKey) {
         ImGui.text(stateName + ":");
         ImGui.indent();
@@ -609,7 +888,8 @@ public class UI {
 
             // Convert BufferedImage to OpenGL texture
             editor.getRenderer().setBackgroundImageTextureId(createTextureFromBufferedImage(image));
-            editor.setPrivateField(editor.getLevels().get(editor.getCurrentLevelIndex()), "backgroundImage", oldImagePath);
+            editor.setPrivateField(editor.getLevels().get(editor.getCurrentLevelIndex()), "backgroundImage",
+                    oldImagePath);
 
         } catch (IOException e) {
             System.err.println("Error loading background image: " + e.getMessage());
@@ -640,6 +920,5 @@ public class UI {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, img.getWidth(), img.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
         return texId;
     }
-    
 
 }

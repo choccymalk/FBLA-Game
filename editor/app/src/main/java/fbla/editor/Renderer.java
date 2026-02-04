@@ -58,6 +58,7 @@ import fbla.editor.jsonParser;
 import fbla.editor.Level;
 import fbla.editor.Entity;
 import fbla.editor.Door;
+import fbla.editor.Renderer3D;
 
 public class Renderer {
 
@@ -78,8 +79,20 @@ public class Renderer {
 
     private LevelEditor editor;
 
-    public Renderer(LevelEditor editor) {
+    private int canvasX = 415;
+    private int canvasY = 20;
+    private int canvasW = LevelEditor.GRID_WIDTH * LevelEditor.GRID_CELL_SIZE;
+    private int canvasH = LevelEditor.GRID_HEIGHT * LevelEditor.GRID_CELL_SIZE;
+
+    private float cameraPosX = 0;
+    private float cameraPosY = 0;
+    private float cameraPosZ = 0;
+
+    private Renderer3D renderer3d;
+
+    public Renderer(LevelEditor editor, Renderer3D renderer3d) {
         this.editor = editor;
+        this.renderer3d = renderer3d;
     }
 
     public int getBackgroundImageTextureId() {
@@ -88,6 +101,10 @@ public class Renderer {
 
     public void setBackgroundImageTextureId(int id) {
         this.backgroundImageTextureId = id;
+    }
+
+    public Renderer3D getRenderer3d(){
+        return this.renderer3d;
     }
 
     private void buildFontMap() {
@@ -130,6 +147,15 @@ public class Renderer {
         glOrtho(0, winW, winH, 0, -1, 1);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
+
+        // Disable lighting for 2D rendering
+        //glDisable(GL_LIGHTING);
+        //glDisable(GL_LIGHT0);
+        //glDisable(GL_LIGHT1);
+        //glDisable(GL_COLOR_MATERIAL);
+
+        // Set material to use vertex color directly
+        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         // Update drag preview position
         editor.updateDragPreview();
@@ -210,43 +236,87 @@ public class Renderer {
     }
 
     private void renderCanvas() {
-        int canvasX = 320;
-        int canvasY = 20;
-        int canvasW = LevelEditor.GRID_WIDTH * LevelEditor.GRID_CELL_SIZE;
-        int canvasH = LevelEditor.GRID_HEIGHT * LevelEditor.GRID_CELL_SIZE;
-
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // Draw background image if loaded
         if (backgroundImageTextureId != -1) {
+            glColor4f(1, 1, 1, 1); // Reset color to white for textures
             draw2D(backgroundImageTextureId, canvasX, canvasY, canvasW, canvasH);
             flushBatch();
         }
 
         // Draw collision grid
         if (editor.getShowCollisionGrid()) {
-            glColor4f(1, 0, 0, 0.3f);
-            glBegin(GL_QUADS);
-            for (int y = 0; y < LevelEditor.GRID_HEIGHT; y++) {
-                for (int x = 0; x < LevelEditor.GRID_WIDTH; x++) {
-                    if (editor.getCollisionGrid()[y][x] == 1) {
-                        int px = canvasX + x * LevelEditor.GRID_CELL_SIZE;
-                        ;
-                        int py = canvasY + y * LevelEditor.GRID_CELL_SIZE;
-                        ;
-                        glVertex2f(px, py);
-                        glVertex2f(px + LevelEditor.GRID_CELL_SIZE, py);
-                        glVertex2f(px + LevelEditor.GRID_CELL_SIZE, py + LevelEditor.GRID_CELL_SIZE);
-                        glVertex2f(px, py + LevelEditor.GRID_CELL_SIZE);
-                    }
-                }
-            }
-            glEnd();
+            drawCollisionLayer();
         }
 
         // Draw grid lines
+        drawGridLineLayer();
+
+        // Draw doors
+        if (editor.getShowDoors()) {
+            drawDoorLayer();
+        }
+
+        // Draw entities
+        if (editor.getShowEntities()) {
+            drawEntityLayer();
+        }
+        flushBatch();
+        // Draw 3d objects
+        draw3DLayer();
+
+        // Draw drag preview
+        if (editor.getIsDraggingEntity() && editor.getDragPreviewGridX() >= 0 && editor.getDragPreviewGridY() >= 0) {
+            int px = canvasX + editor.getDragPreviewGridX() * LevelEditor.GRID_CELL_SIZE;
+            int py = canvasY + editor.getDragPreviewGridY() * LevelEditor.GRID_CELL_SIZE;
+            px = px - 94;
+            glColor4f(0, 1, 0, 0.5f);
+            glBegin(GL_TRIANGLE_FAN);
+            int radius = 12;
+            for (int i = 0; i < 16; i++) {
+                double angle = (i / 16.0) * Math.PI * 2;
+                glVertex2f(px + (float) Math.cos(angle) * radius,
+                        py + (float) Math.sin(angle) * radius);
+            }
+            glEnd();
+        } else if (editor.getIsDraggingDoor() && editor.getDragPreviewGridX() >= 0
+                && editor.getDragPreviewGridY() >= 0) {
+            int px = canvasX + editor.getDragPreviewGridX() * LevelEditor.GRID_CELL_SIZE;
+            int py = canvasY + editor.getDragPreviewGridY() * LevelEditor.GRID_CELL_SIZE;
+            glColor4f(1, 1, 0, 0.5f);
+            glBegin(GL_QUADS);
+            glVertex2f(px, py);
+            glVertex2f(px + 48, py);
+            glVertex2f(px + 48, py + 72);
+            glVertex2f(px, py + 72);
+            glEnd();
+        }
+
+        //flushBatch();
+    }
+
+    private void drawCollisionLayer() {
+        glColor4f(1, 0, 0, 1f);
+        glBegin(GL_QUADS);
+        for (int y = 0; y < LevelEditor.GRID_HEIGHT; y++) {
+            for (int x = 0; x < LevelEditor.GRID_WIDTH; x++) {
+                if (editor.getCollisionGrid()[y][x] == 1) {
+                    int px = canvasX + x * LevelEditor.GRID_CELL_SIZE;
+                    int py = canvasY + y * LevelEditor.GRID_CELL_SIZE;
+                    glVertex2f(px, py);
+                    glVertex2f(px + LevelEditor.GRID_CELL_SIZE, py);
+                    glVertex2f(px + LevelEditor.GRID_CELL_SIZE, py + LevelEditor.GRID_CELL_SIZE);
+                    glVertex2f(px, py + LevelEditor.GRID_CELL_SIZE);
+                }
+            }
+        }
+        glEnd();
+    }
+
+    private void drawGridLineLayer() {
         glColor4f(0.3f, 0.3f, 0.3f, 0.5f);
         glBegin(GL_LINES);
         for (int x = 0; x <= LevelEditor.GRID_WIDTH; x++) {
@@ -260,65 +330,101 @@ public class Renderer {
             glVertex2f(canvasX + canvasW, py);
         }
         glEnd();
+    }
 
-        // Draw doors
-        if (editor.getShowDoors()) {
-            for (int i = 0; i < editor.getDoors().size(); i++) {
-                Door d = editor.getDoors().get(i);
-                int px = canvasX + d.getX();
-                int py = canvasY + d.getY();
-                drawDoor(px, py);
-            }
+    public void setCameraPos(float x, float y, float z){
+        this.cameraPosX = x;
+        this.cameraPosY = y;
+        this.cameraPosZ = z;
+    }
+
+    public float getCameraPosX(){
+        return this.cameraPosX;
+    }
+
+    public float getCameraPosY(){
+        return this.cameraPosY;
+    }
+
+    public float getCameraPosZ(){
+        return this.cameraPosZ;
+    }
+
+    private void draw3DLayer(){
+        glEnable(GL_DEPTH_TEST);
+        glClear(GL_DEPTH_BUFFER_BIT); // Clear depth buffer before rendering 3D
+
+        // Save current projection (2D ortho)
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadIdentity();
+
+        // Setup Perspective: FOV, Aspect Ratio, Near Clip, Far Clip
+        float aspect = (float) canvasW / (float) canvasH;
+        renderer3d.setupPerspective(45.0f, aspect, 0.1f, 1000.0f);
+
+        // Switch to modelview and set up camera
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
+        
+        // IMPORTANT: Move the camera back so we aren't inside the model
+        // In perspective, negative Z moves objects AWAY from you
+        glTranslatef(cameraPosX, cameraPosY, cameraPosZ);
+
+        // Render your VBO objects here
+        for (Object3D obj3d : renderer3d.getLoaded3DObjects()) {
+            renderer3d.clipObjectToCanvasBounds((float)canvasX, (float)canvasY, (float)canvasW, (float)canvasH, obj3d);
         }
 
-        // Draw entities
-        if (editor.getShowEntities()) {
-            for (int i = 0; i < editor.getEntities().size(); i++) {
-                Entity e = editor.getEntities().get(i);
-                if (!e.getType().equals("door")) {
-                    int px = canvasX + e.getX();
-                    int py = canvasY + e.getY();
-                    drawEntity(px, py, e);
-                    if (e.getName() != null && !editor.getIsDraggingEntity() && !editor.getIsDraggingDoor()) {
-                        drawNameOverEntity(e.getName(), px, py);
-                    }
+        glPopMatrix(); // Restore modelview
+        
+        // Restore 2D projection
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+    }
+
+    private void drawDoorLayer() {
+        for (int i = 0; i < editor.getDoors().size(); i++) {
+            Door d = editor.getDoors().get(i);
+            int px = canvasX + d.getX();
+            int py = canvasY + d.getY();
+            drawDoor(px, py);
+        }
+    }
+
+    private void drawEntityLayer() {
+        // entities
+        for (int i = 0; i < editor.getEntities().size(); i++) {
+            Entity e = editor.getEntities().get(i);
+            if (!e.getType().equals("door")) {
+                int px = canvasX + e.getX();
+                int py = canvasY + e.getY();
+                drawEntity(px, py, e);
+            }
+        }
+        // entity names
+        for (int i = 0; i < editor.getEntities().size(); i++) {
+            Entity e = editor.getEntities().get(i);
+            if (!e.getType().equals("door")) {
+                int px = canvasX + e.getX();
+                int py = canvasY + e.getY();
+                if (e.getName() != null && !editor.getIsDraggingEntity() && !editor.getIsDraggingDoor()) {
+                    drawNameOverEntity(e.getName(), px, py);
+                } else if (!editor.getIsDraggingEntity() && !editor.getIsDraggingDoor()) {
+                    drawNameOverEntity(e.getType(), px, py);
                 }
             }
         }
-
-        // Draw drag preview
-        if (editor.getIsDraggingEntity() && editor.getDragPreviewGridX() >= 0 && editor.getDragPreviewGridY() >= 0) {
-            int px = canvasX + editor.getDragPreviewGridX() * LevelEditor.GRID_CELL_SIZE;
-            int py = canvasY + editor.getDragPreviewGridY() * LevelEditor.GRID_CELL_SIZE;
-            // glColor4f(0, 1, 0, 0.5f);
-            glBegin(GL_TRIANGLE_FAN);
-            int radius = 12;
-            for (int i = 0; i < 16; i++) {
-                double angle = (i / 16.0) * Math.PI * 2;
-                glVertex2f(px + (float) Math.cos(angle) * radius,
-                        py + (float) Math.sin(angle) * radius);
-            }
-            glEnd();
-        } else if (editor.getIsDraggingDoor() && editor.getDragPreviewGridX() >= 0
-                && editor.getDragPreviewGridY() >= 0) {
-            int px = canvasX + editor.getDragPreviewGridX() * LevelEditor.GRID_CELL_SIZE;
-            int py = canvasY + editor.getDragPreviewGridY() * LevelEditor.GRID_CELL_SIZE;
-            // glColor4f(1, 1, 0, 0.5f);
-            glBegin(GL_QUADS);
-            glVertex2f(px, py);
-            glVertex2f(px + 48, py);
-            glVertex2f(px + 48, py + 72);
-            glVertex2f(px, py + 72);
-            glEnd();
-        }
-
     }
 
     private void drawEntity(int x, int y, Entity e) {
         // TODO: draw entity sprite instead of circle, level 3
         // Entity.java, level 3
         // Draw a circle for entities
-        glColor4f(0, 1, 0, 0.3f);
+        glColor4f(0, 1, 0, 1f);
         glBegin(GL_TRIANGLE_FAN);
         int radius = 12;
         for (int i = 0; i < 16; i++) {
@@ -333,7 +439,7 @@ public class Renderer {
 
     private void drawDoor(int x, int y) {
         // Draw a rectangle for doors (48x72 = 2x3 cells)
-        glColor4f(1, 1, 0, 0.3f);
+        glColor4f(1, 1, 0, 1f);
         glBegin(GL_QUADS);
         glVertex2f(x, y);
         glVertex2f(x + 48, y);
@@ -343,270 +449,35 @@ public class Renderer {
     }
 
     private void drawNameOverEntity(String name, int entityXPos, int entityYPos) {
-        // each character in the fontmap is 8 px wide and 11 px tall
+        glColor4f(1, 1, 1, 1); // Ensure white color for text
         int i = 0;
         for (char letter : name.toCharArray()) {
-            switch (letter) {
-                case 'a':
-                    draw2D(fontMap.get("latin_small_letter_a"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'b':
-                    draw2D(fontMap.get("latin_small_letter_b"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'c':
-                    draw2D(fontMap.get("latin_small_letter_c"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'd':
-                    draw2D(fontMap.get("latin_small_letter_d"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'e':
-                    draw2D(fontMap.get("latin_small_letter_e"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'f':
-                    draw2D(fontMap.get("latin_small_letter_f"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'g':
-                    draw2D(fontMap.get("latin_small_letter_g"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'h':
-                    draw2D(fontMap.get("latin_small_letter_h"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'i':
-                    draw2D(fontMap.get("latin_small_letter_i"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'j':
-                    draw2D(fontMap.get("latin_small_letter_j"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'k':
-                    draw2D(fontMap.get("latin_small_letter_k"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'l':
-                    draw2D(fontMap.get("latin_small_letter_l"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'm':
-                    draw2D(fontMap.get("latin_small_letter_m"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'n':
-                    draw2D(fontMap.get("latin_small_letter_n"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'o':
-                    draw2D(fontMap.get("latin_small_letter_o"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'p':
-                    draw2D(fontMap.get("latin_small_letter_p"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'q':
-                    draw2D(fontMap.get("latin_small_letter_q"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'r':
-                    draw2D(fontMap.get("latin_small_letter_r"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 's':
-                    draw2D(fontMap.get("latin_small_letter_s"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 't':
-                    draw2D(fontMap.get("latin_small_letter_t"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'u':
-                    draw2D(fontMap.get("latin_small_letter_u"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'v':
-                    draw2D(fontMap.get("latin_small_letter_v"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'w':
-                    draw2D(fontMap.get("latin_small_letter_w"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'x':
-                    draw2D(fontMap.get("latin_small_letter_x"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'y':
-                    draw2D(fontMap.get("latin_small_letter_y"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'z':
-                    draw2D(fontMap.get("latin_small_letter_z"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'A':
-                    draw2D(fontMap.get("latin_capital_letter_a"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'B':
-                    draw2D(fontMap.get("latin_capital_letter_b"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'C':
-                    draw2D(fontMap.get("latin_capital_letter_c"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'D':
-                    draw2D(fontMap.get("latin_capital_letter_d"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'E':
-                    draw2D(fontMap.get("latin_capital_letter_e"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'F':
-                    draw2D(fontMap.get("latin_capital_letter_f"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'G':
-                    draw2D(fontMap.get("latin_capital_letter_g"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'H':
-                    draw2D(fontMap.get("latin_capital_letter_h"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'I':
-                    draw2D(fontMap.get("latin_capital_letter_i"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'J':
-                    draw2D(fontMap.get("latin_capital_letter_j"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'K':
-                    draw2D(fontMap.get("latin_capital_letter_k"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'L':
-                    draw2D(fontMap.get("latin_capital_letter_l"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'M':
-                    draw2D(fontMap.get("latin_capital_letter_m"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'N':
-                    draw2D(fontMap.get("latin_capital_letter_n"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'O':
-                    draw2D(fontMap.get("latin_capital_letter_o"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'P':
-                    draw2D(fontMap.get("latin_capital_letter_p"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'Q':
-                    draw2D(fontMap.get("latin_capital_letter_q"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'R':
-                    draw2D(fontMap.get("latin_capital_letter_r"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'S':
-                    draw2D(fontMap.get("latin_capital_letter_s"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'T':
-                    draw2D(fontMap.get("latin_capital_letter_t"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'U':
-                    draw2D(fontMap.get("latin_capital_letter_u"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'V':
-                    draw2D(fontMap.get("latin_capital_letter_v"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'W':
-                    draw2D(fontMap.get("latin_capital_letter_w"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'X':
-                    draw2D(fontMap.get("latin_capital_letter_x"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'Y':
-                    draw2D(fontMap.get("latin_capital_letter_y"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case 'Z':
-                    draw2D(fontMap.get("latin_capital_letter_z"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case '0':
-                    draw2D(fontMap.get("digit_zero"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case '1':
-                    draw2D(fontMap.get("digit_one"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case '2':
-                    draw2D(fontMap.get("digit_two"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case '3':
-                    draw2D(fontMap.get("digit_three"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case '4':
-                    draw2D(fontMap.get("digit_four"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case '5':
-                    draw2D(fontMap.get("digit_five"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case '6':
-                    draw2D(fontMap.get("digit_six"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case '7':
-                    draw2D(fontMap.get("digit_seven"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case '8':
-                    draw2D(fontMap.get("digit_eight"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case '9':
-                    draw2D(fontMap.get("digit_nine"), entityXPos + i, entityYPos + 14, 12, 16);
-                    i += 12;
-                    break;
-                case ' ':
-                    // Space character - just advance position without drawing
-                    i += 12;
-                    break;
-                default:
-                    // For any unsupported character, you could draw a default/placeholder
-                    // or just skip it. Here we'll just advance the position.
-                    i += 12;
-                    break;
+            String fontKey = getCharacterFontKey(letter);
+            if (fontKey != null && fontMap.containsKey(fontKey)) {
+                draw2D(fontMap.get(fontKey), entityXPos + i, entityYPos - 30, 12, 16);
+                i += 12;
+            } else {
+                i += 12; // Skip unknown characters
             }
         }
-        flushBatch();
+    }
+
+    private String getCharacterFontKey(char c) {
+        if (c >= 'a' && c <= 'z') {
+            return "latin_small_letter_" + c;
+        } else if (c >= 'A' && c <= 'Z') {
+            return "latin_capital_letter_" + Character.toLowerCase(c);
+        } else if (c >= '0' && c <= '9') {
+            return "digit_" + toWordDigit(c);
+        } else if (c == ' ') {
+            return null; // Space doesn't need a texture
+        }
+        return null;
+    }
+
+    private String toWordDigit(char c) {
+        String[] words = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
+        return words[c - '0'];
     }
 
     public int loadTexture(String filePath) {

@@ -64,8 +64,8 @@ import fbla.editor.Door;
 // 3 - low, nice to haves, don't need to be added now
 
 public class LevelEditor {
-    public static final int WINDOW_W = 1700;
-    public static final int WINDOW_H = 900;
+    public static final int WINDOW_W = 1920;
+    public static final int WINDOW_H = 1080;
     public static final String RESOURCE_PATH = System.getProperty("user.home")
             + "\\Desktop\\FBLA-Game\\game_resources";
     public static final long FRAMERATE = 20;
@@ -89,6 +89,7 @@ public class LevelEditor {
     private int[][] collisionGrid;
     private List<Entity> entities;
     private List<Door> doors;
+    private List<Object3D> object3ds;
 
     private ImString backgroundImagePath = new ImString("", 256);
     private int backgroundImageTextureId = -1;
@@ -107,7 +108,8 @@ public class LevelEditor {
 
     private int inGameFrameCount = 0;
 
-    private Renderer renderer = new Renderer(this);
+    private Renderer3D renderer3d = new Renderer3D();
+    private Renderer renderer = new Renderer(this, renderer3d);
     private UI ui = new UI(this);
 
     public static void main(String[] args) throws Exception {
@@ -200,7 +202,13 @@ public class LevelEditor {
         collisionGrid = level.getCollisionGrid();
         entities = new ArrayList<>(level.getEntities());
         doors = new ArrayList<>(level.getDoors());
-
+        if(level.getObject3DList() != null){
+            object3ds = new ArrayList<>(level.getObject3DList());
+        } else {
+            List<Object3D> newLObject3dsList = new ArrayList<>();
+            level.set3DObjectsList(newLObject3dsList);
+            object3ds = new ArrayList<>(level.getObject3DList());
+        }
         // Rebuild collision grid from entities and doors
         rebuildCollisionGrid();
 
@@ -256,11 +264,12 @@ public class LevelEditor {
     }
 
     private void handleMousePress(int mouseX, int mouseY) {
-        int canvasX = 320;
+        int canvasX = 415;
         int canvasY = 20;
         int canvasW = GRID_WIDTH * GRID_CELL_SIZE;
         int canvasH = GRID_HEIGHT * GRID_CELL_SIZE;
 
+        System.out.println("mouse x: " + mouseX + " mouse y:" + mouseY);
         // Check if click is within canvas
         if (mouseX >= canvasX && mouseX <= canvasX + canvasW &&
                 mouseY >= canvasY && mouseY <= canvasY + canvasH) {
@@ -270,12 +279,14 @@ public class LevelEditor {
                 Entity e = entities.get(i);
                 int entityScreenX = canvasX + e.getX();
                 int entityScreenY = canvasY + e.getY();
-
+                System.out.println("e x: " + e.getX() + ", e y: " + e.getY() + ", mouse x: " + mouseX + ", mouse y: " + mouseY);
                 if (mouseX >= entityScreenX - 12 && mouseX <= entityScreenX + 12 &&
                         mouseY >= entityScreenY - 12 && mouseY <= entityScreenY + 12) {
                     isDraggingEntity = true;
                     draggingEntityIndex = i;
+                    System.out.println("mouse clicked on entity with type: " + e.getType());
                     return;
+                    
                 }
             }
 
@@ -308,7 +319,7 @@ public class LevelEditor {
     }
 
     private void handleMouseRelease(int mouseX, int mouseY) {
-        int canvasX = 320;
+        int canvasX = 415;
         int canvasY = 20;
         int canvasW = GRID_WIDTH * GRID_CELL_SIZE;
         int canvasH = GRID_HEIGHT * GRID_CELL_SIZE;
@@ -452,9 +463,6 @@ public class LevelEditor {
             } catch (InterruptedException e) {
                 System.out.println(e);
             }
-
-            inGameFrameCount++;
-            System.out.println("frame " + inGameFrameCount);
         }
     }
 
@@ -525,6 +533,11 @@ public class LevelEditor {
     public boolean getShowCollisionGrid(){
         return this.ui.getShowCollisionGrid();
     }
+
+    public List<Object3D> getObject3ds(){
+        return this.object3ds;
+    }
+
     void addEntity(int x, int y, String type, String name, String imagePath) {
         List<String> aiPackages = List.of("");
         Entity newEntity = new Entity();
@@ -564,6 +577,17 @@ public class LevelEditor {
         }
 
         System.out.println("Added " + type + " at (" + x + ", " + y + ")");
+    }
+
+    public void add3DObject(float x, float y, float z, float sx, float sy, float sz, float ax, float ay, float az, String name, String path, int textureId, String texturePath){
+        Object3D model = renderer3d.load3DObject(path, textureId, name);
+        renderer3d.move3DObject(model, x, y, z);
+        renderer3d.scale3DObject(model, sx, sy, sz);
+        renderer3d.rotate3DObject(model, ax, ay, az);
+        model.setModelPath(path);
+        model.setTexturePath(texturePath);
+        object3ds.add(model);
+        levels.get(currentLevelIndex).getObject3DList().add(model);
     }
 
     public void addDoor(int x, int y, int targetLevel, int targetX, int targetY, String imagePath) {
@@ -920,6 +944,7 @@ public class LevelEditor {
 
     // Add a new blank level
     void addNewLevel() {
+        List<Object3D> object3ds = new ArrayList<>();
         Level newLevel = new Level();
 
         // Create blank collision grid
@@ -929,6 +954,8 @@ public class LevelEditor {
                 newCollisionGrid[y][x] = 0;
             }
         }
+
+        newLevel.set3DObjectsList(object3ds);
 
         // Set fields using reflection
         setPrivateField(newLevel, "collisionGrid", newCollisionGrid);

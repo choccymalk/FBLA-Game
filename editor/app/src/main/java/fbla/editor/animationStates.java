@@ -20,12 +20,11 @@ public class animationStates {
 
     // does not matter what setallempty is, it has to be there so gson doesnt try to use it
     public animationStates(boolean setAllEmpty){
-        List<String> emptyList = List.of();
-        this.idleImages = emptyList;
-        this.walkingDownImages = emptyList;
-        this.walkingUpImages = emptyList;
-        this.walkingLeftImages = emptyList;
-        this.walkingRightImages = emptyList;
+        this.idleImages = new ArrayList<>();
+        this.walkingDownImages = new ArrayList<>();
+        this.walkingUpImages = new ArrayList<>();
+        this.walkingLeftImages = new ArrayList<>();
+        this.walkingRightImages = new ArrayList<>();
     }
 
     public List<String> getIdleImagesPaths(){
