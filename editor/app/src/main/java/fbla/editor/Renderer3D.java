@@ -112,6 +112,67 @@ public class Renderer3D {
         }
     }
 
+    // ONLY used if loading a level
+    public Object3D load3DObject(String filePath, int textureId, String objectName, float x, float y, float z, float sx, float sy, float sz, float ax, float ay, float az) {
+        List<float[]> tempVertices = new ArrayList<>();
+        List<float[]> tempTexCoords = new ArrayList<>();
+        List<Float> packedData = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#"))
+                    continue;
+
+                String[] parts = line.split("\\s+");
+                if (parts[0].equals("v")) {
+                    tempVertices.add(new float[] { Float.parseFloat(parts[1]), Float.parseFloat(parts[2]),
+                            Float.parseFloat(parts[3]) });
+                } else if (parts[0].equals("vt")) {
+                    tempTexCoords.add(new float[] { Float.parseFloat(parts[1]), 1.0f - Float.parseFloat(parts[2]) });
+                } // Inside load3DObject, replace the 'f' parsing block:
+                else if (parts[0].equals("f")) {
+                    // Standard OBJ faces can have 3, 4, or more vertices.
+                    // We must convert them to triangles (1-2-3, 1-3-4, 1-4-5...)
+                    for (int i = 2; i < parts.length - 1; i++) {
+                        packVertex(parts[1], tempVertices, tempTexCoords, packedData);
+                        packVertex(parts[i], tempVertices, tempTexCoords, packedData);
+                        packVertex(parts[i + 1], tempVertices, tempTexCoords, packedData);
+                    }
+                }
+            }
+
+            float[] vertexData = new float[packedData.size()];
+            for (int i = 0; i < packedData.size(); i++) {
+                vertexData[i] = packedData.get(i);
+            }
+
+            Object3D obj = new Object3D(objectName, vertexData.length / 5);
+            obj.textureId = textureId;
+
+            // --- UPLOAD TO GPU VBO ---
+            FloatBuffer buffer = BufferUtils.createFloatBuffer(vertexData.length);
+            buffer.put(vertexData).flip();
+
+            obj.vboId = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, obj.vboId);
+            glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            move3DObject(obj, x, y, z);
+            scale3DObject(obj, sx, sy, sz);
+            rotate3DObject(obj, ax, ay, az);
+
+            loaded3DObjects.add(obj);
+            return obj;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public List<Object3D> getLoaded3DObjects() {
         return this.loaded3DObjects;
     }

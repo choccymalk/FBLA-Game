@@ -202,12 +202,22 @@ public class LevelEditor {
         collisionGrid = level.getCollisionGrid();
         entities = new ArrayList<>(level.getEntities());
         doors = new ArrayList<>(level.getDoors());
-        if(level.getObject3DList() != null){
-            object3ds = new ArrayList<>(level.getObject3DList());
+        if (level.getObject3DList() != null) {
+            // object3ds = new ArrayList<>(level.getObject3DList());
+            List<Object3D> loadedObjects = new ArrayList<>();
+            for (Object3D object3d : level.getObject3DList()) {
+                loadedObjects.add(renderer3d.load3DObject(RESOURCE_PATH + "\\models\\" + object3d.getModelPath(),
+                        renderer.loadTexture(RESOURCE_PATH + "\\textures\\" + object3d.getTexturePath()),
+                        object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(), object3d.getScaleX(),
+                        object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(), object3d.getRotationY(),
+                        object3d.getRotationZ()));
+            }
+            object3ds = loadedObjects;
         } else {
             List<Object3D> newLObject3dsList = new ArrayList<>();
             level.set3DObjectsList(newLObject3dsList);
             object3ds = new ArrayList<>(level.getObject3DList());
+
         }
         // Rebuild collision grid from entities and doors
         rebuildCollisionGrid();
@@ -279,14 +289,15 @@ public class LevelEditor {
                 Entity e = entities.get(i);
                 int entityScreenX = canvasX + e.getX();
                 int entityScreenY = canvasY + e.getY();
-                System.out.println("e x: " + e.getX() + ", e y: " + e.getY() + ", mouse x: " + mouseX + ", mouse y: " + mouseY);
+                System.out.println(
+                        "e x: " + e.getX() + ", e y: " + e.getY() + ", mouse x: " + mouseX + ", mouse y: " + mouseY);
                 if (mouseX >= entityScreenX - 12 && mouseX <= entityScreenX + 12 &&
                         mouseY >= entityScreenY - 12 && mouseY <= entityScreenY + 12) {
                     isDraggingEntity = true;
                     draggingEntityIndex = i;
                     System.out.println("mouse clicked on entity with type: " + e.getType());
                     return;
-                    
+
                 }
             }
 
@@ -466,75 +477,75 @@ public class LevelEditor {
         }
     }
 
-    public List<Entity> getEntities(){
+    public List<Entity> getEntities() {
         return entities;
     }
 
-    public List<Door> getDoors(){
+    public List<Door> getDoors() {
         return this.doors;
     }
 
-    public Renderer getRenderer(){
+    public Renderer getRenderer() {
         return this.renderer;
     }
 
-    public boolean getIsDraggingEntity(){
+    public boolean getIsDraggingEntity() {
         return this.isDraggingEntity;
     }
 
-    public boolean getIsDraggingDoor(){
+    public boolean getIsDraggingDoor() {
         return this.isDraggingDoor;
     }
 
-    public boolean getShowDoors(){
+    public boolean getShowDoors() {
         return ui.getShowDoors();
     }
 
-    public boolean getShowEntities(){
+    public boolean getShowEntities() {
         return ui.getShowEntities();
     }
 
-    public int getCurrentLevelIndex(){
+    public int getCurrentLevelIndex() {
         return this.currentLevelIndex;
     }
 
-    public List<Level> getLevels(){
+    public List<Level> getLevels() {
         return this.levels;
     }
 
-    public UI getUi(){
+    public UI getUi() {
         return this.ui;
     }
 
-    public ImGuiImplGlfw getImGuiImplGlfw(){
+    public ImGuiImplGlfw getImGuiImplGlfw() {
         return this.imguiGlfw;
     }
 
-    public ImGuiImplGl3 getImGuiImplGl3(){
+    public ImGuiImplGl3 getImGuiImplGl3() {
         return this.imguiGl3;
     }
 
-    public ImString getBackgroundImagePath(){
+    public ImString getBackgroundImagePath() {
         return this.backgroundImagePath;
     }
 
-    public int getDragPreviewGridX(){
+    public int getDragPreviewGridX() {
         return this.dragPreviewGridX;
     }
 
-    public int getDragPreviewGridY(){
+    public int getDragPreviewGridY() {
         return this.dragPreviewGridY;
     }
 
-    public int[][] getCollisionGrid(){
+    public int[][] getCollisionGrid() {
         return this.collisionGrid;
     }
 
-    public boolean getShowCollisionGrid(){
+    public boolean getShowCollisionGrid() {
         return this.ui.getShowCollisionGrid();
     }
 
-    public List<Object3D> getObject3ds(){
+    public List<Object3D> getObject3ds() {
         return this.object3ds;
     }
 
@@ -579,7 +590,8 @@ public class LevelEditor {
         System.out.println("Added " + type + " at (" + x + ", " + y + ")");
     }
 
-    public void add3DObject(float x, float y, float z, float sx, float sy, float sz, float ax, float ay, float az, String name, String path, int textureId, String texturePath){
+    public void add3DObject(float x, float y, float z, float sx, float sy, float sz, float ax, float ay, float az,
+            String name, String path, int textureId, String texturePath) {
         Object3D model = renderer3d.load3DObject(path, textureId, name);
         renderer3d.move3DObject(model, x, y, z);
         renderer3d.scale3DObject(model, sx, sy, sz);

@@ -373,13 +373,13 @@ public class UI {
         ImGui.inputFloat("Rotation X##ent", objectRotationX);
         ImGui.inputFloat("Rotation Y##ent", objectRotationY);
         ImGui.inputFloat("Rotation Z##ent", objectRotationZ);
-        ImGui.inputText("Object Texture##ent", objectTexturePath);
-        ImGui.inputText("Object Model##ent", object3DModelPath);
+        ImGui.inputText("Object Texture (Relative to " + RESOURCE_PATH + "\\textures\\)" + "##ent", objectTexturePath);
+        ImGui.inputText("Object Model (Relative to " + RESOURCE_PATH + "\\models\\)" + "##ent", object3DModelPath);
         if (ImGui.button("Add Object##btn", 150, 25)) {
-            int textureId = editor.getRenderer().loadTexture(objectTexturePath.get());
+            int textureId = editor.getRenderer().loadTexture(RESOURCE_PATH + "\\textures\\" + objectTexturePath.get());
             editor.add3DObject(objectX.get(), objectY.get(), objectZ.get(), objectScaleX.get(), objectScaleY.get(),
                     objectScaleZ.get(), objectRotationX.get(), objectRotationY.get(), objectRotationZ.get(),
-                    object3DName.get(), object3DModelPath.get(), textureId, objectTexturePath.get());
+                    object3DName.get(), RESOURCE_PATH + "\\models\\" + object3DModelPath.get(), textureId, RESOURCE_PATH + "\\textures\\" + objectTexturePath.get());
 
         }
 
@@ -444,7 +444,8 @@ public class UI {
         ImGui.text("Y: " + editor.getRenderer().getCameraPosY());
         ImGui.text("Z: " + editor.getRenderer().getCameraPosZ());
 
-        ImGui.text("Camera will be fixed at (0,0,-6.0) in game");
+        ImGui.text("Camera will be fixed at");
+        ImGui.text(" (0,0,-6.0) in game");
 
         ImGui.end();
 
