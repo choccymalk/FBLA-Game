@@ -92,14 +92,15 @@ public class Renderer3D {
             }
 
             Object3D obj = new Object3D(objectName, vertexData.length / 5);
-            obj.textureId = textureId;
-
+            //obj.textureId = textureId;
+            obj.setTextureId(textureId);
             // --- UPLOAD TO GPU VBO ---
             FloatBuffer buffer = BufferUtils.createFloatBuffer(vertexData.length);
             buffer.put(vertexData).flip();
 
-            obj.vboId = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, obj.vboId);
+            //obj.vboId = glGenBuffers();
+            obj.setVboId(glGenBuffers());
+            glBindBuffer(GL_ARRAY_BUFFER, obj.getVboId());
             glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -118,7 +119,6 @@ public class Renderer3D {
         List<float[]> tempTexCoords = new ArrayList<>();
         List<Float> packedData = new ArrayList<>();
         filePath = LevelEditor.RESOURCE_PATH + "\\models\\" + filePath;
-
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -150,14 +150,14 @@ public class Renderer3D {
             }
 
             Object3D obj = new Object3D(objectName, vertexData.length / 5);
-            obj.textureId = textureId;
+            obj.setTextureId(textureId);
 
             // --- UPLOAD TO GPU VBO ---
             FloatBuffer buffer = BufferUtils.createFloatBuffer(vertexData.length);
             buffer.put(vertexData).flip();
 
-            obj.vboId = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, obj.vboId);
+            obj.setVboId(glGenBuffers());
+            glBindBuffer(GL_ARRAY_BUFFER, obj.getVboId());
             glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -173,6 +173,7 @@ public class Renderer3D {
             return null;
         }
     }
+
 
     public List<Object3D> getLoaded3DObjects() {
         return this.loaded3DObjects;
@@ -209,23 +210,23 @@ public class Renderer3D {
      * @param obj The Object3D to render
      */
     public void render3DObject(Object3D obj) {
-        if (obj.vboId == -1)
+        if (obj.getVboId() == -1)
             return;
 
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, obj.textureId);
+        glBindTexture(GL_TEXTURE_2D, obj.getTextureId());
 
         // Disable culling to render both sides of faces
-        glDisable(GL_CULL_FACE);
+        //glDisable(GL_CULL_FACE);
 
         glPushMatrix();
-        glTranslatef(obj.x, obj.y, obj.z);
-        glRotatef(obj.rotationX, 1, 0, 0);
-        glRotatef(obj.rotationY, 0, 1, 0);
-        glRotatef(obj.rotationZ, 0, 0, 1);
-        glScalef(obj.scaleX, obj.scaleY, obj.scaleZ);
+        glTranslatef(obj.getX(), obj.getY(), obj.getZ());
+        glRotatef(obj.getRotationX(), 1, 0, 0);
+        glRotatef(obj.getRotationY(), 0, 1, 0);
+        glRotatef(obj.getRotationZ(), 0, 0, 1);
+        glScalef(obj.getScaleX(), obj.getScaleY(), obj.getScaleZ());
 
-        glBindBuffer(GL_ARRAY_BUFFER, obj.vboId);
+        glBindBuffer(GL_ARRAY_BUFFER, obj.getVboId());
 
         // STRIDE: 5 floats * 4 bytes = 20 bytes per vertex
         int stride = 20;
@@ -238,7 +239,7 @@ public class Renderer3D {
         // 2 components (U,V), offset 12 bytes (3 floats * 4 bytes)
         glTexCoordPointer(2, GL_FLOAT, stride, 12);
 
-        glDrawArrays(GL_TRIANGLES, 0, obj.vertexCount);
+        glDrawArrays(GL_TRIANGLES, 0, obj.getVertexCount());
 
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -352,9 +353,9 @@ public class Renderer3D {
      * @param z   New Z coordinate
      */
     public void move3DObject(Object3D obj, float x, float y, float z) {
-        obj.x = x;
-        obj.y = y;
-        obj.z = z;
+        obj.setX(x);
+        obj.setY(y);
+        obj.setZ(z);
     }
 
     /**
@@ -366,9 +367,9 @@ public class Renderer3D {
      * @param scaleZ Scale factor for Z axis
      */
     public void scale3DObject(Object3D obj, float scaleX, float scaleY, float scaleZ) {
-        obj.scaleX = scaleX;
-        obj.scaleY = scaleY;
-        obj.scaleZ = scaleZ;
+        obj.setScaleX(scaleX);
+        obj.setScaleY(scaleY);
+        obj.setScaleZ(scaleZ);
     }
 
     /**
@@ -380,9 +381,9 @@ public class Renderer3D {
      * @param rotZ Rotation around Z axis (degrees)
      */
     public void rotate3DObject(Object3D obj, float rotX, float rotY, float rotZ) {
-        obj.rotationX = rotX;
-        obj.rotationY = rotY;
-        obj.rotationZ = rotZ;
+        obj.setRoationX(rotX);
+        obj.setRoationY(rotY);
+        obj.setRoationZ(rotZ);
     }
 
     /**
@@ -393,7 +394,7 @@ public class Renderer3D {
      */
     public Object3D get3DObject(String objectName) {
         for (Object3D obj : loaded3DObjects) {
-            if (obj.name.equals(objectName)) {
+            if (obj.getName().equals(objectName)) {
                 return obj;
             }
         }
@@ -408,7 +409,7 @@ public class Renderer3D {
     public void remove3DObject(String objectName) {
         for (int i = 0; i < loaded3DObjects.size(); i++) {
             Object3D obj = loaded3DObjects.get(i);
-            if (obj.name.equals(objectName)) {
+            if (obj.getName().equals(objectName)) {
                 loaded3DObjects.remove(i);
                 return;
             }

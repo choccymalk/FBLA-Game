@@ -376,6 +376,18 @@ public class Renderer {
         return this.cameraRotZ;
     }
 
+    public void setCameraRotX(float x){
+        this.cameraRotX = x;
+    }
+
+    public void setCameraRotY(float y){
+        this.cameraRotX = y;
+    }
+
+    public void setCameraRotZ(float z){
+        this.cameraRotX = z;
+    }
+
     private void draw3DLayer() {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -406,7 +418,7 @@ public class Renderer {
 
         // 3. Render Objects
         for (Object3D obj3d : renderer3d.getLoaded3DObjects()) {
-            if (obj3d.getLevelIndex() == editor.getCurrentLevelIndex()) {
+            if(editor.getLevels().get(editor.getCurrentLevelIndex()).getObject3DList().contains(obj3d.getName())){
                 renderer3d.clipObjectToCanvasBounds((float) canvasX, (float) canvasY, (float) canvasW, (float) canvasH, obj3d);
             }
         }

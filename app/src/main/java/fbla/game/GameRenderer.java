@@ -178,7 +178,16 @@ public class GameRenderer {
 
         // Render your VBO objects here
         for (Object3D obj3d : renderer3d.getLoaded3DObjects()) {
-            if (obj3d.getLevelIndex() == game.getCurrentLevelIndex()) {
+            // this checks to see if the object has the same level index as the current loaded level index
+            // not robust because if we wanted to load an object on the fly, the object we load might not
+            // have the same level index as the level we are on
+            /*if (obj3d.getLevelIndex() == game.getCurrentLevelIndex()) {
+                renderer3d.render3DObject(obj3d);
+            }*/
+
+            // this is more robust, it checks to see if the level contains the name of the object, we can easily
+            // load a new object by adding the name of the object to the level's list
+            if(game.getLevels().get(game.getCurrentLevelIndex()).getObject3DList().contains(obj3d.getName())){
                 renderer3d.render3DObject(obj3d);
             }
         }

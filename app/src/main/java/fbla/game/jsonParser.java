@@ -5,18 +5,23 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
+import fbla.game.Renderer.Object3D;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class jsonParser {
-    private final File levelsJson;
+    private File levelsJson;
+    private File object3dsJson;
     private final Gson gson = new Gson();
-    private List<Level> levels = Collections.emptyList();
+    private List<Level> levels = new ArrayList<>();
+    private List<Object3D> object3Ds = new ArrayList<>();
 
     public jsonParser(File levelsJson) {
         if (levelsJson == null) throw new IllegalArgumentException("levelsJson cannot be null");
@@ -24,7 +29,13 @@ public class jsonParser {
         parse();
     }
 
-    public void parse() {
+    public jsonParser(File levelsJson, File object3dsJson) {
+        if(object3dsJson == null) throw new IllegalArgumentException("object3dsJson cannot be null");
+        this.object3dsJson = object3dsJson;
+        parse3dObjects();
+    }
+
+    private void parse() {
         try (FileReader reader = new FileReader(levelsJson)) {
             JsonObject root = gson.fromJson(reader, JsonObject.class);
             if (root == null) {
@@ -47,6 +58,32 @@ public class jsonParser {
         } catch (IOException e) {
             e.printStackTrace();
             levels = Collections.emptyList();
+        }
+    }
+
+    private void parse3dObjects() {
+        try (FileReader reader = new FileReader(object3dsJson)) {
+            JsonObject root = gson.fromJson(reader, JsonObject.class);
+            if (root == null) {
+                object3Ds = Collections.emptyList();
+                return;
+            }
+
+            JsonElement objectsElement = root.get("3d_objects");
+            if (objectsElement == null || objectsElement.isJsonNull()) {
+                object3Ds = Collections.emptyList();
+                return;
+            }
+
+            Type listType = new TypeToken<List<Object3D>>() {}.getType();
+            object3Ds = gson.fromJson(objectsElement, listType);
+            if (object3Ds == null) object3Ds = Collections.emptyList();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            object3Ds = Collections.emptyList();
+        } catch (IOException e) {
+            e.printStackTrace();
+            object3Ds = Collections.emptyList();
         }
     }
 
@@ -79,6 +116,20 @@ public class jsonParser {
     public Level getLevel(int index) {
         checkIndex(index);
         return levels.get(index);
+    }
+
+    public List<Object3D> getAllObject3ds(){
+        return this.object3Ds;
+    }
+
+    public List<Object3D> getObject3dsInLevel(int levelIndex){
+        List<Object3D> objects = new ArrayList<>();
+        for (Object3D object3d : this.object3Ds) {
+            if(object3d.getLevelIndex() == levelIndex){
+                objects.add(object3d);
+            }
+        }
+        return objects;
     }
 
     private void checkIndex(int idx) {

@@ -215,6 +215,7 @@ public class UI {
         ImGui.sameLine();
         if (ImGui.button("Save", 90, 30)) {
             editor.saveAllLevels();
+            editor.saveAllObject3Ds();
         }
         ImGui.sameLine();
         ImGui.text("Autosave Off");

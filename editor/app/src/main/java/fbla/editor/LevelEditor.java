@@ -90,6 +90,8 @@ public class LevelEditor {
     private List<Entity> entities;
     private List<Door> doors;
     private List<Object3D> object3ds;
+    public jsonParser object3DParser = new jsonParser(new File(RESOURCE_PATH + "\\levels.json"),
+            new File(RESOURCE_PATH + "\\3dobjects.json"));
 
     private ImString backgroundImagePath = new ImString("", 256);
     private int backgroundImageTextureId = -1;
@@ -99,6 +101,8 @@ public class LevelEditor {
     private int draggingDoorIndex = -1;
     private int dragPreviewGridX = -1;
     private int dragPreviewGridY = -1;
+
+    private boolean isPanningCamera = false;
 
     private float cursorXPos = 0;
     private float cursorYPos = 0;
@@ -160,11 +164,12 @@ public class LevelEditor {
             } else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
                 System.out.println(cursorXPos + "," + cursorYPos + " fromm callback " + mouseX + "," + mouseY);
                 // figure out way user moved mouse more, x or y
-                if(action == GLFW_PRESS){
+                if (action == GLFW_PRESS) {
                     handleMiddleMouseButtonPress(mouseX, mouseY);
-                } else if (action == GLFW_RELEASE){
+                } else if (action == GLFW_RELEASE) {
+                    System.out.println("released");
                     handleMiddleMouseButtonRelease(mouseX, mouseY);
-                }
+                } // else if(action )
             }
         });
 
@@ -235,26 +240,23 @@ public class LevelEditor {
         parser = new jsonParser(new File(RESOURCE_PATH + "\\levels.json"));
         levels = new ArrayList<>(parser.getLevels());
         List<Object3D> loadedObjects = new ArrayList<>();
-        for (Level level : levels) {
-            for (Object3D object3d : level.getObject3DList()) {
-                System.out.println("Loaded Object with " + object3d.getModelPath() + " " + object3d.getTexturePath()
-                        + " " + object3d.getName() + " @ (" + object3d.getX() + "," + object3d.getY() + ","
-                        + object3d.getZ() + ") and scale of (" + object3d.getScaleX() + "," + object3d.getScaleY() + ","
-                        + object3d.getScaleZ() + ") with level index of " + object3d.getLevelIndex());
-                Object3D newModel = renderer3d.load3DObject(object3d.getModelPath(),
-                        renderer.loadTexture3DObj(object3d.getTexturePath()),
-                        object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(), object3d.getScaleX(),
-                        object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(), object3d.getRotationY(),
-                        object3d.getRotationZ());
-                newModel.setLevelIndex(object3d.getLevelIndex());
-                newModel.setModelPath(object3d.getModelPath());
-                newModel.setTexturePath(object3d.getTexturePath());
-                loadedObjects.add(newModel);
-            }
-            System.out.println(level.getObject3DList().size());
-            object3ds = loadedObjects;
-            System.out.println(object3ds.size());
+        for (Object3D object3d : object3DParser.getAllObject3ds()) {
+            System.out.println("Loaded Object with " + object3d.getModelPath() + " " + object3d.getTexturePath()
+                    + " " + object3d.getName() + " @ (" + object3d.getX() + "," + object3d.getY() + ","
+                    + object3d.getZ() + ") and scale of (" + object3d.getScaleX() + "," + object3d.getScaleY() + ","
+                    + object3d.getScaleZ() + ") with level index of " + object3d.getLevelIndex());
+            Object3D newModel = renderer3d.load3DObject(object3d.getModelPath(),
+                    renderer.loadTexture3DObj(object3d.getTexturePath()),
+                    object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(), object3d.getScaleX(),
+                    object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(), object3d.getRotationY(),
+                    object3d.getRotationZ());
+            newModel.setLevelIndex(object3d.getLevelIndex());
+            newModel.setModelPath(object3d.getModelPath());
+            newModel.setTexturePath(object3d.getTexturePath());
+            newModel.setName(object3d.getName());
+            loadedObjects.add(newModel);
         }
+        object3ds = loadedObjects;
         if (!levels.isEmpty()) {
             loadLevel(0);
         }
@@ -495,12 +497,66 @@ public class LevelEditor {
         }
     }
 
-    private void handleMiddleMouseButtonPress(int x, int y){
+    private int initalMMBX = -1;
+    private int initalMMBY = -1;
+    private float initialCameraRotationX = -1;
+    private float initialCameraRotationY = -1;
+    private float initialCameraRotationZ = -1;
+
+    private void handleMiddleMouseButtonPress(int x, int y) {
         // TODO: handle panning and tilting of camera
+        System.out.println("middle mouse button pressed");
+        isPanningCamera = true;
+        initalMMBX = x;
+        initalMMBY = y;
+        initialCameraRotationX = renderer.getCameraRotX();
+        initialCameraRotationY = renderer.getCameraRotY();
+        initialCameraRotationZ = renderer.getCameraRotZ();
     }
 
-    private void handleMiddleMouseButtonRelease(int x, int y){
+    private void handleMiddleMouseButtonRelease(int x, int y) {
+        isPanningCamera = false;
+        System.out.println("mmb not pressed anymore");
+    }
 
+    // in render loop, this method is called if ispanningcamera is true
+    private void panCamera() {
+        System.out.println("panning");
+
+        double[] xpos = new double[1];
+        double[] ypos = new double[1];
+        glfwGetCursorPos(window, xpos, ypos);
+
+        int mouseX = (int) xpos[0];
+        int mouseY = (int) ypos[0];
+
+        // TODO: finish camera panning
+
+        // Calculate mouse movement delta
+        int deltaX = mouseX - initalMMBX;
+        int deltaY = mouseY - initalMMBY;
+
+        System.out.println(deltaX);
+        System.out.println(deltaY);
+
+        // Sensitivity factor for rotation (adjust as needed)
+        float sensitivity = 0.2f;
+
+        // Calculate new rotation angles
+        float newRotationY = initialCameraRotationY + deltaX * sensitivity;
+        float newRotationX = initialCameraRotationX - deltaY * sensitivity; // Invert Y axis for natural rotation
+
+        // Optional: Clamp vertical rotation to prevent camera flipping
+        // Typically limit pitch to [-89°, 89°] to avoid gimbal lock issues
+        // newRotationX = Math.max(-89.0f, Math.min(89.0f, newRotationX));
+
+        // Set the new camera rotation
+        //renderer.setCameraRotX(newRotationX);
+        //renderer.setCameraRotY(newRotationY);
+        // Z rotation usually not changed for basic camera panning
+        //renderer.setCameraRotZ(initialCameraRotationZ);
+        //renderer.setCameraRot(deltaX, deltaY, initialCameraRotationZ);
+        renderer.setCameraRot(newRotationX, newRotationY, initialCameraRotationZ);
     }
 
     void updateDragPreview() {
@@ -531,6 +587,8 @@ public class LevelEditor {
     private void loop() {
         while (!glfwWindowShouldClose(window)) {
             renderer.tick(window, winW, winH);
+            if (isPanningCamera)
+                panCamera();
             try {
                 Thread.sleep(1000 / FRAMERATE);
             } catch (InterruptedException e) {
@@ -660,7 +718,7 @@ public class LevelEditor {
         model.setModelPath(path);
         model.setTexturePath(texturePath);
         object3ds.add(model);
-        levels.get(currentLevelIndex).appendItemTo3DObjectsList(model);
+        levels.get(currentLevelIndex).appendItemTo3DObjectsList(model.getName());
     }
 
     public void addDoor(int x, int y, int targetLevel, int targetX, int targetY, String imagePath) {
@@ -724,16 +782,36 @@ public class LevelEditor {
         }
     }
 
+    public void saveAllObject3Ds() {
+        try {
+            // Update the current level in the list
+            // levels.set(currentLevelIndex, createLevelFromEditor());
+
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            JsonObject root = new JsonObject();
+            root.add("3d_objects", gson.toJsonTree(object3ds));
+
+            File file = new File(RESOURCE_PATH + "\\3dobjects.json");
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(gson.toJson(root));
+            }
+            System.out.println("Saved to " + file.getAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("Failed to save: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private Level createLevelFromEditor() {
         Level level = levels.get(currentLevelIndex);
         setPrivateField(level, "collisionGrid", collisionGrid);
         setPrivateField(level, "entities", entities);
         setPrivateField(level, "doors", doors);
-        List<Object3D> object3dList = new ArrayList<>();
+        List<String> object3dList = new ArrayList<>();
         for (Object3D object3d : object3ds) {
-            if(object3d.getLevelIndex() == currentLevelIndex){
-                object3dList.add(object3d);
-                System.out.println("wrote " + object3dList.get(object3dList.indexOf(object3d)).getName() + " obj path: " + object3dList.get(object3dList.indexOf(object3d)).getModelPath());
+            if (object3d.getLevelIndex() == currentLevelIndex) {
+                object3dList.add(object3d.getName());
+                System.out.println("wrote " + object3d.getName() + " obj path: " + object3d.getModelPath());
             }
         }
         level.set3DObjectsList(object3dList);
@@ -1025,7 +1103,7 @@ public class LevelEditor {
 
     // Add a new blank level
     void addNewLevel() {
-        List<Object3D> object3ds = new ArrayList<>();
+        List<String> object3ds = new ArrayList<>();
         Level newLevel = new Level();
 
         // Create blank collision grid
@@ -1043,9 +1121,6 @@ public class LevelEditor {
         setPrivateField(newLevel, "entities", new ArrayList<Entity>());
         setPrivateField(newLevel, "doors", new ArrayList<Door>());
         setPrivateField(newLevel, "backgroundImage", "");
-
-        List<Object3D> newLObject3dsList = new ArrayList<>();
-        newLevel.set3DObjectsList(newLObject3dsList);
         object3ds = new ArrayList<>(newLevel.getObject3DList());
 
         levels.add(newLevel);

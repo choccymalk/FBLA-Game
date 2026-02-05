@@ -1,16 +1,16 @@
 package fbla.game.Renderer;
 
 public class Object3D {
-    public String name;
-    public int vertexCount;
-    public int vboId = -1; // -1 means no VBO is assigned yet
-    public int textureId;
-    public float x, y, z;
-    public float scaleX = 1f, scaleY = 1f, scaleZ = 1f;
-    public float rotationX = 0f, rotationY = 0f, rotationZ = 0f;
-    public int levelIndex = -1;
-    public String modelPath = "";
-    public String texturePath = "";
+    private String name;
+    private int vertexCount;
+    private int vboId = -1; // -1 means no VBO is assigned yet
+    private int textureId;
+    private float x, y, z;
+    private float scaleX = 1f, scaleY = 1f, scaleZ = 1f;
+    private float rotationX = 0f, rotationY = 0f, rotationZ = 0f;
+    private int levelIndex = -1;
+    private String modelPath = "";
+    private String texturePath = "";
 
     public Object3D(String name, int vertexCount) {
         this.name = name;
@@ -120,4 +120,29 @@ public class Object3D {
     public void setLevelIndex(int index){
         this.levelIndex = index;
     }
+
+    public int getVboId(){
+        return this.vboId;
+    }
+
+    public int getVertexCount(){
+        return this.vertexCount;
+    }
+
+    public int getTextureId(){
+        return this.textureId;
+    }
+
+    public void setVboId(int id){
+        this.vboId = id;
+    }
+
+    public void setVertexCount(int count){
+        this.vertexCount = count;
+    }
+
+    public void setTextureId(int id){
+        this.textureId = id;
+    }
+
 }

@@ -111,6 +111,7 @@ public class main {
     public int[][] entityMovement;
     private int[] pressedKey = new int[2];
     jsonParser parser = new jsonParser(new File(RESOURCE_PATH + "\\levels.json"));
+    jsonParser object3DParser = new jsonParser(new File(RESOURCE_PATH + "\\levels.json"), new File(RESOURCE_PATH + "\\3dobjects.json"));
     int[][] collisionGrid = parser.getCollisionGrid(0);
     public GameState currentGameState = GameState.TITLE_SCREEN;
     private HashMap<Entity, Integer> entityMap = new HashMap<>(); // entity to level index map
@@ -257,7 +258,7 @@ public class main {
         }
 
         List<Object3D> loadedObjects = new ArrayList<>();
-        for (Level level : levels) {
+        /*for (Level level : levels) {
             for (Object3D object3d : level.getObject3DList()) {
                 System.out.println("Loaded Object with " + object3d.getModelPath() + " " + object3d.getTexturePath()
                         + " " + object3d.getName() + " @ (" + object3d.getX() + "," + object3d.getY() + ","
@@ -276,7 +277,26 @@ public class main {
             System.out.println(level.getObject3DList().size());
             object3ds = loadedObjects;
             System.out.println(object3ds.size());
+        }*/
+
+        for (Object3D object3d : object3DParser.getAllObject3ds()) {
+            System.out.println("Loaded Object with " + object3d.getModelPath() + " " + object3d.getTexturePath()
+                        + " " + object3d.getName() + " @ (" + object3d.getX() + "," + object3d.getY() + ","
+                        + object3d.getZ() + ") and scale of (" + object3d.getScaleX() + "," + object3d.getScaleY() + ","
+                        + object3d.getScaleZ() + ") with level index of " + object3d.getLevelIndex());
+                Object3D newModel = renderer3d.load3DObject(object3d.getModelPath(),
+                        renderer3d.loadTexture3DObj(object3d.getTexturePath()),
+                        object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(), object3d.getScaleX(),
+                        object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(), object3d.getRotationY(),
+                        object3d.getRotationZ());
+                newModel.setLevelIndex(object3d.getLevelIndex());
+                newModel.setModelPath(object3d.getModelPath());
+                newModel.setTexturePath(object3d.getTexturePath());
+                newModel.setName(object3d.getName());
+                loadedObjects.add(newModel);
         }
+        object3ds = loadedObjects;
+
     }
 
     public void GLDebugMessageCallback() {
@@ -463,7 +483,7 @@ public class main {
         // playerX = player.getX() * GRID_CELL_SIZE;
         // playerY = player.getY() * GRID_CELL_SIZE;
         entities.add(player);
-        parser.parse();
+        //parser.parse();
         // player.setPosition(level.getEntities().get(0).getX(),
         // level.getEntities().get(0).getY());
         player.setPosition(parser.getLevel(levelIndex).getPlayerEntityFromLevel().getX(),
@@ -809,6 +829,10 @@ public class main {
         return this.object3ds;
     }
 
+    public List<Level> getLevels(){
+        return this.levels;
+    }
+
     public void saveCurrentGame(main mainInstance, String name) {
         SaveGame saveGame = new SaveGame(name);
         if (saveGame.saveGame(mainInstance)) {
@@ -916,6 +940,10 @@ public class main {
             levels.get(nearest.getTargetLevel()).getPlayerEntityFromLevel().setPosition(nearest.getTargetX(),
                     nearest.getTargetY());
             buildLevel(nearest.getTargetLevel());
+            player.setPosition(nearest.getTargetX(), nearest.getTargetY());
+            playerX = nearest.getTargetX();
+            playerY = nearest.getTargetY();
+            System.out.println("target x: " + nearest.getTargetX() + " target y: " + nearest.getTargetY());
             return;
         }
 

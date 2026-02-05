@@ -18,7 +18,7 @@ public class Level {
     private List<Door> doors;
 
     @SerializedName("3d_objects")
-    private List<Object3D> objects3d;
+    private List<String> objects3d;
 
     // Gson requires a no-arg constructor or it will use reflection; leaving none is fine.
 
@@ -42,15 +42,15 @@ public class Level {
         this.entities = entities;
     }
 
-    public void set3DObjectsList(List<Object3D> objects){
+    public void set3DObjectsList(List<String> objects){
         this.objects3d = objects;
     }
 
-    public void appendItemTo3DObjectsList(Object3D object){
-        this.objects3d.add(object);
+    public void appendItemTo3DObjectsList(String objectName){
+        this.objects3d.add(objectName);
     }
 
-    public List<Object3D> getObject3DList(){
+    public List<String> getObject3DList(){
         return this.objects3d;
     }
 
