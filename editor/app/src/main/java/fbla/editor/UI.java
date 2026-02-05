@@ -447,7 +447,7 @@ public class UI {
         ImGui.text("Z: " + editor.getRenderer().getCameraPosZ());
 
         ImGui.text("Camera will be fixed at");
-        ImGui.text("(0,0,0) in game");
+        ImGui.text("(0,0,10) in game");
 
         if(ImGui.button("camera rot x add 1")){
             editor.getRenderer().setCameraRot(editor.getRenderer().getCameraRotX() + 1f, editor.getRenderer().getCameraRotY(), editor.getRenderer().getCameraRotZ());
