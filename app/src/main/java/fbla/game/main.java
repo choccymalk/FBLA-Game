@@ -53,7 +53,8 @@ import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
 
-import fbla.game.GameRenderer.Object3D;
+import fbla.game.Renderer.Object3D;
+import fbla.game.Renderer.Renderer3D;
 
 public class main {
     // === Config ===
@@ -62,10 +63,10 @@ public class main {
     private static final int MOVE_AMOUNT = 24;
     public static final int MOVEMENT_DELAY_MS = 75;
     private static final double NPC_INTERACTION_DISTANCE = 500.0;
-    private static final String RESOURCE_PATH = System.getProperty("user.home")
+    public static final String RESOURCE_PATH = System.getProperty("user.home")
             + "\\Desktop\\FBLA-Game\\game_resources";
-    public double FRAMERATE = 10.0;
-    public double UPDATE_RATE = 10.0;
+    public double FRAMERATE = 30.0;
+    public double UPDATE_RATE = 30.0;
     public int soundPlayerVolume = 50;
     private static final int GRID_CELL_SIZE = 24;
     private static final int GRID_WIDTH = 53;
@@ -82,8 +83,7 @@ public class main {
     ImBoolean shouldDebugGridBeDrawn;
     public FullscreenToggle fstoggle;
     private GameRenderer renderer;
-    Object3D model;
-    // Model3D model;
+    private Renderer3D renderer3d = new Renderer3D();
 
     public enum GameState {
         TITLE_SCREEN,
@@ -116,6 +116,7 @@ public class main {
     private HashMap<Entity, Integer> entityMap = new HashMap<>(); // entity to level index map
     private List<Level> levels;
     private HashMap<Integer, List<Entity>> levelIndexToEntityMap = new HashMap<>();
+    List<Object3D> object3ds = new ArrayList<>();
 
     // Title screen state
     public String[] titleScreenOptions = { "Start Game", "Options", "Exit" };
@@ -155,6 +156,7 @@ public class main {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_SAMPLES, 4);
         // glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         window = glfwCreateWindow(winW, winH, "Game Window", NULL, NULL);
         if (window == NULL)
@@ -243,9 +245,6 @@ public class main {
 
         fstoggle = new FullscreenToggle(window);
 
-        // model = renderer.load3DModel(RESOURCE_PATH + "\\models\\model.obj");
-        model = renderer.load3DObject(RESOURCE_PATH + "\\models\\fish.obj", fishTex, "model");
-
         // GL43.glEnable(GL43.GL_DEBUG_OUTPUT);
         // GL43.glEnable(GL43.GL_DEBUG_OUTPUT_SYNCHRONOUS);
         // GL43.glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE,
@@ -255,6 +254,28 @@ public class main {
             for (Entity entity : level.getEntities()) {
                 entityMap.put(entity, levels.indexOf(level));
             }
+        }
+
+        List<Object3D> loadedObjects = new ArrayList<>();
+        for (Level level : levels) {
+            for (Object3D object3d : level.getObject3DList()) {
+                System.out.println("Loaded Object with " + object3d.getModelPath() + " " + object3d.getTexturePath()
+                        + " " + object3d.getName() + " @ (" + object3d.getX() + "," + object3d.getY() + ","
+                        + object3d.getZ() + ") and scale of (" + object3d.getScaleX() + "," + object3d.getScaleY() + ","
+                        + object3d.getScaleZ() + ") with level index of " + object3d.getLevelIndex());
+                Object3D newModel = renderer3d.load3DObject(object3d.getModelPath(),
+                        renderer3d.loadTexture3DObj(object3d.getTexturePath()),
+                        object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(), object3d.getScaleX(),
+                        object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(), object3d.getRotationY(),
+                        object3d.getRotationZ());
+                newModel.setLevelIndex(object3d.getLevelIndex());
+                newModel.setModelPath(object3d.getModelPath());
+                newModel.setTexturePath(object3d.getTexturePath());
+                loadedObjects.add(newModel);
+            }
+            System.out.println(level.getObject3DList().size());
+            object3ds = loadedObjects;
+            System.out.println(object3ds.size());
         }
     }
 
@@ -365,6 +386,14 @@ public class main {
         this.currentGameState = state;
     }
 
+    public ImBoolean getIsFullscreen() {
+        return this.isFullscreen;
+    }
+
+    public ImBoolean getShouldDebugGridBeDrawn() {
+        return this.shouldDebugGridBeDrawn;
+    }
+
     public int createTextureFromBufferedImage(BufferedImage img) {
         int[] pixels = new int[img.getWidth() * img.getHeight()];
         img.getRGB(0, 0, img.getWidth(), img.getHeight(), pixels, 0, img.getWidth());
@@ -431,12 +460,14 @@ public class main {
         player.setTextureId(playerTex);
         player.setWidth(ENTITY_WIDTH_CELLS * GRID_CELL_SIZE);
         player.setHeight(ENTITY_HEIGHT_CELLS * GRID_CELL_SIZE);
-        //playerX = player.getX() * GRID_CELL_SIZE;
-        //playerY = player.getY() * GRID_CELL_SIZE;
+        // playerX = player.getX() * GRID_CELL_SIZE;
+        // playerY = player.getY() * GRID_CELL_SIZE;
         entities.add(player);
         parser.parse();
-        //player.setPosition(level.getEntities().get(0).getX(), level.getEntities().get(0).getY());
-        player.setPosition(parser.getLevel(levelIndex).getPlayerEntityFromLevel().getX(), parser.getLevel(levelIndex).getPlayerEntityFromLevel().getY());
+        // player.setPosition(level.getEntities().get(0).getX(),
+        // level.getEntities().get(0).getY());
+        player.setPosition(parser.getLevel(levelIndex).getPlayerEntityFromLevel().getX(),
+                parser.getLevel(levelIndex).getPlayerEntityFromLevel().getY());
         player.setEntityAnimation(new entityAnimation(player, RESOURCE_PATH, this.renderer));
         playerX = player.getX();
         playerY = player.getY();
@@ -467,8 +498,6 @@ public class main {
         }
 
         createDoors(levels.get(levelIndex).getDoors());
-        renderer.move3DObject(model, 10, 10, 0);
-        renderer.scale3DObject(model, 10.0f, 10.0f, 10.0f);
     }
 
     private void createDoors(List<Door> doors) {
@@ -480,48 +509,19 @@ public class main {
     }
 
     private void loop() {
-        long lastTime = System.nanoTime();
-        long lastRenderTime = lastTime;
-
-        // Game updates fast (e.g., 60 UPS)
-        double nsPerUpdate = 1_000_000_000.0 / UPDATE_RATE; // framerate / 2 updates per second
-
-        // Rendering slow (e.g., 10 FPS)
-        double nsPerFrame = 1_000_000_000.0 / FRAMERATE;
-
-        double deltaUpdate = 0;
-        double deltaFrame = 0;
 
         while (!glfwWindowShouldClose(window)) {
-            long now = System.nanoTime();
+            updateGame(1.0f / (float) UPDATE_RATE); // Fixed timestep for updates
+            render(); // Render the current game state
 
-            // Accumulate time for updates
-            deltaUpdate += (now - lastTime) / nsPerUpdate;
-
-            // Accumulate time for rendering
-            deltaFrame += (now - lastRenderTime) / nsPerFrame;
-
-            lastTime = now;
-
-            // Update game as fast as needed (60 times/sec)
-            while (deltaUpdate >= 1) {
-                updateGame(1.0f / (float) UPDATE_RATE); // Fixed timestep for updates
-                deltaUpdate--;
+            try {
+                Thread.sleep(1000 / (long) FRAMERATE);
+            } catch (InterruptedException e) {
+                System.out.println(e);
             }
 
-            // Render only when it's time (10 times/sec)
-            if (deltaFrame >= 1) {
-                render(); // Render the current game state
-                deltaFrame = 0; // Reset, don't accumulate
-
-                // Swap buffers only when we actually rendered
-                glfwSwapBuffers(window);
-
-                // Update render timestamp
-                lastRenderTime = now;
-            }
-
-            glfwPollEvents(); // Still poll events every iteration for responsiveness
+            glfwSwapBuffers(window);
+            glfwPollEvents();
         }
     }
 
@@ -557,14 +557,6 @@ public class main {
         // moved to renderOptions like updateTitleScreen
     }
 
-    private void spinfish() {
-        modelRotX = modelRotX + 0.5f;
-        modelRotY = modelRotY + 0.5f;
-        modelRotZ = modelRotZ + 0.5f;
-        renderer.rotate3DObject(model, modelRotX, modelRotY, modelRotZ);
-
-    }
-
     private void updateInGame(double deltaMs) {
         if (!messageBoxDisplayed) {
             long now = System.currentTimeMillis();
@@ -572,7 +564,6 @@ public class main {
                 int newPlayerX = Math.max(0, Math.min(playerX + xVelocity, winW - playerBI.getWidth()));
                 int newPlayerY = Math.max(0, Math.min(playerY + yVelocity, winH - playerBI.getHeight()));
                 boolean collision = false;
-                System.out.println(newPlayerX + " " + newPlayerY);
                 for (int px = 0; px < 3; px++) {
                     for (int py = 0; py < 5; py++) {
                         int checkX = positionInWindowToPositionInGridX(newPlayerX + px * GRID_CELL_SIZE,
@@ -603,7 +594,6 @@ public class main {
         renderer.render(winW, winH, backgroundBI, backgroundTex, playerBI,
                 gridBI, gridTex, titleScreenBI, titleScreenTex,
                 titleScreenGameLogoBI, titleScreenGameLogoTex);
-        spinfish();
         if (currentGameState == GameState.IN_GAME) {
             if (yVelocity == 0 && xVelocity == 0) {
                 entities.get(0).setCurrentAnimationState("idle");
@@ -639,37 +629,6 @@ public class main {
             }
         }
     }
-    /*
-     * private void render() {
-     * glClearColor(0f, 0f, 0f, 1f);
-     * glClear(GL_COLOR_BUFFER_BIT);
-     * 
-     * glMatrixMode(GL_PROJECTION);
-     * glLoadIdentity();
-     * glOrtho(0, winW, winH, 0, -1, 1);
-     * glMatrixMode(GL_MODELVIEW);
-     * glLoadIdentity();
-     * 
-     * switch (currentGameState) {
-     * case TITLE_SCREEN:
-     * renderTitleScreen();
-     * break;
-     * case IN_GAME:
-     * renderInGame();
-     * if (messageBoxDisplayed) {
-     * renderMessageBox();
-     * }
-     * break;
-     * case PAUSED:
-     * // renderInGame();
-     * renderPauseMenu();
-     * break;
-     * case OPTIONS:
-     * renderOptions();
-     * break;
-     * }
-     * }
-     */
 
     private void keyPressed(int key) {
         System.out.println("Key pressed: " + key);
@@ -727,20 +686,11 @@ public class main {
             case GLFW_KEY_E:
                 interactWithNearestNPC();
                 break;
-            case GLFW_KEY_O:
-                renderer.move3DObject(model, 500, 500, 0);
-                break;
-            case GLFW_KEY_P:
-                renderer.scale3DObject(model, 50.0f, 50.0f, 50.0f);
-                break;
-            case GLFW_KEY_I:
-                modelRotX = modelRotX + 10;
-                modelRotY = modelRotY + 10;
-                modelRotZ = modelRotZ + 10;
-                renderer.rotate3DObject(model, modelRotX, modelRotY, modelRotZ);
+            case GLFW_KEY_F5:
+                saveCurrentGame(this, "quicksave");
                 break;
             case GLFW_KEY_F9:
-                loadGameFromFile(this, "player_save");
+                loadGameFromFile(this, "quicksave");
                 break;
             case GLFW_KEY_0:
                 System.out.println(Arrays.deepToString(collisionGrid));
@@ -800,6 +750,9 @@ public class main {
     public void displayMessage(String message) {
         if (messageBoxDisplayed)
             return;
+        if(message == null){
+            message = " ";
+        }
         System.out.println("Displaying message: " + message);
         yVelocity = 0;
         xVelocity = 0;
@@ -846,6 +799,14 @@ public class main {
 
     public void setEntityMovement(int entityIndex, int directionIndex, int value) {
         entityMovement[entityIndex][directionIndex] = value;
+    }
+
+    public Renderer3D getRenderer3d() {
+        return this.renderer3d;
+    }
+
+    public List<Object3D> getObject3ds() {
+        return this.object3ds;
     }
 
     public void saveCurrentGame(main mainInstance, String name) {
@@ -911,7 +872,7 @@ public class main {
         levels.get(currentLevelIndex).setEntities(levelEntities);
     }
 
-    private void killNearestNPC(){
+    private void killNearestNPC() {
         if (entities.size() < 2)
             return;
         Entity player = entities.get(0);
@@ -927,8 +888,8 @@ public class main {
                 nearest = npc;
             }
         }
-        if(nearest != null){
-            if(!nearest.getType().equals("door")){
+        if (nearest != null) {
+            if (!nearest.getType().equals("door")) {
                 removeEntity(nearest);
             }
         }

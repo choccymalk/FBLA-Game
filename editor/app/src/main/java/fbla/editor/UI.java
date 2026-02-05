@@ -216,6 +216,8 @@ public class UI {
         if (ImGui.button("Save", 90, 30)) {
             editor.saveAllLevels();
         }
+        ImGui.sameLine();
+        ImGui.text("Autosave Off");
 
         // Add new level button (Level 2 TODO)
         if (ImGui.button("New Level", 90, 30)) {
@@ -379,7 +381,7 @@ public class UI {
             int textureId = editor.getRenderer().loadTexture(RESOURCE_PATH + "\\textures\\" + objectTexturePath.get());
             editor.add3DObject(objectX.get(), objectY.get(), objectZ.get(), objectScaleX.get(), objectScaleY.get(),
                     objectScaleZ.get(), objectRotationX.get(), objectRotationY.get(), objectRotationZ.get(),
-                    object3DName.get(), RESOURCE_PATH + "\\models\\" + object3DModelPath.get(), textureId, RESOURCE_PATH + "\\textures\\" + objectTexturePath.get());
+                    object3DName.get(), object3DModelPath.get(), textureId, objectTexturePath.get());
 
         }
 
@@ -398,8 +400,8 @@ public class UI {
                 }
                 ImGui.sameLine();
                 if (ImGui.button("X##ent" + i, 25, 20)) {
-                    editor.getObject3ds().remove(i);
-                    editor.getLevels().get(editor.getCurrentLevelIndex()).getObject3DList().remove(i);
+                    editor.getObject3ds().remove(o3d);
+                    editor.getLevels().get(editor.getCurrentLevelIndex()).getObject3DList().remove(o3d);
                     break;
                 }
             }
@@ -408,7 +410,7 @@ public class UI {
         ImGui.end();
 
         ImGui.setNextWindowPos(1702, 20, 0);
-        ImGui.setNextWindowSize(200, 350, 0);
+        ImGui.setNextWindowSize(200, 700, 0);
 
         ImGui.begin("Camera Position");
 
@@ -445,8 +447,40 @@ public class UI {
         ImGui.text("Z: " + editor.getRenderer().getCameraPosZ());
 
         ImGui.text("Camera will be fixed at");
-        ImGui.text(" (0,0,-6.0) in game");
+        ImGui.text("(0,0,0) in game");
 
+        if(ImGui.button("camera rot x add 1")){
+            editor.getRenderer().setCameraRot(editor.getRenderer().getCameraRotX() + 1f, editor.getRenderer().getCameraRotY(), editor.getRenderer().getCameraRotZ());
+        }
+
+        if(ImGui.button("camera rot x sub 1")){
+            editor.getRenderer().setCameraRot(editor.getRenderer().getCameraRotX() - 1f, editor.getRenderer().getCameraRotY(), editor.getRenderer().getCameraRotZ());
+        }
+
+        if(ImGui.button("camera rot y add 1")){
+            editor.getRenderer().setCameraRot(editor.getRenderer().getCameraRotX(), editor.getRenderer().getCameraRotY() + 1f, editor.getRenderer().getCameraRotZ());
+        }
+
+        if(ImGui.button("camera rot y sub 1")){
+            editor.getRenderer().setCameraRot(editor.getRenderer().getCameraRotX(), editor.getRenderer().getCameraRotY() - 1f, editor.getRenderer().getCameraRotZ());
+        }
+
+        if(ImGui.button("camera rot z add 1")){
+            editor.getRenderer().setCameraRot(editor.getRenderer().getCameraRotX(), editor.getRenderer().getCameraRotY(), editor.getRenderer().getCameraRotZ() + 1f);
+        }
+
+        if(ImGui.button("camera rot z sub 1")){
+            editor.getRenderer().setCameraRot(editor.getRenderer().getCameraRotX(), editor.getRenderer().getCameraRotY(), editor.getRenderer().getCameraRotZ() - 1f);
+        }
+
+        if(ImGui.button("camera rot reset to 0")){
+            editor.getRenderer().setCameraRot(0, 0, 0);
+        }
+
+        ImGui.text("X Rot: " + editor.getRenderer().getCameraRotX());
+        ImGui.text("Y Rot: " + editor.getRenderer().getCameraRotY());
+        ImGui.text("Z Rot: " + editor.getRenderer().getCameraRotZ());
+        
         ImGui.end();
 
         // Render dialogue editor window if open
@@ -700,6 +734,7 @@ public class UI {
 
         if (editingObject3DIndex >= 0 && editingObject3DIndex < editor.getObject3ds().size()) {
             Object3D o3d = editor.getObject3ds().get(editingObject3DIndex);
+            System.out.println(editor.getObject3ds().get(editingObject3DIndex).getName());
             if (o3d.getName() == null) {
                 ImGui.text("Editing: undefined name");
             } else {
@@ -710,8 +745,8 @@ public class UI {
             ImGui.inputText("Name", newObject3DName);
             ImGui.sameLine();
             if (ImGui.button("Set Name")) {
-                o3d.setName(newEntityName.get());
-                newEntityName.clear();
+                o3d.setName(newObject3DName.get());
+                newObject3DName.clear();
             }
             ImGui.inputFloat("Pos X", newObjectX);
             ImGui.sameLine();
@@ -721,12 +756,12 @@ public class UI {
             ImGui.inputFloat("Pos Y", newObjectY);
             ImGui.sameLine();
             if (ImGui.button("Set Pos Y")) {
-                editor.getRenderer().getRenderer3d().move3DObject(o3d, o3d.getY(), newObjectY.get(), o3d.getZ());
+                editor.getRenderer().getRenderer3d().move3DObject(o3d, o3d.getX(), newObjectY.get(), o3d.getZ());
             }
             ImGui.inputFloat("Pos Z", newObjectZ);
             ImGui.sameLine();
             if (ImGui.button("Set Pos Z")) {
-                editor.getRenderer().getRenderer3d().move3DObject(o3d, newObjectX.get(), o3d.getY(), newObjectZ.get());
+                editor.getRenderer().getRenderer3d().move3DObject(o3d, o3d.getX(), o3d.getY(), newObjectZ.get());
             }
             ImGui.inputFloat("Rot X", newObjectRotationX);
             ImGui.sameLine();
@@ -736,12 +771,12 @@ public class UI {
             ImGui.inputFloat("Rot Y", newObjectRotationY);
             ImGui.sameLine();
             if (ImGui.button("Set Rot Y")) {
-                editor.getRenderer().getRenderer3d().rotate3DObject(o3d, o3d.getRotationY(), newObjectRotationY.get(), o3d.getRotationZ());
+                editor.getRenderer().getRenderer3d().rotate3DObject(o3d, o3d.getRotationX(), newObjectRotationY.get(), o3d.getRotationZ());
             }
             ImGui.inputFloat("Rot Z", newObjectRotationZ);
             ImGui.sameLine();
             if (ImGui.button("Set Rot Z")) {
-                editor.getRenderer().getRenderer3d().rotate3DObject(o3d, o3d.getRotationY(), o3d.getRotationY(), newObjectRotationZ.get());
+                editor.getRenderer().getRenderer3d().rotate3DObject(o3d, o3d.getRotationX(), o3d.getRotationY(), newObjectRotationZ.get());
             }
             ImGui.inputFloat("Scale X", newObjectScaleX);
             ImGui.sameLine();

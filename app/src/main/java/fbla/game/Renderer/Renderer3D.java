@@ -1,25 +1,9 @@
-package fbla.editor;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.List;
+package fbla.game.Renderer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
-import imgui.ImGui;
-import imgui.gl3.ImGuiImplGl3;
-import imgui.glfw.ImGuiImplGlfw;
-import imgui.flag.ImGuiWindowFlags;
-import imgui.flag.ImGuiCol;
+
 import java.awt.image.BufferedImage;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-
-import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -27,11 +11,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.assimp.*;
 
-import org.lwjgl.BufferUtils;
+import fbla.game.main;
 
 public class Renderer3D {
 
@@ -117,8 +104,7 @@ public class Renderer3D {
         List<float[]> tempVertices = new ArrayList<>();
         List<float[]> tempTexCoords = new ArrayList<>();
         List<Float> packedData = new ArrayList<>();
-        filePath = LevelEditor.RESOURCE_PATH + "\\models\\" + filePath;
-
+        filePath = main.RESOURCE_PATH + "\\models\\" + filePath;
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -216,7 +202,7 @@ public class Renderer3D {
         glBindTexture(GL_TEXTURE_2D, obj.textureId);
 
         // Disable culling to render both sides of faces
-        glDisable(GL_CULL_FACE);
+        //glDisable(GL_CULL_FACE);
 
         glPushMatrix();
         glTranslatef(obj.x, obj.y, obj.z);
@@ -244,73 +230,6 @@ public class Renderer3D {
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glPopMatrix();
-    }
-
-    // used to pretend that the canvas is the only part of the window and that the
-    // origin of the canvas is the origin of the window
-    // used to pretend that the canvas is the only part of the window and that the
-    // origin of the canvas is the origin of the window
-    public void clipObjectToCanvasBounds(float canvasPositionInWindowX, float canvasPositionInWindowY, float canvasW,
-            float canvasH, Object3D obj) {
-
-        // 1. Calculate OpenGL Coordinates (Bottom-Left Origin)
-        // ImGui uses Top-Left, OpenGL uses Bottom-Left. We must flip Y.
-        float windowHeight = ImGui.getIO().getDisplaySizeY();
-        int glX = (int) canvasPositionInWindowX;
-        int glY = (int) (windowHeight - canvasPositionInWindowY - canvasH);
-        int glW = (int) canvasW;
-        int glH = (int) canvasH;
-
-        // 2. Save Previous State
-        // We are about to change global GL settings (Viewport, Matrix, Scissor).
-        // We must save them so we don't break the ImGui rendering that happens after
-        // this.
-        IntBuffer prevViewport = BufferUtils.createIntBuffer(16);
-        glGetIntegerv(GL_VIEWPORT, prevViewport);
-
-        glPushAttrib(GL_SCISSOR_BIT | GL_ENABLE_BIT); // Save Scissor test state and enabled caps
-
-        // 3. Set Viewport and Scissor
-        // Viewport: Maps (-1 to 1) NDCs to the specific pixels of the canvas.
-        // This ensures (0,0,0) is the CENTER of the canvas, not the window.
-        glViewport(glX, glY, glW, glH);
-
-        // Scissor: Actually cuts off pixels outside the canvas bounds.
-        glEnable(GL_SCISSOR_TEST);
-        glScissor(glX, glY, glW, glH);
-
-        // 4. Update Projection Matrix for correct Aspect Ratio
-        // If we don't do this, the object will look squashed if the canvas isn't 16:9.
-        /*glMatrixMode(GL_PROJECTION);
-        glPushMatrix(); // Save the Editor's projection (likely orthographic for UI)
-        glLoadIdentity();
-
-        float aspectRatio = (float) glW / (float) glH;
-        // Re-run perspective setup for just this canvas
-        // (Using standard game defaults: FOV 70, Near 0.1, Far 1000)
-        setupPerspective(70.0f, aspectRatio, 0.1f, 1000.0f);
-
-        glMatrixMode(GL_MODELVIEW);*/
-        // actually don't do this, as the canvas will always be 16:9
-        // IMPORTANT: SKIP STEP 4!
-
-        // (Modelview is handled inside render3DObject via glPushMatrix, so we are safe
-        // there)
-
-        // 5. Render
-        render3DObject(obj);
-
-        // 6. Restore State
-        // Restore Projection Matrix
-        // glMatrixMode(GL_PROJECTION);
-        // glPopMatrix();
-        // glMatrixMode(GL_MODELVIEW); // Go back to modelview mode for safety
-
-        // Restore Viewport
-        glViewport(prevViewport.get(0), prevViewport.get(1), prevViewport.get(2), prevViewport.get(3));
-
-        // Restore Scissor/Enable bits
-        glPopAttrib();
     }
 
     /**
@@ -416,9 +335,42 @@ public class Renderer3D {
     }
 
     public void removeAll3DObjects(){
-        for (Object3D object3d : loaded3DObjects) {
-            System.out.println("removed 3d obj with name " + object3d.getName());
-            loaded3DObjects.remove(object3d);
+        for (int i = 0; i < loaded3DObjects.size(); i++) {
+            loaded3DObjects.remove(i);
+        }
+    }
+
+    // ONLY used for loading a new 3d object in loadlevel
+    public int loadTexture3DObj(String filePath) {
+        filePath = main.RESOURCE_PATH + "\\textures\\" + filePath;
+        try {
+            BufferedImage img = ImageIO.read(new File(filePath));
+            int[] pixels = new int[img.getWidth() * img.getHeight()];
+            img.getRGB(0, 0, img.getWidth(), img.getHeight(), pixels, 0, img.getWidth());
+
+            ByteBuffer buffer = BufferUtils.createByteBuffer(img.getWidth() * img.getHeight() * 4);
+            for (int y = 0; y < img.getHeight(); y++) {
+                for (int x = 0; x < img.getWidth(); x++) {
+                    int pixel = pixels[y * img.getWidth() + x];
+                    buffer.put((byte) ((pixel >> 16) & 0xFF)); // R
+                    buffer.put((byte) ((pixel >> 8) & 0xFF)); // G
+                    buffer.put((byte) (pixel & 0xFF)); // B
+                    buffer.put((byte) ((pixel >> 24) & 0xFF)); // A
+                }
+            }
+            buffer.flip();
+
+            int texId = glGenTextures();
+            glBindTexture(GL_TEXTURE_2D, texId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Pixel art look
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.getWidth(), img.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                    buffer);
+
+            return texId;
+        } catch (IOException e) {
+            System.err.println("Failed to load: " + filePath);
+            return -1;
         }
     }
 }

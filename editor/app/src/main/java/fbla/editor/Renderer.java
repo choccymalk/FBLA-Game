@@ -87,6 +87,9 @@ public class Renderer {
     private float cameraPosX = 0;
     private float cameraPosY = 0;
     private float cameraPosZ = 0;
+    private float cameraRotX = 0;
+    private float cameraRotY = 0;
+    private float cameraRotZ = 0;
 
     private Renderer3D renderer3d;
 
@@ -157,11 +160,11 @@ public class Renderer {
         // Set material to use vertex color directly
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-        // Update drag preview position
-        editor.updateDragPreview();
-
         // Render canvas (OpenGL)
         renderCanvas();
+
+        // Update drag preview position
+        editor.updateDragPreview();
 
         // Render UI (ImGui on top)
         editor.getImGuiImplGlfw().newFrame();
@@ -246,12 +249,14 @@ public class Renderer {
             draw2D(backgroundImageTextureId, canvasX, canvasY, canvasW, canvasH);
             flushBatch();
         }
-
+        // reset colors
+        glColor4f(1, 1, 1, 1);
         // Draw collision grid
         if (editor.getShowCollisionGrid()) {
             drawCollisionLayer();
         }
-
+        // reset colors
+        glColor4f(1, 1, 1, 1);
         // Draw grid lines
         drawGridLineLayer();
 
@@ -259,11 +264,14 @@ public class Renderer {
         if (editor.getShowDoors()) {
             drawDoorLayer();
         }
-
+        // reset colors
+        glColor4f(1, 1, 1, 1);
         // Draw entities
         if (editor.getShowEntities()) {
             drawEntityLayer();
         }
+        // reset colors
+        glColor4f(1, 1, 1, 1);
         flushBatch();
         // Draw 3d objects
         draw3DLayer();
@@ -350,38 +358,64 @@ public class Renderer {
         return this.cameraPosZ;
     }
 
-    private void draw3DLayer(){
-        glEnable(GL_DEPTH_TEST);
-        glClear(GL_DEPTH_BUFFER_BIT); // Clear depth buffer before rendering 3D
+    public void setCameraRot(float x, float y, float z){
+        this.cameraRotX = x;
+        this.cameraRotY = y;
+        this.cameraRotZ = z;
+    }
 
-        // Save current projection (2D ortho)
+    public float getCameraRotX(){
+        return this.cameraRotX;
+    }
+
+    public float getCameraRotY(){
+        return this.cameraRotY;
+    }
+
+    public float getCameraRotZ(){
+        return this.cameraRotZ;
+    }
+
+    private void draw3DLayer() {
+        glEnable(GL_DEPTH_TEST);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        // 1. Setup Projection (Perspective)
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
         glLoadIdentity();
 
-        // Setup Perspective: FOV, Aspect Ratio, Near Clip, Far Clip
         float aspect = (float) canvasW / (float) canvasH;
         renderer3d.setupPerspective(45.0f, aspect, 0.1f, 1000.0f);
 
-        // Switch to modelview and set up camera
+        // 2. Setup Camera (ModelView)
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadIdentity();
-        
-        // IMPORTANT: Move the camera back so we aren't inside the model
-        // In perspective, negative Z moves objects AWAY from you
-        glTranslatef(cameraPosX, cameraPosY, cameraPosZ);
 
-        // Render your VBO objects here
+        // --- CAMERA LOGIC START ---
+        // We rotate and translate the WORLD in the opposite direction of the camera.
+        // Order matters: Rotate first, then Translate (First Person view).
+        
+        glRotatef(-cameraRotX, 1.0f, 0.0f, 0.0f); // Pitch
+        glRotatef(-cameraRotY, 0.0f, 1.0f, 0.0f); // Yaw
+        glRotatef(-cameraRotZ, 0.0f, 0.0f, 1.0f); // Roll
+        
+        glTranslatef(-cameraPosX, -cameraPosY, -cameraPosZ);
+        // --- CAMERA LOGIC END ---
+
+        // 3. Render Objects
         for (Object3D obj3d : renderer3d.getLoaded3DObjects()) {
-            renderer3d.clipObjectToCanvasBounds((float)canvasX, (float)canvasY, (float)canvasW, (float)canvasH, obj3d);
+            if (obj3d.getLevelIndex() == editor.getCurrentLevelIndex()) {
+                renderer3d.clipObjectToCanvasBounds((float) canvasX, (float) canvasY, (float) canvasW, (float) canvasH, obj3d);
+            }
         }
 
-        glPopMatrix(); // Restore modelview
+        // 4. Cleanup
+        glPopMatrix(); // Pop ModelView
         
-        // Restore 2D projection
         glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
+        glPopMatrix(); // Pop Projection
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
     }
@@ -481,6 +515,40 @@ public class Renderer {
     }
 
     public int loadTexture(String filePath) {
+        try {
+            BufferedImage img = ImageIO.read(new File(filePath));
+            int[] pixels = new int[img.getWidth() * img.getHeight()];
+            img.getRGB(0, 0, img.getWidth(), img.getHeight(), pixels, 0, img.getWidth());
+
+            ByteBuffer buffer = BufferUtils.createByteBuffer(img.getWidth() * img.getHeight() * 4);
+            for (int y = 0; y < img.getHeight(); y++) {
+                for (int x = 0; x < img.getWidth(); x++) {
+                    int pixel = pixels[y * img.getWidth() + x];
+                    buffer.put((byte) ((pixel >> 16) & 0xFF)); // R
+                    buffer.put((byte) ((pixel >> 8) & 0xFF)); // G
+                    buffer.put((byte) (pixel & 0xFF)); // B
+                    buffer.put((byte) ((pixel >> 24) & 0xFF)); // A
+                }
+            }
+            buffer.flip();
+
+            int texId = glGenTextures();
+            glBindTexture(GL_TEXTURE_2D, texId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Pixel art look
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.getWidth(), img.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                    buffer);
+
+            return texId;
+        } catch (IOException e) {
+            System.err.println("Failed to load: " + filePath);
+            return -1;
+        }
+    }
+
+    // ONLY used for loading a new 3d object in loadlevel
+    public int loadTexture3DObj(String filePath) {
+        filePath = RESOURCE_PATH + "\\textures\\" + filePath;
         try {
             BufferedImage img = ImageIO.read(new File(filePath));
             int[] pixels = new int[img.getWidth() * img.getHeight()];

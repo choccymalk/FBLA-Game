@@ -100,6 +100,9 @@ public class LevelEditor {
     private int dragPreviewGridX = -1;
     private int dragPreviewGridY = -1;
 
+    private float cursorXPos = 0;
+    private float cursorYPos = 0;
+
     // Collision grid update constants
     private static final int ENTITY_WIDTH = 3; // cells
     private static final int ENTITY_HEIGHT = 5; // cells
@@ -142,19 +145,62 @@ public class LevelEditor {
         });
 
         glfwSetMouseButtonCallback(window, (win, button, action, mods) -> {
+            double[] xpos = new double[1];
+            double[] ypos = new double[1];
+            glfwGetCursorPos(win, xpos, ypos);
+
+            int mouseX = (int) xpos[0];
+            int mouseY = (int) ypos[0];
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
-                double[] xpos = new double[1];
-                double[] ypos = new double[1];
-                glfwGetCursorPos(win, xpos, ypos);
-
-                int mouseX = (int) xpos[0];
-                int mouseY = (int) ypos[0];
-
                 if (action == GLFW_PRESS) {
                     handleMousePress(mouseX, mouseY);
                 } else if (action == GLFW_RELEASE) {
                     handleMouseRelease(mouseX, mouseY);
+                } // } else if (action == GLFW_)
+            } else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+                System.out.println(cursorXPos + "," + cursorYPos + " fromm callback " + mouseX + "," + mouseY);
+                // figure out way user moved mouse more, x or y
+                if(action == GLFW_PRESS){
+                    handleMiddleMouseButtonPress(mouseX, mouseY);
+                } else if (action == GLFW_RELEASE){
+                    handleMiddleMouseButtonRelease(mouseX, mouseY);
                 }
+            }
+        });
+
+        glfwSetCursorPosCallback(window, (win, x, y) -> {
+            double[] xpos = new double[1];
+            double[] ypos = new double[1];
+            glfwGetCursorPos(win, xpos, ypos);
+
+            cursorXPos = (int) xpos[0];
+            cursorYPos = (int) ypos[0];
+        });
+
+        glfwSetScrollCallback(window, (win, x, y) -> {
+
+            double[] xpos = new double[1];
+            double[] ypos = new double[1];
+            glfwGetCursorPos(win, xpos, ypos);
+
+            int mouseX = (int) xpos[0];
+            int mouseY = (int) ypos[0];
+
+            if (y > 0) {
+                // 415 is canvas pos x in window, 1280 is size of canvas x
+                // 15 is canvas pos y in window, 800 is size of canvas y
+                // checks to see if mouse is in canvas
+                if ((mouseX > 415 && mouseX < 415 + 1280) && (mouseY < 740)) {
+                    renderer.setCameraPos(renderer.getCameraPosX(), renderer.getCameraPosY(),
+                            renderer.getCameraPosZ() + 5);
+                }
+            } else if (y < 0) {
+                if ((mouseX > 415 && mouseX < 415 + 1280) && (mouseY < 740)) {
+                    renderer.setCameraPos(renderer.getCameraPosX(), renderer.getCameraPosY(),
+                            renderer.getCameraPosZ() - 5);
+                }
+            } else {
+                renderer.setCameraPos(renderer.getCameraPosX(), renderer.getCameraPosY(), renderer.getCameraPosZ());
             }
         });
 
@@ -188,6 +234,27 @@ public class LevelEditor {
         // Load levels
         parser = new jsonParser(new File(RESOURCE_PATH + "\\levels.json"));
         levels = new ArrayList<>(parser.getLevels());
+        List<Object3D> loadedObjects = new ArrayList<>();
+        for (Level level : levels) {
+            for (Object3D object3d : level.getObject3DList()) {
+                System.out.println("Loaded Object with " + object3d.getModelPath() + " " + object3d.getTexturePath()
+                        + " " + object3d.getName() + " @ (" + object3d.getX() + "," + object3d.getY() + ","
+                        + object3d.getZ() + ") and scale of (" + object3d.getScaleX() + "," + object3d.getScaleY() + ","
+                        + object3d.getScaleZ() + ") with level index of " + object3d.getLevelIndex());
+                Object3D newModel = renderer3d.load3DObject(object3d.getModelPath(),
+                        renderer.loadTexture3DObj(object3d.getTexturePath()),
+                        object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(), object3d.getScaleX(),
+                        object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(), object3d.getRotationY(),
+                        object3d.getRotationZ());
+                newModel.setLevelIndex(object3d.getLevelIndex());
+                newModel.setModelPath(object3d.getModelPath());
+                newModel.setTexturePath(object3d.getTexturePath());
+                loadedObjects.add(newModel);
+            }
+            System.out.println(level.getObject3DList().size());
+            object3ds = loadedObjects;
+            System.out.println(object3ds.size());
+        }
         if (!levels.isEmpty()) {
             loadLevel(0);
         }
@@ -202,22 +269,9 @@ public class LevelEditor {
         collisionGrid = level.getCollisionGrid();
         entities = new ArrayList<>(level.getEntities());
         doors = new ArrayList<>(level.getDoors());
-        if (level.getObject3DList() != null) {
-            // object3ds = new ArrayList<>(level.getObject3DList());
-            List<Object3D> loadedObjects = new ArrayList<>();
-            for (Object3D object3d : level.getObject3DList()) {
-                loadedObjects.add(renderer3d.load3DObject(RESOURCE_PATH + "\\models\\" + object3d.getModelPath(),
-                        renderer.loadTexture(RESOURCE_PATH + "\\textures\\" + object3d.getTexturePath()),
-                        object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(), object3d.getScaleX(),
-                        object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(), object3d.getRotationY(),
-                        object3d.getRotationZ()));
-            }
-            object3ds = loadedObjects;
-        } else {
-            List<Object3D> newLObject3dsList = new ArrayList<>();
-            level.set3DObjectsList(newLObject3dsList);
-            object3ds = new ArrayList<>(level.getObject3DList());
 
+        if (object3ds != null) {
+            System.out.println(object3ds.size());
         }
         // Rebuild collision grid from entities and doors
         rebuildCollisionGrid();
@@ -441,6 +495,14 @@ public class LevelEditor {
         }
     }
 
+    private void handleMiddleMouseButtonPress(int x, int y){
+        // TODO: handle panning and tilting of camera
+    }
+
+    private void handleMiddleMouseButtonRelease(int x, int y){
+
+    }
+
     void updateDragPreview() {
         if (!isDraggingEntity && !isDraggingDoor) {
             dragPreviewGridX = -1;
@@ -546,7 +608,7 @@ public class LevelEditor {
     }
 
     public List<Object3D> getObject3ds() {
-        return this.object3ds;
+        return object3ds;
     }
 
     void addEntity(int x, int y, String type, String name, String imagePath) {
@@ -592,14 +654,13 @@ public class LevelEditor {
 
     public void add3DObject(float x, float y, float z, float sx, float sy, float sz, float ax, float ay, float az,
             String name, String path, int textureId, String texturePath) {
-        Object3D model = renderer3d.load3DObject(path, textureId, name);
-        renderer3d.move3DObject(model, x, y, z);
-        renderer3d.scale3DObject(model, sx, sy, sz);
-        renderer3d.rotate3DObject(model, ax, ay, az);
+        Object3D model = renderer3d.load3DObject(path, renderer.loadTexture3DObj(texturePath), name, x, y, z, sx, sy,
+                sz, ax, ay, az);
+        model.setLevelIndex(currentLevelIndex);
         model.setModelPath(path);
         model.setTexturePath(texturePath);
         object3ds.add(model);
-        levels.get(currentLevelIndex).getObject3DList().add(model);
+        levels.get(currentLevelIndex).appendItemTo3DObjectsList(model);
     }
 
     public void addDoor(int x, int y, int targetLevel, int targetX, int targetY, String imagePath) {
@@ -668,6 +729,14 @@ public class LevelEditor {
         setPrivateField(level, "collisionGrid", collisionGrid);
         setPrivateField(level, "entities", entities);
         setPrivateField(level, "doors", doors);
+        List<Object3D> object3dList = new ArrayList<>();
+        for (Object3D object3d : object3ds) {
+            if(object3d.getLevelIndex() == currentLevelIndex){
+                object3dList.add(object3d);
+                System.out.println("wrote " + object3dList.get(object3dList.indexOf(object3d)).getName() + " obj path: " + object3dList.get(object3dList.indexOf(object3d)).getModelPath());
+            }
+        }
+        level.set3DObjectsList(object3dList);
         return level;
     }
 
@@ -974,6 +1043,10 @@ public class LevelEditor {
         setPrivateField(newLevel, "entities", new ArrayList<Entity>());
         setPrivateField(newLevel, "doors", new ArrayList<Door>());
         setPrivateField(newLevel, "backgroundImage", "");
+
+        List<Object3D> newLObject3dsList = new ArrayList<>();
+        newLevel.set3DObjectsList(newLObject3dsList);
+        object3ds = new ArrayList<>(newLevel.getObject3DList());
 
         levels.add(newLevel);
         loadLevel(levels.size() - 1);
