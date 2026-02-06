@@ -670,7 +670,7 @@ public class LevelEditor {
     }
 
     void addEntity(int x, int y, String type, String name, String imagePath) {
-        List<String> aiPackages = List.of("");
+        List<String> aiPackages = new ArrayList<>();
         Entity newEntity = new Entity();
         newEntity.setPosition(x * GRID_CELL_SIZE, y * GRID_CELL_SIZE);
         setPrivateField(newEntity, "type", type);

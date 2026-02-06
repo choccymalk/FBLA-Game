@@ -53,6 +53,7 @@ import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
 
+import fbla.game.GameMode.FirstPerson;
 import fbla.game.Renderer.Object3D;
 import fbla.game.Renderer.Renderer3D;
 
@@ -111,13 +112,27 @@ public class main {
     public int[][] entityMovement;
     private int[] pressedKey = new int[2];
     jsonParser parser = new jsonParser(new File(RESOURCE_PATH + "\\levels.json"));
-    jsonParser object3DParser = new jsonParser(new File(RESOURCE_PATH + "\\levels.json"), new File(RESOURCE_PATH + "\\3dobjects.json"));
+    jsonParser object3DParser = new jsonParser(new File(RESOURCE_PATH + "\\levels.json"),
+            new File(RESOURCE_PATH + "\\3dobjects.json"));
     int[][] collisionGrid = parser.getCollisionGrid(0);
     public GameState currentGameState = GameState.TITLE_SCREEN;
     private HashMap<Entity, Integer> entityMap = new HashMap<>(); // entity to level index map
     private List<Level> levels;
     private HashMap<Integer, List<Entity>> levelIndexToEntityMap = new HashMap<>();
     List<Object3D> object3ds = new ArrayList<>();
+    public GameMode currentGameMode = GameMode.FLAT_2D;
+
+    private enum GameMode {
+        FLAT_2D,
+        FIRST_PERSON_3D
+    }
+
+    private FirstPerson fpGameMode;
+
+    private boolean playerStrafing = false;
+    private boolean playerMovingForwards = false;
+    private float playerStrafeAmount = 0;
+    private float playerMoveAmount = 0;
 
     // Title screen state
     public String[] titleScreenOptions = { "Start Game", "Options", "Exit" };
@@ -243,6 +258,7 @@ public class main {
         style.setFrameRounding(5f);
         style.setScrollbarRounding(0.0f);
         renderer = new GameRenderer(this, imguiGlfw, imguiGl3);
+        fpGameMode = new FirstPerson(window, renderer);
 
         fstoggle = new FullscreenToggle(window);
 
@@ -258,42 +274,50 @@ public class main {
         }
 
         List<Object3D> loadedObjects = new ArrayList<>();
-        /*for (Level level : levels) {
-            for (Object3D object3d : level.getObject3DList()) {
-                System.out.println("Loaded Object with " + object3d.getModelPath() + " " + object3d.getTexturePath()
-                        + " " + object3d.getName() + " @ (" + object3d.getX() + "," + object3d.getY() + ","
-                        + object3d.getZ() + ") and scale of (" + object3d.getScaleX() + "," + object3d.getScaleY() + ","
-                        + object3d.getScaleZ() + ") with level index of " + object3d.getLevelIndex());
-                Object3D newModel = renderer3d.load3DObject(object3d.getModelPath(),
-                        renderer3d.loadTexture3DObj(object3d.getTexturePath()),
-                        object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(), object3d.getScaleX(),
-                        object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(), object3d.getRotationY(),
-                        object3d.getRotationZ());
-                newModel.setLevelIndex(object3d.getLevelIndex());
-                newModel.setModelPath(object3d.getModelPath());
-                newModel.setTexturePath(object3d.getTexturePath());
-                loadedObjects.add(newModel);
-            }
-            System.out.println(level.getObject3DList().size());
-            object3ds = loadedObjects;
-            System.out.println(object3ds.size());
-        }*/
+        /*
+         * for (Level level : levels) {
+         * for (Object3D object3d : level.getObject3DList()) {
+         * System.out.println("Loaded Object with " + object3d.getModelPath() + " " +
+         * object3d.getTexturePath()
+         * + " " + object3d.getName() + " @ (" + object3d.getX() + "," + object3d.getY()
+         * + ","
+         * + object3d.getZ() + ") and scale of (" + object3d.getScaleX() + "," +
+         * object3d.getScaleY() + ","
+         * + object3d.getScaleZ() + ") with level index of " +
+         * object3d.getLevelIndex());
+         * Object3D newModel = renderer3d.load3DObject(object3d.getModelPath(),
+         * renderer3d.loadTexture3DObj(object3d.getTexturePath()),
+         * object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(),
+         * object3d.getScaleX(),
+         * object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(),
+         * object3d.getRotationY(),
+         * object3d.getRotationZ());
+         * newModel.setLevelIndex(object3d.getLevelIndex());
+         * newModel.setModelPath(object3d.getModelPath());
+         * newModel.setTexturePath(object3d.getTexturePath());
+         * loadedObjects.add(newModel);
+         * }
+         * System.out.println(level.getObject3DList().size());
+         * object3ds = loadedObjects;
+         * System.out.println(object3ds.size());
+         * }
+         */
 
         for (Object3D object3d : object3DParser.getAllObject3ds()) {
             System.out.println("Loaded Object with " + object3d.getModelPath() + " " + object3d.getTexturePath()
-                        + " " + object3d.getName() + " @ (" + object3d.getX() + "," + object3d.getY() + ","
-                        + object3d.getZ() + ") and scale of (" + object3d.getScaleX() + "," + object3d.getScaleY() + ","
-                        + object3d.getScaleZ() + ") with level index of " + object3d.getLevelIndex());
-                Object3D newModel = renderer3d.load3DObject(object3d.getModelPath(),
-                        renderer3d.loadTexture3DObj(object3d.getTexturePath()),
-                        object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(), object3d.getScaleX(),
-                        object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(), object3d.getRotationY(),
-                        object3d.getRotationZ());
-                newModel.setLevelIndex(object3d.getLevelIndex());
-                newModel.setModelPath(object3d.getModelPath());
-                newModel.setTexturePath(object3d.getTexturePath());
-                newModel.setName(object3d.getName());
-                loadedObjects.add(newModel);
+                    + " " + object3d.getName() + " @ (" + object3d.getX() + "," + object3d.getY() + ","
+                    + object3d.getZ() + ") and scale of (" + object3d.getScaleX() + "," + object3d.getScaleY() + ","
+                    + object3d.getScaleZ() + ") with level index of " + object3d.getLevelIndex());
+            Object3D newModel = renderer3d.load3DObject(object3d.getModelPath(),
+                    renderer3d.loadTexture3DObj(object3d.getTexturePath()),
+                    object3d.getName(), object3d.getX(), object3d.getY(), object3d.getZ(), object3d.getScaleX(),
+                    object3d.getScaleY(), object3d.getScaleZ(), object3d.getRotationX(), object3d.getRotationY(),
+                    object3d.getRotationZ());
+            newModel.setLevelIndex(object3d.getLevelIndex());
+            newModel.setModelPath(object3d.getModelPath());
+            newModel.setTexturePath(object3d.getTexturePath());
+            newModel.setName(object3d.getName());
+            loadedObjects.add(newModel);
         }
         object3ds = loadedObjects;
 
@@ -404,6 +428,13 @@ public class main {
 
     public void setCurrentGameState(GameState state) {
         this.currentGameState = state;
+        if (state == GameState.IN_GAME) {
+            if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                }
+            }
+        }
     }
 
     public ImBoolean getIsFullscreen() {
@@ -451,6 +482,15 @@ public class main {
         entities.clear();
 
         Level level = levels.get(levelIndex);
+        if (level.getGameMode() == 1) {
+            currentGameMode = GameMode.FIRST_PERSON_3D;
+            glfwSetInputMode(window, GLFW_CURSOR_DISABLED, GLFW_TRUE);
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        } else {
+            currentGameMode = GameMode.FLAT_2D;
+            glfwSetInputMode(window, GLFW_CURSOR_DISABLED, GLFW_FALSE);
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
 
         collisionGrid = level.getCollisionGrid();
         try {
@@ -462,38 +502,40 @@ public class main {
         backgroundTex = createTextureFromBufferedImage(backgroundBI);
 
         Entity player = null;
-        for (Entity e : level.getEntities()) {
-            if (e.getType().equals("player")) {
-                player = e;
-                break;
+        if (currentGameMode == GameMode.FLAT_2D) {
+            for (Entity e : level.getEntities()) {
+                if (e.getType().equals("player")) {
+                    player = e;
+                    break;
+                }
             }
+            if (player == null) {
+                throw new IllegalStateException("Level " + levelIndex + " has no player entity defined.");
+            }
+            try {
+                playerBI = javax.imageio.ImageIO.read(new File(RESOURCE_PATH + "\\textures\\" + player.getImagePath()));
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            playerTex = createTextureFromBufferedImage(playerBI);
+            player.setTextureId(playerTex);
+            player.setWidth(ENTITY_WIDTH_CELLS * GRID_CELL_SIZE);
+            player.setHeight(ENTITY_HEIGHT_CELLS * GRID_CELL_SIZE);
+            // playerX = player.getX() * GRID_CELL_SIZE;
+            // playerY = player.getY() * GRID_CELL_SIZE;
+            entities.add(player);
+            // parser.parse();
+            // player.setPosition(level.getEntities().get(0).getX(),
+            // level.getEntities().get(0).getY());
+            player.setPosition(parser.getLevel(levelIndex).getPlayerEntityFromLevel().getX(),
+                    parser.getLevel(levelIndex).getPlayerEntityFromLevel().getY());
+            player.setEntityAnimation(new entityAnimation(player, RESOURCE_PATH, this.renderer));
+            playerX = player.getX();
+            playerY = player.getY();
+            entityMovement = new int[level.getEntities().size()][4];
+            System.out.println(player.getX() + " " + player.getY());
+            System.out.println(level.getEntities().get(0).getX() + " " + level.getEntities().get(0).getY());
         }
-        if (player == null) {
-            throw new IllegalStateException("Level " + levelIndex + " has no player entity defined.");
-        }
-        try {
-            playerBI = javax.imageio.ImageIO.read(new File(RESOURCE_PATH + "\\textures\\" + player.getImagePath()));
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        playerTex = createTextureFromBufferedImage(playerBI);
-        player.setTextureId(playerTex);
-        player.setWidth(ENTITY_WIDTH_CELLS * GRID_CELL_SIZE);
-        player.setHeight(ENTITY_HEIGHT_CELLS * GRID_CELL_SIZE);
-        // playerX = player.getX() * GRID_CELL_SIZE;
-        // playerY = player.getY() * GRID_CELL_SIZE;
-        entities.add(player);
-        //parser.parse();
-        // player.setPosition(level.getEntities().get(0).getX(),
-        // level.getEntities().get(0).getY());
-        player.setPosition(parser.getLevel(levelIndex).getPlayerEntityFromLevel().getX(),
-                parser.getLevel(levelIndex).getPlayerEntityFromLevel().getY());
-        player.setEntityAnimation(new entityAnimation(player, RESOURCE_PATH, this.renderer));
-        playerX = player.getX();
-        playerY = player.getY();
-        entityMovement = new int[level.getEntities().size()][4];
-        System.out.println(player.getX() + " " + player.getY());
-        System.out.println(level.getEntities().get(0).getX() + " " + level.getEntities().get(0).getY());
         for (Entity e : level.getEntities()) {
             if (!e.getType().equals("player")) {
                 e.setEntityAi(new EntityAI(e, this));
@@ -533,7 +575,6 @@ public class main {
         while (!glfwWindowShouldClose(window)) {
             updateGame(1.0f / (float) UPDATE_RATE); // Fixed timestep for updates
             render(); // Render the current game state
-
             try {
                 Thread.sleep(1000 / (long) FRAMERATE);
             } catch (InterruptedException e) {
@@ -579,6 +620,15 @@ public class main {
 
     private void updateInGame(double deltaMs) {
         if (!messageBoxDisplayed) {
+            double[] xpos = new double[1];
+            double[] ypos = new double[1];
+            glfwGetCursorPos(window, xpos, ypos);
+
+            int mouseX = (int) xpos[0];
+            int mouseY = (int) ypos[0];
+            if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                fpGameMode.panCamera(mouseX, mouseY);
+            }
             long now = System.currentTimeMillis();
             if (now - movementLastTime >= MOVEMENT_DELAY_MS) {
                 int newPlayerX = Math.max(0, Math.min(playerX + xVelocity, winW - playerBI.getWidth()));
@@ -599,6 +649,18 @@ public class main {
                 }
                 playerX = Math.max(0, Math.min(playerX + xVelocity, winW - playerBI.getWidth()));
                 playerY = Math.max(0, Math.min(playerY + yVelocity, winH - playerBI.getHeight()));
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    if (playerStrafing) {
+                        fpGameMode.strafe(playerStrafeAmount);
+                    } else {
+                        fpGameMode.strafe(0);
+                    }
+                    if (playerMovingForwards) {
+                        fpGameMode.moveForwardAndBackward(playerMoveAmount);
+                    } else {
+                        fpGameMode.moveForwardAndBackward(0);
+                    }
+                }
                 movementLastTime = now;
             }
         }
@@ -614,39 +676,43 @@ public class main {
         renderer.render(winW, winH, backgroundBI, backgroundTex, playerBI,
                 gridBI, gridTex, titleScreenBI, titleScreenTex,
                 titleScreenGameLogoBI, titleScreenGameLogoTex);
-        if (currentGameState == GameState.IN_GAME) {
-            if (yVelocity == 0 && xVelocity == 0) {
-                entities.get(0).setCurrentAnimationState("idle");
-            } else if (xVelocity == 24) {
-                entities.get(0).setCurrentAnimationState("walkingRight");
-            } else if (xVelocity == -24) {
-                entities.get(0).setCurrentAnimationState("walkingLeft");
-            } else if (yVelocity != 0) {
-                entities.get(0).setCurrentAnimationState("idle");
-            }
+        try {
+            if (currentGameState == GameState.IN_GAME && currentGameMode == GameMode.FLAT_2D) {
+                if (yVelocity == 0 && xVelocity == 0) {
+                    entities.get(0).setCurrentAnimationState("idle");
+                } else if (xVelocity == 24) {
+                    entities.get(0).setCurrentAnimationState("walkingRight");
+                } else if (xVelocity == -24) {
+                    entities.get(0).setCurrentAnimationState("walkingLeft");
+                } else if (yVelocity != 0) {
+                    entities.get(0).setCurrentAnimationState("idle");
+                }
 
-            entities.get(0).setPosition(playerX, playerY);
+                entities.get(0).setPosition(playerX, playerY);
 
-            for (int i = 1; i < entities.size(); i++) {
-                if (entityMovement != null && entityMovement.length > i) {
-                    if (entityMovement[i][0] > 0) {
-                        entities.get(i).setCurrentAnimationState("walkingRight");
-                        entityMovement[i][0]--;
-                    } else if (entityMovement[i][2] > 0) {
-                        entities.get(i).setCurrentAnimationState("walkingLeft");
-                        entityMovement[i][2]--;
-                    } else if (entityMovement[i][1] > 0) {
-                        entities.get(i).setCurrentAnimationState("walkingUp");
-                        entityMovement[i][1]--;
-                    } else if (entityMovement[i][3] > 0) {
-                        entities.get(i).setCurrentAnimationState("walkingDown");
-                        entityMovement[i][3]--;
-                    } else {
-                        // entityIndexToAnimationObjects.get(i).tick("idle");
-                        entities.get(i).setCurrentAnimationState("idle");
+                for (int i = 1; i < entities.size(); i++) {
+                    if (entityMovement != null && entityMovement.length > i) {
+                        if (entityMovement[i][0] > 0) {
+                            entities.get(i).setCurrentAnimationState("walkingRight");
+                            entityMovement[i][0]--;
+                        } else if (entityMovement[i][2] > 0) {
+                            entities.get(i).setCurrentAnimationState("walkingLeft");
+                            entityMovement[i][2]--;
+                        } else if (entityMovement[i][1] > 0) {
+                            entities.get(i).setCurrentAnimationState("walkingUp");
+                            entityMovement[i][1]--;
+                        } else if (entityMovement[i][3] > 0) {
+                            entities.get(i).setCurrentAnimationState("walkingDown");
+                            entityMovement[i][3]--;
+                        } else {
+                            // entityIndexToAnimationObjects.get(i).tick("idle");
+                            entities.get(i).setCurrentAnimationState("idle");
+                        }
                     }
                 }
             }
+        } catch (Exception e) {
+            System.out.println(e);
         }
     }
 
@@ -656,7 +722,11 @@ public class main {
         if (key == GLFW_KEY_ESCAPE) {
             if (currentGameState == GameState.IN_GAME) {
                 currentGameState = GameState.PAUSED;
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             } else if (currentGameState == GameState.PAUSED) {
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                }
                 currentGameState = GameState.IN_GAME;
             } else if (currentGameState == GameState.TITLE_SCREEN) {
                 glfwSetWindowShouldClose(window, true);
@@ -669,6 +739,8 @@ public class main {
                 handleInGameKeyPress(key);
                 break;
             case PAUSED:
+                break;
+            default:
                 break;
         }
     } // (int)(Math.random() * 1000)
@@ -690,18 +762,34 @@ public class main {
             case GLFW_KEY_UP:
             case GLFW_KEY_W:
                 yVelocity = -MOVE_AMOUNT;
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    playerMovingForwards = true;
+                    playerMoveAmount = -1;
+                }
                 break;
             case GLFW_KEY_DOWN:
             case GLFW_KEY_S:
                 yVelocity = MOVE_AMOUNT;
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    playerMovingForwards = true;
+                    playerMoveAmount = 1;
+                }
                 break;
             case GLFW_KEY_LEFT:
             case GLFW_KEY_A:
                 xVelocity = -MOVE_AMOUNT;
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    playerStrafing = true;
+                    playerStrafeAmount = -1;
+                }
                 break;
             case GLFW_KEY_RIGHT:
             case GLFW_KEY_D:
                 xVelocity = MOVE_AMOUNT;
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    playerStrafing = true;
+                    playerStrafeAmount = 1;
+                }
                 break;
             case GLFW_KEY_E:
                 interactWithNearestNPC();
@@ -748,21 +836,37 @@ public class main {
             case GLFW_KEY_W:
                 if (yVelocity < 0)
                     yVelocity = 0;
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    playerMovingForwards = false;
+                    playerMoveAmount = 0;
+                }
                 break;
             case GLFW_KEY_DOWN:
             case GLFW_KEY_S:
                 if (yVelocity > 0)
                     yVelocity = 0;
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    playerMovingForwards = false;
+                    playerMoveAmount = 0;
+                }
                 break;
             case GLFW_KEY_LEFT:
             case GLFW_KEY_A:
                 if (xVelocity < 0)
                     xVelocity = 0;
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    playerStrafing = false;
+                    playerStrafeAmount = 0;
+                }
                 break;
             case GLFW_KEY_RIGHT:
             case GLFW_KEY_D:
                 if (xVelocity > 0)
                     xVelocity = 0;
+                if (currentGameMode == GameMode.FIRST_PERSON_3D) {
+                    playerStrafing = false;
+                    playerStrafeAmount = 0;
+                }
                 break;
         }
     }
@@ -770,7 +874,7 @@ public class main {
     public void displayMessage(String message) {
         if (messageBoxDisplayed)
             return;
-        if(message == null){
+        if (message == null) {
             message = " ";
         }
         System.out.println("Displaying message: " + message);
@@ -829,7 +933,7 @@ public class main {
         return this.object3ds;
     }
 
-    public List<Level> getLevels(){
+    public List<Level> getLevels() {
         return this.levels;
     }
 

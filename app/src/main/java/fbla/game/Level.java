@@ -22,6 +22,9 @@ public class Level {
     @SerializedName("3d_objects")
     private List<String> objects3d;
 
+    @SerializedName("game_mode")
+    private int gameMode;
+
     // Gson requires a no-arg constructor or it will use reflection; leaving none is fine.
 
     public int[][] getCollisionGrid() {
@@ -75,6 +78,11 @@ public class Level {
 
     public void setDoors(List<Door> doors){
         this.doors = doors;
+    }
+
+    // 0 for 2d, 1 for first person 3d
+    public int getGameMode(){
+        return this.gameMode;
     }
 
 }

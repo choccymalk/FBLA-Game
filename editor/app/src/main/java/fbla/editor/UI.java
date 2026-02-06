@@ -63,8 +63,8 @@ import fbla.editor.Door;
 public class UI {
 
     // UI state
-    private ImString selectedEntityType = new ImString("npc", 256);
-    private ImString entityName = new ImString("placeholder", 256);
+    private ImString selectedEntityType = new ImString("npc");
+    private ImString entityName = new ImString("placeholder");
     private ImString entityImage = new ImString("npc.png");
     private ImFloat entityX = new ImFloat(0);
     private ImFloat entityY = new ImFloat(0);
@@ -74,9 +74,9 @@ public class UI {
     private boolean showDoors = true;
     private boolean show3DObjects = true;
 
-    private ImString object3DName = new ImString("3d object");
-    private ImString object3DModelPath = new ImString();
-    private ImString objectTexturePath = new ImString();
+    private ImString object3DName = new ImString("3d object", 4096);
+    private ImString object3DModelPath = new ImString(4096);
+    private ImString objectTexturePath = new ImString(4096);
     // C:\Users\Bentley\Desktop\FBLA-Game\game_resources\textures\fish_texture.png
     // C:\Users\Bentley\Desktop\FBLA-Game\game_resources\models\fish.obj
     private ImFloat objectX = new ImFloat(0);
@@ -90,10 +90,10 @@ public class UI {
     private ImFloat objectRotationZ = new ImFloat(0);
 
     // Door creation state
-    private ImString doorTargetLevel = new ImString("0", 256);
-    private ImString doorTargetX = new ImString("0", 256);
-    private ImString doorTargetY = new ImString("0", 256);
-    private ImString doorImage = new ImString("door.png");
+    private ImString doorTargetLevel = new ImString("0", 4096);
+    private ImString doorTargetX = new ImString("0", 4096);
+    private ImString doorTargetY = new ImString("0", 4096);
+    private ImString doorImage = new ImString("door.png", 4096);
 
     // Grid editing state
     private ImBoolean paintMode = new ImBoolean(false);
@@ -105,21 +105,21 @@ public class UI {
     private int editingEntityIndex = -1;
     private dialogueTree editingDialogueNode = null;
     private List<dialogueTree> dialogueNodeStack = new ArrayList<>();
-    private ImString dialogueNpcText = new ImString("", 512);
-    private ImString dialogueNpcAction = new ImString("", 256);
-    private ImString dialogueResponseText = new ImString("", 256);
+    private ImString dialogueNpcText = new ImString("", 4096);
+    private ImString dialogueNpcAction = new ImString("", 4096);
+    private ImString dialogueResponseText = new ImString("", 4096);
     private int editingResponseIndex = -1;
     private Map<String, Integer> entityAnimationStateTextures = new HashMap<>();
-    private ImString newFramePathIdle = new ImString();
-    private ImString newFramePathWalkingUp = new ImString();
-    private ImString newFramePathWalkingLeft = new ImString();
-    private ImString newFramePathWalkingRight = new ImString();
-    private ImString newFramePathWalkingDown = new ImString();
-    private ImString newEntityType = new ImString();
-    private ImString newEntityName = new ImString();
-    private ImFloat newDoorTargetLevel = new ImFloat();
+    private ImString newFramePathIdle = new ImString(4096);
+    private ImString newFramePathWalkingUp = new ImString(4096);
+    private ImString newFramePathWalkingLeft = new ImString(4096);
+    private ImString newFramePathWalkingRight = new ImString(4096);
+    private ImString newFramePathWalkingDown = new ImString(4096);
+    private ImString newEntityType = new ImString(4096);
+    private ImString newEntityName = new ImString(4096);
+    private ImFloat newDoorTargetLevel = new ImFloat(4096);
 
-    private ImString newObject3DName = new ImString();
+    private ImString newObject3DName = new ImString(4096);
     private ImFloat newObjectX = new ImFloat(0);
     private ImFloat newObjectY = new ImFloat(0);
     private ImFloat newObjectZ = new ImFloat(0);

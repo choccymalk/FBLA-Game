@@ -40,6 +40,13 @@ public class GameRenderer {
     private boolean DRAW_DEBUG_GRID;
     private GameState lastStateForOptionsMenu = GameState.TITLE_SCREEN;
 
+    private float cameraRotX = 0;
+    private float cameraRotY = 0;
+    private float cameraRotZ = 0;
+    private float cameraPosX = 0;
+    private float cameraPosY = 0;
+    private float cameraPosZ = 10;
+
     public GameRenderer(main game, ImGuiImplGlfw imguiGlfw, ImGuiImplGl3 imguiGl3) {
         this.game = game;
         this.imguiGlfw = imguiGlfw;
@@ -148,6 +155,54 @@ public class GameRenderer {
         ImGui.newFrame();
     }
 
+    public void setCameraPos(float x, float y, float z){
+        this.cameraPosX = x;
+        this.cameraPosY = y;
+        this.cameraPosZ = z;
+    }
+
+    public float getCameraPosX(){
+        return this.cameraPosX;
+    }
+
+    public float getCameraPosY(){
+        return this.cameraPosY;
+    }
+
+    public float getCameraPosZ(){
+        return this.cameraPosZ;
+    }
+
+    public void setCameraRot(float x, float y, float z){
+        this.cameraRotX = x;
+        this.cameraRotY = y;
+        this.cameraRotZ = z;
+    }
+
+    public float getCameraRotX(){
+        return this.cameraRotX;
+    }
+
+    public float getCameraRotY(){
+        return this.cameraRotY;
+    }
+
+    public float getCameraRotZ(){
+        return this.cameraRotZ;
+    }
+
+    public void setCameraRotX(float x){
+        this.cameraRotX = x;
+    }
+
+    public void setCameraRotY(float y){
+        this.cameraRotX = y;
+    }
+
+    public void setCameraRotZ(float z){
+        this.cameraRotX = z;
+    }
+
     private void draw3DLayer() {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT); // Clear depth buffer before rendering 3D
@@ -170,11 +225,11 @@ public class GameRenderer {
         // We rotate and translate the WORLD in the opposite direction of the camera.
         // Order matters: Rotate first, then Translate (First Person view).
 
-        glRotatef(-0, 1.0f, 0.0f, 0.0f); // Pitch
-        glRotatef(-0, 0.0f, 1.0f, 0.0f); // Yaw
-        glRotatef(-0, 0.0f, 0.0f, 1.0f); // Roll
-        // camera pos x, camera pos y, camera pos z. all must be negative
-        glTranslatef(-0, -0, -10);
+        glRotatef(-cameraRotX, 1.0f, 0.0f, 0.0f); // Pitch
+        glRotatef(-cameraRotY, 0.0f, 1.0f, 0.0f); // Yaw
+        glRotatef(-cameraRotZ, 0.0f, 0.0f, 1.0f); // Roll
+        
+        glTranslatef(-cameraPosX, -cameraPosY, -cameraPosZ);
 
         // Render your VBO objects here
         for (Object3D obj3d : renderer3d.getLoaded3DObjects()) {

@@ -44,6 +44,7 @@ public class PauseMenu {
         }
         if (ImGui.button("To Title Screen", 200, 40)) {
             game.setCurrentGameState(main.GameState.TITLE_SCREEN);
+            
         }
 
         ImGui.end();

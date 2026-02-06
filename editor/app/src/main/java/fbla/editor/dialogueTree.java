@@ -3,6 +3,7 @@ package fbla.editor;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.List;
 /*
  * "dialogue_tree": {
@@ -51,7 +52,7 @@ import java.util.List;
     private String npcAction;
 
     public dialogueTree(boolean doesntmatter){
-        List<Response> emptyResponse = List.of();
+        List<Response> emptyResponse = new ArrayList<>();
         this.npcText = "";
         this.npcAction = "";
         this.responses = emptyResponse;
