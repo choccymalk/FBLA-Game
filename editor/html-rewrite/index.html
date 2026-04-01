@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="js/AnimationStates.js"></script>
+        <script src="js/Entity.js"></script>
+    </head>
+
+<body>
+    <input type="file" id="fileInput"><button onclick="createAndSerializeObjects()"></button>
+    <script>
+        function createAndSerializeObjects(){
+            var animStates = new AnimationStates(['1.png'],['1.png'],['1.png'],['1.png'],['1.png']);
+            var entity = new Entity('type', 0, 0, '1.png', 'name', 1, animStates);
+            console.log(JSON.stringify(entity));
+        }
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+                    // The file content is in event.target.result
+                    console.log('File content (as Data URL for images):', event.target.result);
+                    // Example: display image preview
+                    // document.getElementById('imagePreview').src = event.target.result;
+                };
+
+                // Read the file as a Data URL or as text (readAsText)
+                reader.readAsText(file);
+            }
+        });
+    </script>
+</body>
+
+</html>

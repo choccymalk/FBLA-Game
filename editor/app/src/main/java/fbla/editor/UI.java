@@ -376,10 +376,10 @@ public class UI {
         ImGui.inputFloat("Rotation X##ent", objectRotationX);
         ImGui.inputFloat("Rotation Y##ent", objectRotationY);
         ImGui.inputFloat("Rotation Z##ent", objectRotationZ);
-        ImGui.inputText("Object Texture (Relative to " + RESOURCE_PATH + "\\textures\\)" + "##ent", objectTexturePath);
-        ImGui.inputText("Object Model (Relative to " + RESOURCE_PATH + "\\models\\)" + "##ent", object3DModelPath);
+        ImGui.inputText("Object Texture (Relative to " + RESOURCE_PATH + "/textures/)" + "##ent", objectTexturePath);
+        ImGui.inputText("Object Model (Relative to " + RESOURCE_PATH + "/models/)" + "##ent", object3DModelPath);
         if (ImGui.button("Add Object##btn", 150, 25)) {
-            int textureId = editor.getRenderer().loadTexture(RESOURCE_PATH + "\\textures\\" + objectTexturePath.get());
+            int textureId = editor.getRenderer().loadTexture(RESOURCE_PATH + "/textures/" + objectTexturePath.get());
             editor.add3DObject(objectX.get(), objectY.get(), objectZ.get(), objectScaleX.get(), objectScaleY.get(),
                     objectScaleZ.get(), objectRotationX.get(), objectRotationY.get(), objectRotationZ.get(),
                     object3DName.get(), object3DModelPath.get(), textureId, objectTexturePath.get());
@@ -900,10 +900,10 @@ public class UI {
     void loadBackgroundImage(String imagePath) {
         try {
             String oldImagePath = imagePath;
-            imagePath = RESOURCE_PATH + "\\textures\\" + imagePath;
+            imagePath = RESOURCE_PATH + "/textures/" + imagePath;
             File imageFile = new File(imagePath);
             if (!imageFile.exists()) {
-                System.err.println("Background image file not found: " + imagePath);
+                System.out.println("Background image file not found: " + imagePath);
                 return;
             }
 

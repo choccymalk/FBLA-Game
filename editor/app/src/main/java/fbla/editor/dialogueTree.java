@@ -47,7 +47,7 @@ import java.util.List;
     @SerializedName("npc_text")
     private String npcText;
     @SerializedName("responses")
-    private List<Response> responses;
+    private List<Response> responses; 
     @SerializedName("npc_action")
     private String npcAction;
 
