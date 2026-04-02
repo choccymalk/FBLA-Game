@@ -35,7 +35,10 @@ class Entity {
     get getAnimationStates(){
         return this.animation_states;
     }
-    get dialogue_tree(){
+    get getDialogueTree(){
         return this.dialogue_tree;
+    }
+    get getName(){
+        return this.name;
     }
 }
