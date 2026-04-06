@@ -30,9 +30,9 @@ public class HospitalMiniGame {
     public HospitalMiniGame(main game, ImGuiImplGl3 imguiGl3, GameRenderer renderer) {
         this.game = game;
         this.imguiGl3 = imguiGl3;
-        this.scheduledItem1 = "Evan Burger, 1-2 P.M.";
-        this.scheduledItem2 = "John Unhealthy, 2-3 P.M.";
-        this.scheduledItem3 = "triple t, 3-4 P.M.";
+        this.scheduledItem1 = "Evan B., 1-2 P.M.";
+        this.scheduledItem2 = "John A., 2-3 P.M.";
+        this.scheduledItem3 = "George P., 3-4 P.M.";
     }
     // TODO: rewrite render using the preexisting code as a starting point, it came from schoolminigame
     /**
