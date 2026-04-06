@@ -56,6 +56,7 @@ import org.lwjgl.system.MemoryUtil;
 import fbla.game.GameMode.FirstPerson;
 import fbla.game.Renderer.Object3D;
 import fbla.game.Renderer.Renderer3D;
+import fbla.game.UI.SchoolMiniGame;
 
 public class main {
     // === Config ===
@@ -72,12 +73,12 @@ public class main {
     private static final int GRID_CELL_SIZE = 24;
     private static final int GRID_WIDTH = 53;
     private static final int GRID_HEIGHT = 30;
-    private static final int ENTITY_WIDTH_CELLS = 3;
-    private static final int ENTITY_HEIGHT_CELLS = 5;
+    private static final int ENTITY_WIDTH_CELLS = 7; // 3
+    private static final int ENTITY_HEIGHT_CELLS = 9; // 5
     private static final int DOOR_WIDTH = 96;
     private static final int DOOR_HEIGHT = 144;
     public boolean DRAW_DEBUG_GRID;
-    private static final String DEFAULT_FONT = "roboto";
+    private static final String DEFAULT_FONT = "8bit";
     private static final int DEFAULT_FONT_SIZE = 20;
     private static boolean FULLSCREEN = false;
     ImBoolean isFullscreen;
@@ -90,7 +91,9 @@ public class main {
         TITLE_SCREEN,
         IN_GAME,
         PAUSED,
-        OPTIONS
+        OPTIONS,
+        SCHOOLMINIGAME,
+        HOSPITALMINIGAME
     }
 
     public long window;
@@ -199,6 +202,7 @@ public class main {
         glfwSetMouseButtonCallback(window, (win, button, action, mods) -> {
             if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
                 leftMouseButtonPressed = true;
+                System.out.println("lmb down at (" + cursorXPosition + ", " + cursorYPosition + ")");
             }
         });
 
@@ -402,12 +406,12 @@ public class main {
             npcBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/npc.png").toFile());
             gridBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/grid_overlay.png").toFile());
             doorBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/door.png").toFile());
-            titleScreenGameLogoBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/logo.png").toFile());
+            titleScreenGameLogoBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/titlescreen-stars-logo.png").toFile());
             fishBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/fish_texture.png").toFile());
 
             try {
                 titleScreenBI = javax.imageio.ImageIO
-                        .read(resourcesPath.resolve("textures/title_screen2.png").toFile());
+                        .read(resourcesPath.resolve("textures/titlescreen-stars-logo.png").toFile());
             } catch (IOException e) {
                 System.out.println("No title screen image found, using background with overlay.");
                 titleScreenBI = backgroundBI;
@@ -551,10 +555,17 @@ public class main {
                 e.setHeight(ENTITY_HEIGHT_CELLS * GRID_CELL_SIZE);
                 e.setPosition(e.getX(), e.getY());
                 entities.add(e);
-                for (int i = 0; i <= ENTITY_WIDTH_CELLS - 1; i++) {
-                    for (int j = 0; j <= ENTITY_HEIGHT_CELLS - 1; j++) {
-                        collisionGrid[(e.getY() / GRID_CELL_SIZE) + j][(e.getX() / GRID_CELL_SIZE) + i] = 1;
+                try {
+                    for (int i = 0; i <= ENTITY_WIDTH_CELLS - 1; i++) {
+                        for (int j = 0; j <= ENTITY_HEIGHT_CELLS - 1; j++) {
+                            System.out.println((e.getY() / GRID_CELL_SIZE) + j);
+                            System.out.println((e.getX() / GRID_CELL_SIZE) + i);
+                            collisionGrid[(e.getY() / GRID_CELL_SIZE) + j][(e.getX() / GRID_CELL_SIZE) + i] = 1;
+                        }
                     }
+                } catch (Exception err){
+                    System.out.println(Arrays.deepToString(collisionGrid));
+                    System.out.println(err);
                 }
             }
         }
@@ -575,11 +586,11 @@ public class main {
         while (!glfwWindowShouldClose(window)) {
             updateGame(1.0f / (float) UPDATE_RATE); // Fixed timestep for updates
             render(); // Render the current game state
-            try {
-                Thread.sleep(1000 / (long) FRAMERATE);
-            } catch (InterruptedException e) {
-                System.out.println(e);
-            }
+            //try {
+            //    Thread.sleep(1000 / (long) FRAMERATE);
+            //} catch (InterruptedException e) {
+            //    System.out.println(e);
+            //}
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -634,8 +645,8 @@ public class main {
                 int newPlayerX = Math.max(0, Math.min(playerX + xVelocity, winW - playerBI.getWidth()));
                 int newPlayerY = Math.max(0, Math.min(playerY + yVelocity, winH - playerBI.getHeight()));
                 boolean collision = false;
-                for (int px = 0; px < 3; px++) {
-                    for (int py = 0; py < 5; py++) {
+                for (int px = 0; px < ENTITY_WIDTH_CELLS; px++) {
+                    for (int py = 0; py < ENTITY_HEIGHT_CELLS; py++) {
                         int checkX = positionInWindowToPositionInGridX(newPlayerX + px * GRID_CELL_SIZE,
                                 newPlayerY + py * GRID_CELL_SIZE);
                         int checkY = positionInWindowToPositionInGridY(newPlayerX + px * GRID_CELL_SIZE,
@@ -812,6 +823,12 @@ public class main {
             // case GLFW_KEY_P:
             // renderer.move3DModel(model, 1, 0, 5);
             // break;
+            case GLFW_KEY_F2:
+                this.currentGameState = GameState.SCHOOLMINIGAME;
+                break;
+            case GLFW_KEY_F3:
+                this.currentGameState = GameState.HOSPITALMINIGAME;
+                break;
         }
 
         if (pressedKey[0] != 0 && pressedKey[1] != 0) {
@@ -929,6 +946,10 @@ public class main {
         return this.renderer3d;
     }
 
+    public GameRenderer getGameRenderer(){
+        return this.renderer;
+    }
+
     public List<Object3D> getObject3ds() {
         return this.object3ds;
     }
@@ -988,8 +1009,8 @@ public class main {
 
     private void removeEntity(Entity e) {
         int[][] collisionGrid = getCollisionGrid();
-        for (int a = 0; a < 3; a++) {
-            for (int j = 0; j < 5; j++) {
+        for (int a = 0; a < ENTITY_WIDTH_CELLS; a++) {
+            for (int j = 0; j < ENTITY_HEIGHT_CELLS; j++) {
                 collisionGrid[(e.getY() / 24) + j][(e.getX() / 24) + a] = 0;
             }
         }

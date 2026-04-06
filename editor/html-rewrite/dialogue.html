@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dialogue Tree Editor</title>
+    <style>
+        :root {
+            --bg: #f4f6f8;
+            --panel: #ffffff;
+            --panel-alt: #f8fafc;
+            --border: #d9e2ec;
+            --text: #243447;
+            --muted: #66788a;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .app {
+            max-width: 1700px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .title-block h1 {
+            margin: 0 0 6px 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .title-block p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+            max-width: 950px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        button {
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.15s ease;
+        }
+
+        button:hover {
+            border-color: #b8c4d1;
+            background: #f9fbfd;
+        }
+
+        .primary-btn {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .primary-btn:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .danger-btn {
+            color: var(--danger);
+            border-color: #f1b8b8;
+            background: #fff;
+        }
+
+        .danger-btn:hover {
+            background: #fff5f5;
+            border-color: #ef9a9a;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.65fr) 420px;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(to bottom, #ffffff, #fbfcfe);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 650;
+        }
+
+        .card-header span {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .card-body { padding: 14px; }
+
+        details.card {
+            padding: 0;
+        }
+
+        details > summary {
+            list-style: none;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        details > summary::-webkit-details-marker { display: none; }
+
+        .summary-row {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .summary-row strong { font-size: 15px; }
+        .summary-row small { color: var(--muted); }
+
+        textarea, input {
+            font: inherit;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 220px;
+            resize: vertical;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.45;
+            background: #fcfdff;
+            color: var(--text);
+            outline: none;
+        }
+
+        textarea:focus, input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+
+        .right-column .card-body {
+            display: grid;
+            gap: 14px;
+        }
+
+        #tree-container {
+            position: relative;
+            width: 100%;
+            height: 820px;
+            overflow: auto;
+            background:
+                radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.18) 1px, transparent 0);
+            background-size: 22px 22px;
+            border-top: 1px solid var(--border);
+        }
+
+        #lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #nodes {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .node {
+            position: absolute;
+            width: 260px;
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+            overflow: hidden;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+            cursor: pointer;
+        }
+
+        .node:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+        }
+
+        .node.selected {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16), 0 14px 28px rgba(15, 23, 42, 0.12);
+        }
+
+        .node-header {
+            padding: 10px 12px;
+            background: linear-gradient(to bottom, #ffffff, #f8fafc);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .node-header .badge {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #475569;
+            background: #eef2ff;
+            border: 1px solid #dbe4ff;
+            border-radius: 999px;
+            padding: 4px 8px;
+        }
+
+        .node-body {
+            padding: 12px;
+        }
+
+        .node-preview {
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.45;
+            margin-bottom: 10px;
+            min-height: 40px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .small-action-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .small-btn {
+            padding: 7px 10px;
+            font-size: 12px;
+            border-radius: 9px;
+        }
+
+        .field {
+            margin-bottom: 10px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 650;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .field input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 9px 10px;
+            font-size: 13px;
+            outline: none;
+            background: #fff;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin: 12px 0 8px;
+        }
+
+        .responses {
+            display: grid;
+            gap: 8px;
+        }
+
+        .response-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .response-row input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            padding: 0;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .add-btn {
+            width: 100%;
+            margin-top: 10px;
+            background: #eff6ff;
+            border-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .add-btn:hover {
+            background: #dbeafe;
+            border-color: #bfdbfe;
+        }
+
+        .helper {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .inspector-empty {
+            padding: 14px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .inspector-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .inspector-header strong { font-size: 15px; }
+        .inspector-header small { color: var(--muted); }
+
+        .inline-note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .breadcrumb {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 1200px) {
+            .layout { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 700px) {
+            .header { flex-direction: column; }
+            .toolbar { width: 100%; }
+            button { width: 100%; }
+            .node { width: 240px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <div class="title-block">
+                <h1>Dialogue Tree Editor</h1>
+                <p>
+                    The canvas is for browsing structure. Click a node to edit it in the inspector on the right.
+                </p>
+            </div>
+            <div class="toolbar">
+                <button onclick="initTree()">New Tree</button>
+                <button onclick="focusSelectedNode()">Focus Selected</button>
+                <button class="primary-btn" onclick="exportJSON()">Export JSON</button>
+            </div>
+        </div>
+
+        <div class="layout">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>Tree Canvas</h2>
+                        <span>Click a node to edit it</span>
+                    </div>
+                </div>
+                <div id="tree-container">
+                    <svg id="lines"></svg>
+                    <div id="nodes"></div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>Inspector</h2>
+                            <span>Selected node properties</span>
+                        </div>
+                    </div>
+                    <div id="inspector">
+                        <div class="inspector-empty">
+                            Select a node on the left to edit its text, action, and responses.
+                        </div>
+                    </div>
+                </div>
+
+                <details class="card" style="margin-top: 14px;">
+                    <summary class="summary-row">
+                        <div>
+                            <strong>Import JSON</strong><br />
+                            <small>Paste a dialogue tree and load it</small>
+                        </div>
+                        <span>Open</span>
+                    </summary>
+                    <div class="card-body">
+                        <textarea id="json-text" placeholder='{"dialogue_tree": {...}}'></textarea>
+                        <button class="primary-btn" onclick="loadJSON()">Load JSON</button>
+                        <div class="helper">If the field is empty, a blank root node is created.</div>
+                    </div>
+                </details>
+
+                <details class="card" style="margin-top: 14px;">
+                    <summary class="summary-row">
+                        <div>
+                            <strong>Export JSON</strong><br />
+                            <small>Copy the current tree data</small>
+                        </div>
+                        <span>Open</span>
+                    </summary>
+                    <div class="card-body">
+                        <textarea id="json-output" readonly placeholder="Exported JSON will appear here"></textarea>
+                        <button onclick="exportJSON()">Refresh Export</button>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let root = null;
+        let selectedNode = null;
+        let selectedPath = [];
+
+        const nodeWidth = 260;
+        const nodeHeight = 140;
+        const horizSpacing = 70;
+        const vertSpacing = 110;
+
+        function createEmptyNode() {
+            return { npc_text: "", npc_action: "", responses: [] };
+        }
+
+        function createEmptyResponse() {
+            return {
+                response_text: "",
+                next: createEmptyNode()
+            };
+        }
+
+        function initTree() {
+            root = createEmptyNode();
+            selectedNode = root;
+            selectedPath = [];
+            renderAll();
+        }
+
+        function loadJSON() {
+            const text = document.getElementById('json-text').value.trim();
+
+            if (!text) {
+                initTree();
+                return;
+            }
+
+            try {
+                const data = JSON.parse(text);
+                root = data.dialogue_tree || createEmptyNode();
+                normalizeTree(root);
+                selectedNode = root;
+                selectedPath = [];
+                renderAll();
+            } catch (e) {
+                alert('Invalid JSON: ' + e.message);
+            }
+        }
+
+        function normalizeTree(node) {
+            if (!node) return createEmptyNode();
+            if (typeof node.npc_text !== 'string') node.npc_text = '';
+            if (typeof node.npc_action !== 'string') node.npc_action = '';
+            if (!Array.isArray(node.responses)) node.responses = [];
+            for (const resp of node.responses) {
+                if (typeof resp.response_text !== 'string') resp.response_text = '';
+                if (!resp.next) resp.next = createEmptyNode();
+                normalizeTree(resp.next);
+            }
+            return node;
+        }
+
+        function renderAll() {
+            renderTree();
+            renderInspector();
+        }
+
+        function renderTree() {
+            const nodesDiv = document.getElementById('nodes');
+            const linesSvg = document.getElementById('lines');
+            nodesDiv.innerHTML = '';
+            linesSvg.innerHTML = '';
+
+            if (!root) return;
+
+            const positions = new Map();
+
+            function getSubtreeWidth(node) {
+                if (!node.responses || node.responses.length === 0) return nodeWidth;
+
+                const childWidths = node.responses.map(r => getSubtreeWidth(r.next));
+                return Math.max(
+                    nodeWidth,
+                    childWidths.reduce((a, b) => a + b, 0) + (childWidths.length - 1) * horizSpacing
+                );
+            }
+
+            function positionNode(node, x, y, parentPos = null) {
+                positions.set(node, { x, y });
+
+                if (parentPos) {
+                    drawLine(
+                        parentPos.x + nodeWidth / 2,
+                        parentPos.y + nodeHeight,
+                        x + nodeWidth / 2,
+                        y
+                    );
+                }
+
+                if (!node.responses || node.responses.length === 0) return;
+
+                const childWidths = node.responses.map(r => getSubtreeWidth(r.next));
+                const totalWidth = childWidths.reduce((a, b) => a + b, 0) + (childWidths.length - 1) * horizSpacing;
+                let currentX = x + (nodeWidth / 2) - (totalWidth / 2);
+
+                for (let i = 0; i < node.responses.length; i++) {
+                    const resp = node.responses[i];
+                    positionNode(resp.next, currentX, y + nodeHeight + vertSpacing, positions.get(node));
+                    currentX += childWidths[i] + horizSpacing;
+                }
+            }
+
+            positionNode(root, 650, 50);
+
+            positions.forEach((pos, node) => {
+                const nodeDiv = createNodeElement(node);
+                nodeDiv.style.left = pos.x + 'px';
+                nodeDiv.style.top = pos.y + 'px';
+                if (node === selectedNode) nodeDiv.classList.add('selected');
+                nodesDiv.appendChild(nodeDiv);
+            });
+        }
+
+        function drawLine(x1, y1, x2, y2) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', '#94a3b8');
+            line.setAttribute('stroke-width', '2');
+            line.setAttribute('stroke-linecap', 'round');
+            document.getElementById('lines').appendChild(line);
+        }
+
+        function createNodeElement(node) {
+            const div = document.createElement('div');
+            div.className = 'node';
+            div.onclick = (e) => {
+                e.stopPropagation();
+                selectNode(node);
+            };
+
+            const header = document.createElement('div');
+            header.className = 'node-header';
+
+            const badge = document.createElement('div');
+            badge.className = 'badge';
+            badge.textContent = 'Node';
+
+            const count = document.createElement('div');
+            count.style.fontSize = '12px';
+            count.style.color = 'var(--muted)';
+            count.textContent = `${(node.responses || []).length} response(s)`;
+
+            header.appendChild(badge);
+            header.appendChild(count);
+            div.appendChild(header);
+
+            const body = document.createElement('div');
+            body.className = 'node-body';
+
+            const preview = document.createElement('div');
+            preview.className = 'node-preview';
+            preview.textContent = node.npc_text ? node.npc_text : '(empty NPC text)';
+            body.appendChild(preview);
+
+            const meta = document.createElement('div');
+            meta.className = 'meta-row';
+            meta.innerHTML = `<span>${node.npc_action ? 'Has action' : 'No action'}</span><span>${(node.responses || []).length} choices</span>`;
+            body.appendChild(meta);
+
+            const actionRow = document.createElement('div');
+            actionRow.className = 'small-action-row';
+
+            const selectBtn = document.createElement('button');
+            selectBtn.className = 'small-btn';
+            selectBtn.textContent = 'Edit';
+            selectBtn.onclick = (e) => {
+                e.stopPropagation();
+                selectNode(node);
+            };
+            actionRow.appendChild(selectBtn);
+
+            const addBtn = document.createElement('button');
+            addBtn.className = 'small-btn';
+            addBtn.textContent = '+ Response';
+            addBtn.onclick = (e) => {
+                e.stopPropagation();
+                selectNode(node);
+                node.responses = node.responses || [];
+                node.responses.push(createEmptyResponse());
+                renderAll();
+            };
+            actionRow.appendChild(addBtn);
+
+            body.appendChild(actionRow);
+            div.appendChild(body);
+            return div;
+        }
+
+        function selectNode(node) {
+            selectedNode = node;
+            selectedPath = findPath(root, node) || [];
+            renderAll();
+        }
+
+        function findPath(current, target, path = []) {
+            if (current === target) return [...path];
+            if (!current || !current.responses) return null;
+
+            for (let i = 0; i < current.responses.length; i++) {
+                const child = current.responses[i].next;
+                const result = findPath(child, target, [...path, i]);
+                if (result) return result;
+            }
+            return null;
+        }
+
+        function getNodeByPath(path) {
+            let node = root;
+            for (const index of path) {
+                if (!node || !node.responses || !node.responses[index]) return null;
+                node = node.responses[index].next;
+            }
+            return node;
+        }
+
+        function renderInspector() {
+            const inspector = document.getElementById('inspector');
+            inspector.innerHTML = '';
+
+            if (!selectedNode) {
+                inspector.innerHTML = `
+                    <div class="inspector-empty">
+                        Select a node on the left to edit its text, action, and responses.
+                    </div>
+                `;
+                return;
+            }
+
+            const header = document.createElement('div');
+            header.className = 'inspector-header';
+
+            const left = document.createElement('div');
+            const title = document.createElement('strong');
+            title.textContent = 'Editing Node';
+            const breadcrumb = document.createElement('div');
+            breadcrumb.className = 'breadcrumb';
+            breadcrumb.textContent = selectedPath.length ? `Path: root → ${selectedPath.map(i => `response ${i + 1}`).join(' → ')}` : 'Path: root';
+            left.appendChild(title);
+            left.appendChild(breadcrumb);
+
+            const right = document.createElement('small');
+            right.textContent = `${(selectedNode.responses || []).length} response(s)`;
+
+            header.appendChild(left);
+            header.appendChild(right);
+            inspector.appendChild(header);
+
+            const body = document.createElement('div');
+            body.className = 'card-body';
+
+            const npcTextField = document.createElement('div');
+            npcTextField.className = 'field';
+            npcTextField.innerHTML = '<label>NPC Text</label>';
+            const npcTextInput = document.createElement('input');
+            npcTextInput.value = selectedNode.npc_text || '';
+            npcTextInput.placeholder = 'What the NPC says';
+            npcTextInput.oninput = () => {
+                selectedNode.npc_text = npcTextInput.value;
+                renderTree();
+            };
+            npcTextField.appendChild(npcTextInput);
+            body.appendChild(npcTextField);
+
+            const npcActionField = document.createElement('div');
+            npcActionField.className = 'field';
+            npcActionField.innerHTML = '<label>NPC Action</label>';
+            const npcActionInput = document.createElement('input');
+            npcActionInput.value = selectedNode.npc_action || '';
+            npcActionInput.placeholder = 'Optional action';
+            npcActionInput.oninput = () => {
+                selectedNode.npc_action = npcActionInput.value;
+                renderTree();
+            };
+            npcActionField.appendChild(npcActionInput);
+            body.appendChild(npcActionField);
+
+            const responsesTitle = document.createElement('div');
+            responsesTitle.className = 'section-title';
+            responsesTitle.textContent = 'Responses';
+            body.appendChild(responsesTitle);
+
+            const responsesDiv = document.createElement('div');
+            responsesDiv.className = 'responses';
+
+            selectedNode.responses = selectedNode.responses || [];
+            for (let i = 0; i < selectedNode.responses.length; i++) {
+                const resp = selectedNode.responses[i];
+                const respRow = document.createElement('div');
+                respRow.className = 'response-row';
+
+                const respInput = document.createElement('input');
+                respInput.value = resp.response_text || '';
+                respInput.placeholder = 'Player response';
+                respInput.oninput = () => {
+                    resp.response_text = respInput.value;
+                    renderTree();
+                };
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'danger-btn icon-btn';
+                removeBtn.textContent = '×';
+                removeBtn.title = 'Remove response';
+                removeBtn.onclick = () => {
+                    selectedNode.responses.splice(i, 1);
+                    renderAll();
+                };
+
+                respRow.appendChild(respInput);
+                respRow.appendChild(removeBtn);
+                responsesDiv.appendChild(respRow);
+            }
+
+            body.appendChild(responsesDiv);
+
+            const addBtn = document.createElement('button');
+            addBtn.className = 'add-btn';
+            addBtn.textContent = '+ Add Response';
+            addBtn.onclick = () => {
+                selectedNode.responses.push(createEmptyResponse());
+                renderAll();
+            };
+            body.appendChild(addBtn);
+
+            const actions = document.createElement('div');
+            actions.className = 'small-action-row';
+            actions.style.marginTop = '12px';
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'danger-btn';
+            deleteBtn.textContent = 'Delete Node';
+            deleteBtn.onclick = () => deleteSelectedNode();
+            actions.appendChild(deleteBtn);
+
+            const centerBtn = document.createElement('button');
+            centerBtn.textContent = 'Focus in Canvas';
+            centerBtn.onclick = () => focusSelectedNode();
+            actions.appendChild(centerBtn);
+
+            body.appendChild(actions);
+            inspector.appendChild(body);
+        }
+
+        function deleteSelectedNode() {
+            if (!selectedNode || selectedNode === root) {
+                alert('The root node cannot be deleted.');
+                return;
+            }
+
+            const path = findPath(root, selectedNode);
+            if (!path || path.length === 0) return;
+
+            const parentPath = path.slice(0, -1);
+            const responseIndex = path[path.length - 1];
+            const parentNode = getNodeByPath(parentPath);
+            if (!parentNode || !parentNode.responses) return;
+
+            parentNode.responses.splice(responseIndex, 1);
+            selectedNode = root;
+            selectedPath = [];
+            renderAll();
+        }
+
+        function focusSelectedNode() {
+            if (!selectedNode) return;
+
+            const nodeDivs = Array.from(document.querySelectorAll('.node'));
+            const selectedDiv = nodeDivs.find(div => div.classList.contains('selected'));
+            if (selectedDiv) {
+                selectedDiv.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            }
+        }
+
+        function exportJSON() {
+            if (!root) {
+                alert('No tree loaded');
+                return;
+            }
+            const output = { dialogue_tree: root };
+            document.getElementById('json-output').value = JSON.stringify(output, null, 2);
+        }
+
+        initTree();
+    </script>
+</body>
+</html>

@@ -1,162 +1,329 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <script src="js/AnimationStates.js"></script>
-    <script src="js/Entity.js"></script>
-    <script src="js/Door.js"></script>
-    <script src="js/DialogueTree.js"></script>
-    <script src="js/Response.js"></script>
-    <script src="js/Level.js"></script>
-</head>
-
+    <title>Custom Level Editor</title>
+    <style>
+        body { font-family: sans-serif; display: flex; gap: 20px; background: #f4f4f9; margin: 20px; }
+        canvas { border: 2px solid #333; background: #fff; cursor: crosshair; }
+        .sidebar { width: 350px; display: flex; flex-direction: column; gap: 15px; height: 720px; overflow-y: auto; padding-right: 10px; }
+        .panel { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .panel h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        input, select, textarea, button { width: 100%; margin-bottom: 8px; box-sizing: border-box; padding: 5px; }
+        textarea { resize: vertical; min-height: 60px; font-family: monospace; font-size: 12px; }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { background: #eee; padding: 8px; margin-bottom: 5px; border-radius: 4px; font-size: 12px; }
+        .button-group { display: flex; gap: 10px; }
+    </style>
+    </head>
 <body>
+
     <canvas id="canvas" width="1280" height="720"></canvas>
-    <p>Entities</p>
-    <ul id="entityList"></ul>
-    <p>Add new entity</p>
-    <textarea id="newEntityXTA" placeholder="x"></textarea>
-    <textarea id="newEntityYTA" placeholder="y"></textarea>
-    <textarea id="newEntityNameTA" placeholder="name"></textarea>
-    <textarea id="newEntityTypeTA" placeholder="type"></textarea>
-    <textarea id="newEntityImageTA" placeholder="image"></textarea>
-    <button onclick="addNewEntity()">Add New Entity</button>
-    <p>Doors</p>
-    <ul id="doorList"></ul>
-    <input type="file" id="fileInput">
-    <button onclick="createAndSerializeObjects()">Create Test Level</button>
-    <button onclick="populateEntityList()">Populate Entity List</button>
-    <button onclick="populateDoorList()">Populate Door List</button>
-    <button onclick="drawCurrentLevel()">Draw Current Level</button>
-    <button onclick="drawGrid()">Draw Grid</button>
+
+    <div class="sidebar">
+        <div class="panel">
+            <h3>File & Global</h3>
+            <div class="button-group">
+                <button onclick="createTestLevel()">Load Template</button>
+                <button onclick="exportJSON()">Export JSON</button>
+            </div>
+            <label>Import JSON:</label>
+            <input type="file" id="fileInput" accept=".json">
+            <label>Active Level:</label>
+            <select id="levelSelector" onchange="switchLevel()"></select>
+            <button onclick="addNewLevel()">+ Add New Level</button>
+        </div>
+
+        <div class="panel">
+            <h3>Collision Grid</h3>
+            <label><input type="radio" name="paintMode" value="paint" checked> Paint Solid (1)</label>
+            <label><input type="radio" name="paintMode" value="erase"> Erase (0)</label>
+            <button onclick="clearGrid()">Clear Grid</button>
+        </div>
+
+        <div class="panel">
+            <h3>Add / Edit Entity</h3>
+            <input id="entName" placeholder="Name (e.g., Bob)">
+            <input id="entType" placeholder="Type (e.g., npc, player)">
+            <div class="button-group">
+                <input id="entX" type="number" placeholder="X">
+                <input id="entY" type="number" placeholder="Y">
+            </div>
+            <input id="entImg" placeholder="Image Path (e.g., idle1.png)">
+            <textarea id="entAnim" placeholder='Animation States JSON (e.g., {"idle":["idle1.png"]})'></textarea>
+            <textarea id="entDialog" placeholder='Dialogue Tree JSON'></textarea>
+            <button onclick="addNewEntity()">Add Entity to Level</button>
+            <ul id="entityList"></ul>
+        </div>
+
+        <div class="panel">
+            <h3>Add Door</h3>
+            <div class="button-group">
+                <input id="doorX" type="number" placeholder="X">
+                <input id="doorY" type="number" placeholder="Y">
+            </div>
+            <input id="doorImg" placeholder="Image Path (e.g., door.png)">
+            <input id="doorTargetLevel" type="number" placeholder="Target Level ID">
+            <div class="button-group">
+                <input id="doorTargetX" type="number" placeholder="Target X">
+                <input id="doorTargetY" type="number" placeholder="Target Y">
+            </div>
+            <button onclick="addNewDoor()">Add Door to Level</button>
+            <ul id="doorList"></ul>
+        </div>
+    </div>
+
     <script>
-        const gridSize = 24; // each grid cell is 24x24 px
-        const entitySizeWidthCells = 3;
-        const entitySizeHeightCells = 5;
-        const doorSizeWidthCells = 2;
-        const doorSizeHeightCells = 3;
-        var entities;
-        var currentLevel;
-        var allLevels;
-        var currentEntityResponses;
-        var currentEntityResponseTree;
-        var currentLevelDoors;
-        var canvasContext = canvas.getContext('2d');
-        var levelBackgroundImage = new Image();
-        function createAndSerializeObjects() {
-            var response0 = new Response("hi");
-            var response1 = new Response("hello");
-            var dialogueTree = new DialogueTree("hi", [response0, response1], "");
-            var animStates = new AnimationStates(['idle1.png'], ['walkingup1.png'], ['walkingdown1.png'], ['walkingleft1.png'], ['walkingright1.png']);
-            var entity0 = new Entity('player', 500, 500, 'https://media.officedepot.com/images/f_auto,q_auto,e_sharpen,h_120/products/6805895/6805895_o01_091020/6805895', 'name', 0, animStates, dialogueTree);
-            var entity1 = new Entity('npc', 700, 300, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcPDDQO_8SwiZkf8uPIUZ5YnilrOKpkJKZhg&s', 'name', 1, animStates, dialogueTree);
-            var door0 = new Door(100, 100, 1, 0, 0, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaQVaxjYQn8BT4DZQLNsPpZ9NTJw2qDVLilg&s");
-            var level0 = new Level([[0], [0]], [entity0, entity1], "https://cdn.pixabay.com/photo/2018/01/14/23/12/nature-3082832_1280.jpg", [door0]);
-            var levels = { "levels": [level0] };
-            allLevels = levels;
-            currentLevel = level0;
-            console.log(JSON.stringify(levels));
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 24; 
+        
+        // Editor State
+        let allLevels = { levels: [] };
+        let currentLevelIndex = 0;
+        let isPainting = false;
+
+        // Ensure current level object exists safely
+        function getCurrentLevel() {
+            return allLevels.levels[currentLevelIndex] || null;
         }
+
+        // --- CORE DRAWING ---
+        function drawEditor() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const level = getCurrentLevel();
+            if (!level) return;
+
+            // 1. Draw Background (Mocked with color if image fails)
+            if (level.background_image) {
+                // In a real scenario, you'd ensure images are preloaded.
+                // For the editor, we'll draw a placeholder rect.
+                ctx.fillStyle = "#e0e0eb";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#a0a0a0";
+                ctx.font = "20px Arial";
+                ctx.fillText("Background: " + level.background_image, 10, 30);
+            }
+
+            // 2. Draw Doors
+            if(level.doors) {
+                level.doors.forEach(door => {
+                    ctx.fillStyle = "blue";
+                    ctx.fillRect(door.x, door.y, gridSize*2, gridSize*3);
+                    ctx.fillStyle = "white";
+                    ctx.fillText("Door", door.x + 2, door.y + 15);
+                });
+            }
+
+            // 3. Draw Entities
+            if(level.entities) {
+                level.entities.forEach(ent => {
+                    ctx.fillStyle = ent.type === 'player' ? "green" : "red";
+                    ctx.fillRect(ent.x, ent.y, gridSize*2, gridSize*2);
+                    ctx.fillStyle = "white";
+                    ctx.fillText(ent.name, ent.x + 2, ent.y + 15);
+                });
+            }
+
+            // 4. Draw Collision Grid
+            drawGridLines();
+            drawCollisionBlocks(level.collision_grid);
+            
+            refreshUI();
+        }
+
+        function drawGridLines() {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(0,0,0,0.1)";
+            ctx.lineWidth = 1;
+            for (let x = 0; x <= canvas.width; x += gridSize) {
+                ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
+            }
+            for (let y = 0; y <= canvas.height; y += gridSize) {
+                ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
+            }
+            ctx.stroke();
+        }
+
+        function drawCollisionBlocks(grid) {
+            if(!grid) return;
+            ctx.fillStyle = "rgba(255, 0, 0, 0.4)"; // semi-transparent red for collisions
+            for(let y = 0; y < grid.length; y++) {
+                if(!grid[y]) continue;
+                for(let x = 0; x < grid[y].length; x++) {
+                    if(grid[y][x] === 1) {
+                        ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                    }
+                }
+            }
+        }
+
+        // --- GRID PAINTING LOGIC ---
+        canvas.addEventListener('mousedown', (e) => { isPainting = true; paintCell(e); });
+        canvas.addEventListener('mousemove', (e) => { if (isPainting) paintCell(e); });
+        canvas.addEventListener('mouseup', () => { isPainting = false; });
+        canvas.addEventListener('mouseleave', () => { isPainting = false; });
+
+        function paintCell(e) {
+            const level = getCurrentLevel();
+            if(!level) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / gridSize);
+            const y = Math.floor((e.clientY - rect.top) / gridSize);
+
+            // Initialize grid rows if they don't exist
+            if(!level.collision_grid) level.collision_grid = [];
+            while(level.collision_grid.length <= y) level.collision_grid.push([]);
+
+            const mode = document.querySelector('input[name="paintMode"]:checked').value;
+            level.collision_grid[y][x] = mode === "paint" ? 1 : 0;
+            
+            drawEditor();
+        }
+
+        function clearGrid() {
+            if(getCurrentLevel()) {
+                getCurrentLevel().collision_grid = [];
+                drawEditor();
+            }
+        }
+
+        // --- DATA MANAGEMENT ---
         function addNewEntity() {
-            var newEntity = new Entity(newEntityTypeTA.value, newEntityXTA.value, newEntityYTA.value, newEntityImageTA.value, newEntityNameTA.value, currentLevel.getEntities.length, null, null);
-            currentLevel.entities[currentLevel.entities.length] = newEntity;
-            console.log(newEntity);
-            populateEntityList();
-            drawCurrentLevel();
-            drawGrid();
-        }
-        function populateEntityList() {
-            entityList.replaceChildren();
-            currentLevel.getEntities.forEach(entity => {
-                var newEntity = document.createElement('li');
-                var newEntityName = document.createElement('p');
-                var newEntityX = document.createElement('p');
-                var newEntityY = document.createElement('p');
-                var newEntityType = document.createElement('p');
-                newEntityName.textContent = "Name: " + entity.name;
-                newEntityX.textContent = "X: " + entity.x;
-                newEntityY.textContent = "Y: " + entity.y;
-                newEntityType.textContent = "Type: " + entity.type;
-                newEntity.appendChild(newEntityName);
-                newEntity.appendChild(newEntityX);
-                newEntity.appendChild(newEntityY);
-                newEntity.appendChild(newEntityType);
-                entityList.appendChild(newEntity);
-            });
-        }
-        function populateDoorList() {
-            doorList.replaceChildren();
-            currentLevel.getDoors.forEach(door => {
-                var newDoor = document.createElement('li');
-                var newDoorImage = document.createElement('p');
-                var newDoorX = document.createElement('p');
-                var newDoorY = document.createElement('p');
-                var newDoorTargetLevel = document.createElement('p');
-                var newDoorTargetX = document.createElement('p');
-                var newDoorTargetY = document.createElement('p');
-                newDoorImage.textContent = "Image: " + door.image;
-                newDoorX.textContent = "X: " + door.x;
-                newDoorY.textContent = "Y: " + door.y;
-                newDoorTargetLevel.textContent = "Target Level: " + door.target_level;
-                newDoorTargetX.textContent = "Target X: " + door.target_x;
-                newDoorTargetY.textContent = "Target Y: " + door.target_y;
-                newDoor.appendChild(newDoorImage);
-                newDoor.appendChild(newDoorX);
-                newDoor.appendChild(newDoorY);
-                newDoor.appendChild(newDoorTargetLevel);
-                newDoor.appendChild(newDoorTargetX);
-                newDoor.appendChild(newDoorTargetY);
-                doorList.appendChild(newDoor);
-            });
-        }
-        function drawCurrentLevel() {
-            levelBackgroundImage.src = currentLevel.background_image;
-            canvasContext.drawImage(levelBackgroundImage, 0, 0);
-            currentLevel.getEntities.forEach(entity => {
-                entityImage = new Image();
-                entityImage.src = entity.image;
-                canvasContext.drawImage(entityImage, entity.x, entity.y);
-            });
-            currentLevel.getDoors.forEach(door => {
-                doorImage = new Image();
-                doorImage.src = door.image;
-                canvasContext.drawImage(doorImage, door.x, door.y);
-            });
-        }
-        function drawGrid(step = gridSize, color = '#000') {
-            canvasContext.beginPath();
-            canvasContext.strokeStyle = color;
-            canvasContext.lineWidth = 1;
+            const level = getCurrentLevel();
+            if(!level) return;
+            
+            // Try parsing the JSON textareas, fallback to empty objects if invalid
+            let animStates = {}, dialogTree = {};
+            try { animStates = JSON.parse(document.getElementById('entAnim').value || "{}"); } catch(e) { alert("Invalid Animation JSON"); return; }
+            try { dialogTree = JSON.parse(document.getElementById('entDialog').value || "{}"); } catch(e) { alert("Invalid Dialogue JSON"); return; }
 
-            // Vertical lines
-            for (let x = 0; x <= canvas.width; x += step) {
-                canvasContext.moveTo(x, 0);
-                canvasContext.lineTo(x, canvas.height);
+            const newEntity = {
+                type: document.getElementById('entType').value,
+                x: parseInt(document.getElementById('entX').value) || 0,
+                y: parseInt(document.getElementById('entY').value) || 0,
+                image: document.getElementById('entImg').value,
+                name: document.getElementById('entName').value,
+                entityId: level.entities.length,
+                animation_states: animStates,
+                dialogue_tree: dialogTree
+            };
+
+            level.entities.push(newEntity);
+            drawEditor();
+        }
+
+        function addNewDoor() {
+            const level = getCurrentLevel();
+            if(!level) return;
+
+            const newDoor = {
+                x: parseInt(document.getElementById('doorX').value) || 0,
+                y: parseInt(document.getElementById('doorY').value) || 0,
+                target_level: parseInt(document.getElementById('doorTargetLevel').value) || 0,
+                target_x: parseInt(document.getElementById('doorTargetX').value) || 0,
+                target_y: parseInt(document.getElementById('doorTargetY').value) || 0,
+                image: document.getElementById('doorImg').value
+            };
+            if(!level.doors) level.doors = [];
+            level.doors.push(newDoor);
+            drawEditor();
+        }
+
+        function addNewLevel() {
+            allLevels.levels.push({ collision_grid: [], entities: [], doors: [], background_image: "new_bg.jpg" });
+            currentLevelIndex = allLevels.levels.length - 1;
+            populateLevelDropdown();
+            drawEditor();
+        }
+
+        function switchLevel() {
+            currentLevelIndex = parseInt(document.getElementById('levelSelector').value);
+            drawEditor();
+        }
+
+        // --- UI REFRESHERS ---
+        function refreshUI() {
+            const level = getCurrentLevel();
+            if(!level) return;
+
+            // Entities
+            const entList = document.getElementById('entityList');
+            entList.innerHTML = '';
+            level.entities.forEach((ent, i) => {
+                const li = document.createElement('li');
+                li.innerText = `[${i}] ${ent.name} (${ent.type}) @ ${ent.x},${ent.y}`;
+                // Add a delete button to each item
+                const delBtn = document.createElement('button');
+                delBtn.innerText = "X"; delBtn.style.width="auto"; delBtn.style.float="right";
+                delBtn.onclick = () => { level.entities.splice(i, 1); drawEditor(); };
+                li.appendChild(delBtn);
+                entList.appendChild(li);
+            });
+
+            // Doors
+            const doorListElem = document.getElementById('doorList');
+            doorListElem.innerHTML = '';
+            if(level.doors) {
+                level.doors.forEach((door, i) => {
+                    const li = document.createElement('li');
+                    li.innerText = `Door to Lvl ${door.target_level} @ ${door.x},${door.y}`;
+                    doorListElem.appendChild(li);
+                });
             }
-
-            // Horizontal lines
-            for (let y = 0; y <= canvas.height; y += step) {
-                canvasContext.moveTo(0, y);
-                canvasContext.lineTo(canvas.width, y);
-            }
-
-            canvasContext.stroke();
         }
-        fileInput.addEventListener('change', function () {
-            const file = this.files[0];
 
-            if (file) {
-                const reader = new FileReader();
+        function populateLevelDropdown() {
+            const sel = document.getElementById('levelSelector');
+            sel.innerHTML = '';
+            allLevels.levels.forEach((lvl, i) => {
+                const opt = document.createElement('option');
+                opt.value = i; opt.innerText = "Level " + i;
+                if(i === currentLevelIndex) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
 
-                reader.onload = function (event) {
-                    console.log('File content:', event.target.result);
-                };
+        // --- JSON IMPORT / EXPORT ---
+        function exportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allLevels, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "levels.json");
+            dlAnchorElem.click();
+        }
 
-                // Read the file as a Data URL or as text (readAsText)
-                reader.readAsText(file);
-            }
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    allLevels = JSON.parse(event.target.result);
+                    currentLevelIndex = 0;
+                    populateLevelDropdown();
+                    drawEditor();
+                    alert("Level data loaded successfully!");
+                } catch(err) {
+                    alert("Error parsing JSON file!");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
         });
+
+        // --- INITIALIZATION ---
+        function createTestLevel() {
+            // Your exact requested JSON format
+            const mockJSON = {"levels":[{"collision_grid":[[1,1,1],[1,0,1],[1,1,1]],"entities":[{"type":"player","x":500,"y":500,"image":"idle1.png","name":"name","entityId":0,"animation_states":{"idle":["idle1.png"]},"dialogue_tree":{"npc_text":"hi","responses":[]}},{"type":"npc","x":700,"y":300,"image":"idle1.png","name":"name","entityId":1,"animation_states":{"idle":["idle1.png"]},"dialogue_tree":{"npc_text":"hi","responses":[]}}],"background_image":"backgroundimage.jpg","doors":[{"x":100,"y":100,"target_level":1,"target_x":0,"target_y":0,"image":"door.png"}]}]};
+            allLevels = mockJSON;
+            currentLevelIndex = 0;
+            populateLevelDropdown();
+            drawEditor();
+        }
+
+        // Start empty
+        addNewLevel(); 
     </script>
 </body>
-
 </html>

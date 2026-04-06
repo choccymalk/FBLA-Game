@@ -16,8 +16,10 @@ import fbla.game.Renderer.Renderer2D;
 import fbla.game.Renderer.Renderer3D;
 import fbla.game.Renderer.Object3D;
 import fbla.game.UI.TitleScreen;
+import fbla.game.UI.HospitalMiniGame;
 import fbla.game.UI.InGame;
 import fbla.game.UI.PauseMenu;
+import fbla.game.UI.SchoolMiniGame;
 import fbla.game.UI.OptionsMenu;
 import fbla.game.UI.MessageBox;
 
@@ -36,6 +38,12 @@ public class GameRenderer {
     private final PauseMenu pauseMenu;
     private final OptionsMenu optionsMenu;
     private final MessageBox messageBox;
+
+    // minigames
+    private final SchoolMiniGame schoolMiniGame;
+    private int schoolMiniGameBackground;
+    private final HospitalMiniGame hospitalMiniGame;
+    private int hospitalMiniGameBackground;
 
     private boolean DRAW_DEBUG_GRID;
     private GameState lastStateForOptionsMenu = GameState.TITLE_SCREEN;
@@ -62,6 +70,14 @@ public class GameRenderer {
         this.pauseMenu = new PauseMenu(game, imguiGl3);
         this.optionsMenu = new OptionsMenu(game, imguiGl3);
         this.messageBox = new MessageBox(game, imguiGl3);
+
+        // intialize minigames
+        this.schoolMiniGame = new SchoolMiniGame(game, imguiGl3, this);
+        this.hospitalMiniGame = new HospitalMiniGame(game, imguiGl3, this);
+
+        // initialize minigame backgrounds
+        this.schoolMiniGameBackground = loadTexture(game.RESOURCE_PATH + "\\textures\\GradingPapersNoGrade.png");
+        this.hospitalMiniGameBackground = loadTexture(game.RESOURCE_PATH + "\\textures\\HospitalGame.png");
     }
 
     public void render(int winW, int winH, BufferedImage backgroundBI, int backgroundTex, BufferedImage playerBI,
@@ -108,6 +124,16 @@ public class GameRenderer {
                 optionsMenu.render(winW, winH, lastStateForOptionsMenu, debugGridArray);
                 DRAW_DEBUG_GRID = debugGridArray[0];
                 break;
+            case SCHOOLMINIGAME:
+                renderer2D.draw2D(schoolMiniGameBackground, 0, 0, winW, winH);
+                renderer2D.flushBatch(); // Finish 2D before ImGui
+                drawImGui();
+                schoolMiniGame.render(winW, winH);
+            case HOSPITALMINIGAME:
+                renderer2D.draw2D(hospitalMiniGameBackground, 0, 0, winW, winH);
+                renderer2D.flushBatch(); // Finish 2D before ImGui
+                drawImGui();
+                hospitalMiniGame.render(winW, winH);
         }
     }
 
