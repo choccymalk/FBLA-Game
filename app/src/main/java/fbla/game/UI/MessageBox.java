@@ -26,7 +26,11 @@ public class MessageBox {
         ImGui.begin(game.currentNPC.getName(),
                 ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse);
 
-        ImGui.textWrapped(game.currentFullMessage);
+        if(game.currentFullMessage.startsWith("{BLUE}")){
+            ImGui.textColored(0xFFA40D57, game.currentFullMessage.replace("{BLUE}", ""));
+        } else {
+            ImGui.textWrapped(game.currentFullMessage);
+        }
         ImGui.separator();
 
         try {
@@ -47,6 +51,7 @@ public class MessageBox {
                 }
             }
         } catch (Exception e) {
+            System.out.println(e);
             if (ImGui.button("Close (E)", 100, 30)) {
                 game.closeMessage();
             }

@@ -10,12 +10,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 import org.lwjgl.BufferUtils;
-
 import fbla.game.main.GameState;
 import fbla.game.Renderer.Renderer2D;
 import fbla.game.Renderer.Renderer3D;
 import fbla.game.Renderer.Object3D;
 import fbla.game.UI.TitleScreen;
+import fbla.game.UI.BusinessMiniGame;
 import fbla.game.UI.HospitalMiniGame;
 import fbla.game.UI.InGame;
 import fbla.game.UI.PauseMenu;
@@ -44,6 +44,7 @@ public class GameRenderer {
     private int schoolMiniGameBackground;
     private final HospitalMiniGame hospitalMiniGame;
     private int hospitalMiniGameBackground;
+    private final BusinessMiniGame businessMiniGame; // business minigame backgrounds are drawn in the class
 
     private boolean DRAW_DEBUG_GRID;
     private GameState lastStateForOptionsMenu = GameState.TITLE_SCREEN;
@@ -74,6 +75,7 @@ public class GameRenderer {
         // intialize minigames
         this.schoolMiniGame = new SchoolMiniGame(game, imguiGl3, this);
         this.hospitalMiniGame = new HospitalMiniGame(game, imguiGl3, this);
+        this.businessMiniGame = new BusinessMiniGame(game, imguiGl3, this);
 
         // initialize minigame backgrounds
         this.schoolMiniGameBackground = loadTexture(game.RESOURCE_PATH + "\\textures\\GradingPapersNoGrade.png");
@@ -134,6 +136,9 @@ public class GameRenderer {
                 renderer2D.flushBatch(); // Finish 2D before ImGui
                 drawImGui();
                 hospitalMiniGame.render(winW, winH);
+            case BUSINESSMINIGAME:
+                drawImGui();
+                businessMiniGame.render(winW, winH);
         }
     }
 

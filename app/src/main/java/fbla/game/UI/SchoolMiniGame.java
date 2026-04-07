@@ -200,6 +200,7 @@ public class SchoolMiniGame {
         }
 
         if (!showDropZone1 && !showDropZone2 && !showDropZone3) {
+            game.setSchoolMiniGameScore(playerScore);
             ImGui.setCursorPosX(183f);
             ImGui.setCursorPosY(526f);
             ImGui.text("You got " + Integer.toString(playerScore) + " points");

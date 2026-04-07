@@ -93,8 +93,16 @@ public class main {
         PAUSED,
         OPTIONS,
         SCHOOLMINIGAME,
-        HOSPITALMINIGAME
+        HOSPITALMINIGAME,
+        BUSINESSMINIGAME
     }
+
+    private int schoolMiniGameScore;
+    private int hospitalMiniGameScore;
+    private String businessMiniGameChoice0;
+    private String businessMiniGameChoice1;
+    private String businessMiniGameChoice2;
+    private String[] businessMinigameChoices;
 
     public long window;
     public int winW = WINDOW_W, winH = WINDOW_H;
@@ -438,7 +446,41 @@ public class main {
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 }
             }
+        } else if(state == GameState.SCHOOLMINIGAME){
+            playSound("schoolminigamebackgroundmusic");
+        } else if(state == GameState.HOSPITALMINIGAME){
+            playSound("hostpitalminigamebackgroundmusic");
+        } else if(state == GameState.BUSINESSMINIGAME){
+            playSound("businessminigamebackgroundmusic");
         }
+    }
+
+    public void setSchoolMiniGameScore(int score){
+        this.schoolMiniGameScore = score;
+    }
+
+    public void setHospitalMiniGameScore(int score){
+        this.hospitalMiniGameScore = score;
+    }
+
+    public void setBusinessMiniGameChoice(int choiceNumber, String choice){
+        switch (choiceNumber) {
+            case 0:
+                this.businessMiniGameChoice0 = choice;
+                break;
+            case 1:
+                this.businessMiniGameChoice1 = choice;
+                break;
+            case 2:
+                this.businessMiniGameChoice2 = choice;
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void setBusinessMiniGameChoices(String[] choices){
+        this.businessMinigameChoices = choices;
     }
 
     public ImBoolean getIsFullscreen() {
@@ -829,6 +871,9 @@ public class main {
             case GLFW_KEY_F3:
                 this.currentGameState = GameState.HOSPITALMINIGAME;
                 break;
+            case GLFW_KEY_F4:
+                this.currentGameState = GameState.BUSINESSMINIGAME;
+                break;
         }
 
         if (pressedKey[0] != 0 && pressedKey[1] != 0) {
@@ -912,6 +957,15 @@ public class main {
         xVelocity = 0;
         messageBoxOptionsDisplayed = true;
         messageBoxDisplayed = true;
+        if(message.contains("{BMGPLAYERCHOICE1}")){
+            message = message.replace("{PLAYERCHOICE0}", businessMinigameChoices[0]);
+        }
+        if(message.contains("{BMGPLAYERCHOICE2}")){
+            message = message.replace("{PLAYERCHOICE1}", businessMinigameChoices[1]);
+        }
+        if(message.contains("{BMGPLAYERCHOICE3}")){
+            message = message.replace("{PLAYERCHOICE2}", businessMinigameChoices[2]);
+        }
         currentFullMessage = message;
         currentResponseOptions = responses;
         playTalkingSound();
@@ -1161,6 +1215,35 @@ public class main {
         } else if (action.startsWith("exit_game")) {
             cleanup();
             System.exit(0);
+        } else if (action.startsWith("display_minigame")) {
+            int start = action.indexOf('(');
+            int end = action.indexOf(')');
+            if (start == -1 || end == -1 || end <= start + 1)
+                return;
+            String minigame = action.substring(start + 1, end);
+            if(minigame.equals("school")){
+                setCurrentGameState(GameState.SCHOOLMINIGAME);
+            } else if(minigame.equals("hospital")){
+                setCurrentGameState(GameState.HOSPITALMINIGAME);
+            } else if(minigame.equals("business")){
+                setCurrentGameState(GameState.BUSINESSMINIGAME);
+            } else {
+                System.out.println("entity with name: " + npc.getName() + " wants to load invalid minigame: " + minigame);
+            }
+        } else if (action.startsWith("change_player_level_with_player_position_from_old_level")) {
+            int oldPlayerPosX = playerX;
+            int oldPlayerPosY = playerY; 
+            int start = action.indexOf('(');
+            int end = action.indexOf(')');
+            if (start == -1 || end == -1 || end <= start + 1)
+                return;
+            int level = Integer.parseInt(action.substring(start + 1, end));
+            buildLevel(level);
+            closeMessage();
+            playerX = oldPlayerPosX;
+            playerY = oldPlayerPosY;
+            entities.get(0).setPosition(oldPlayerPosX, oldPlayerPosY);
+            
         }
     }
 
@@ -1168,6 +1251,17 @@ public class main {
         try {
             WavPlayer soundPlayer = new WavPlayer(RESOURCE_PATH + "\\audio\\talking.wav", soundPlayerVolume);
             soundPlayer.setName("soundPlayerThread");
+            soundPlayer.setPriority(Thread.MAX_PRIORITY);
+            soundPlayer.start();
+        } catch (Exception e) {
+            System.err.println("Could not play talking sound: " + e.getMessage());
+        }
+    }
+
+    public void playSound(String soundPath){
+        try {
+            WavPlayer soundPlayer = new WavPlayer(RESOURCE_PATH + "\\audio\\" + soundPath + ".wav", soundPlayerVolume);
+            soundPlayer.setName("soundPlayerThread" + (int) (Math.random() * 100));
             soundPlayer.setPriority(Thread.MAX_PRIORITY);
             soundPlayer.start();
         } catch (Exception e) {
