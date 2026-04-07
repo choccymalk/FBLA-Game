@@ -73,6 +73,11 @@ public class Entity {
         this.targetY = targetY;
     }
 
+    @Override()
+    public String toString(){
+        return this.type + " " + this.x + " " + this.y + " " + this.textureId + " " + this.width + " " + this.height;
+    }
+
     // Getters for JSON fields
     public String getType() { return type; }
     // window space, must be converted to grid space for pathfinding, divide by GRID_CELL_SIZE
@@ -145,6 +150,7 @@ public class Entity {
 
     // Optional convenience
     public void setPosition(int x, int y) {
+        //System.out.println("setting position of entity with type " + this.type + "to x:" + x + ", y: " + y);
         this.x = x;
         this.y = y;
     }

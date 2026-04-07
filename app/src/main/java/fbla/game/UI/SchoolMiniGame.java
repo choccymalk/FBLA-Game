@@ -63,7 +63,7 @@ public class SchoolMiniGame {
                 // Pass the identifier of the image (e.g., path or string ID)
                 ImGui.setDragDropPayload("TEXTURE_ID", grade1Tex, ImGuiCond.None);
                 // ImGui.setDragDropPayload("DND_TEXT_TYPE", "unique drag me");
-                ImGui.text("Dragging Image...");
+                ImGui.image(grade1Tex, 90, 80);
                 ImGui.endDragDropSource();
             }
         }
@@ -76,7 +76,7 @@ public class SchoolMiniGame {
                 // Pass the identifier of the image (e.g., path or string ID)
                 ImGui.setDragDropPayload("TEXTURE_ID", grade2Tex, ImGuiCond.None);
                 // ImGui.setDragDropPayload("DND_TEXT_TYPE", "unique drag me");
-                ImGui.text("Dragging Image...");
+                ImGui.image(grade2Tex, 90, 80);
                 ImGui.endDragDropSource();
             }
         }
@@ -89,7 +89,7 @@ public class SchoolMiniGame {
                 // Pass the identifier of the image (e.g., path or string ID)
                 ImGui.setDragDropPayload("TEXTURE_ID", grade3Tex, ImGuiCond.None);
                 // ImGui.setDragDropPayload("DND_TEXT_TYPE", "unique drag me");
-                ImGui.text("Dragging Image...");
+                ImGui.image(grade3Tex, 90, 80);
                 ImGui.endDragDropSource();
             }
         }

@@ -414,7 +414,8 @@ public class main {
             npcBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/npc.png").toFile());
             gridBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/grid_overlay.png").toFile());
             doorBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/door.png").toFile());
-            titleScreenGameLogoBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/titlescreen-stars-logo.png").toFile());
+            titleScreenGameLogoBI = javax.imageio.ImageIO
+                    .read(resourcesPath.resolve("textures/titlescreen-stars-logo.png").toFile());
             fishBI = javax.imageio.ImageIO.read(resourcesPath.resolve("textures/fish_texture.png").toFile());
 
             try {
@@ -439,6 +440,7 @@ public class main {
     }
 
     public void setCurrentGameState(GameState state) {
+        System.out.println(state);
         this.currentGameState = state;
         if (state == GameState.IN_GAME) {
             if (currentGameMode == GameMode.FIRST_PERSON_3D) {
@@ -446,24 +448,24 @@ public class main {
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 }
             }
-        } else if(state == GameState.SCHOOLMINIGAME){
+        } else if (state == GameState.SCHOOLMINIGAME) {
             playSound("schoolminigamebackgroundmusic");
-        } else if(state == GameState.HOSPITALMINIGAME){
+        } else if (state == GameState.HOSPITALMINIGAME) {
             playSound("hostpitalminigamebackgroundmusic");
-        } else if(state == GameState.BUSINESSMINIGAME){
+        } else if (state == GameState.BUSINESSMINIGAME) {
             playSound("businessminigamebackgroundmusic");
         }
     }
 
-    public void setSchoolMiniGameScore(int score){
+    public void setSchoolMiniGameScore(int score) {
         this.schoolMiniGameScore = score;
     }
 
-    public void setHospitalMiniGameScore(int score){
+    public void setHospitalMiniGameScore(int score) {
         this.hospitalMiniGameScore = score;
     }
 
-    public void setBusinessMiniGameChoice(int choiceNumber, String choice){
+    public void setBusinessMiniGameChoice(int choiceNumber, String choice) {
         switch (choiceNumber) {
             case 0:
                 this.businessMiniGameChoice0 = choice;
@@ -479,7 +481,7 @@ public class main {
         }
     }
 
-    public void setBusinessMiniGameChoices(String[] choices){
+    public void setBusinessMiniGameChoices(String[] choices) {
         this.businessMinigameChoices = choices;
     }
 
@@ -518,12 +520,12 @@ public class main {
     private void startGame() {
         if (!loadGameFromFile(this, "quicksave")) {
             currentGameState = GameState.IN_GAME;
-            buildLevel(0);
+            buildLevel(0, true);
         }
         ;
     }
 
-    private void buildLevel(int levelIndex) {
+    private void buildLevel(int levelIndex, boolean changePlayerPos) {
         currentLevelIndex = levelIndex;
         entities.clear();
 
@@ -569,15 +571,18 @@ public class main {
             player.setHeight(ENTITY_HEIGHT_CELLS * GRID_CELL_SIZE);
             // playerX = player.getX() * GRID_CELL_SIZE;
             // playerY = player.getY() * GRID_CELL_SIZE;
-            entities.add(player);
             // parser.parse();
             // player.setPosition(level.getEntities().get(0).getX(),
             // level.getEntities().get(0).getY());
-            player.setPosition(parser.getLevel(levelIndex).getPlayerEntityFromLevel().getX(),
-                    parser.getLevel(levelIndex).getPlayerEntityFromLevel().getY());
+            if (changePlayerPos) {
+                player.setPosition(levels.get(levelIndex).getPlayerEntityFromLevel().getX(),
+                        levels.get(levelIndex).getPlayerEntityFromLevel().getY());
+                playerX = player.getX();
+                playerY = player.getY();
+            }
+            System.out.println(player.toString());
             player.setEntityAnimation(new entityAnimation(player, RESOURCE_PATH, this.renderer));
-            playerX = player.getX();
-            playerY = player.getY();
+            entities.add(player);
             entityMovement = new int[level.getEntities().size()][4];
             System.out.println(player.getX() + " " + player.getY());
             System.out.println(level.getEntities().get(0).getX() + " " + level.getEntities().get(0).getY());
@@ -605,7 +610,7 @@ public class main {
                             collisionGrid[(e.getY() / GRID_CELL_SIZE) + j][(e.getX() / GRID_CELL_SIZE) + i] = 1;
                         }
                     }
-                } catch (Exception err){
+                } catch (Exception err) {
                     System.out.println(Arrays.deepToString(collisionGrid));
                     System.out.println(err);
                 }
@@ -628,11 +633,11 @@ public class main {
         while (!glfwWindowShouldClose(window)) {
             updateGame(1.0f / (float) UPDATE_RATE); // Fixed timestep for updates
             render(); // Render the current game state
-            //try {
-            //    Thread.sleep(1000 / (long) FRAMERATE);
-            //} catch (InterruptedException e) {
-            //    System.out.println(e);
-            //}
+            // try {
+            // Thread.sleep(1000 / (long) FRAMERATE);
+            // } catch (InterruptedException e) {
+            // System.out.println(e);
+            // }
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -860,19 +865,19 @@ public class main {
                 killNearestNPC();
                 break;
             case GLFW_KEY_F12:
-                buildLevel(currentLevelIndex);
+                buildLevel(currentLevelIndex, true);
                 break;
             // case GLFW_KEY_P:
             // renderer.move3DModel(model, 1, 0, 5);
             // break;
             case GLFW_KEY_F2:
-                this.currentGameState = GameState.SCHOOLMINIGAME;
+                setCurrentGameState(GameState.SCHOOLMINIGAME);
                 break;
             case GLFW_KEY_F3:
-                this.currentGameState = GameState.HOSPITALMINIGAME;
+                setCurrentGameState(GameState.HOSPITALMINIGAME);
                 break;
             case GLFW_KEY_F4:
-                this.currentGameState = GameState.BUSINESSMINIGAME;
+                setCurrentGameState(GameState.BUSINESSMINIGAME);
                 break;
         }
 
@@ -957,14 +962,14 @@ public class main {
         xVelocity = 0;
         messageBoxOptionsDisplayed = true;
         messageBoxDisplayed = true;
-        if(message.contains("{BMGPLAYERCHOICE1}")){
-            message = message.replace("{PLAYERCHOICE0}", businessMinigameChoices[0]);
+        if (message.contains("{BMGPLAYERCHOICE1}")) {
+            message = message.replace("{BMGPLAYERCHOICE1}", businessMinigameChoices[0]);
         }
-        if(message.contains("{BMGPLAYERCHOICE2}")){
-            message = message.replace("{PLAYERCHOICE1}", businessMinigameChoices[1]);
+        if (message.contains("{BMGPLAYERCHOICE2}")) {
+            message = message.replace("{BMGPLAYERCHOICE2}", businessMinigameChoices[1]);
         }
-        if(message.contains("{BMGPLAYERCHOICE3}")){
-            message = message.replace("{PLAYERCHOICE2}", businessMinigameChoices[2]);
+        if (message.contains("{BMGPLAYERCHOICE3}")) {
+            message = message.replace("{BMGPLAYERCHOICE3}", businessMinigameChoices[2]);
         }
         currentFullMessage = message;
         currentResponseOptions = responses;
@@ -1000,7 +1005,7 @@ public class main {
         return this.renderer3d;
     }
 
-    public GameRenderer getGameRenderer(){
+    public GameRenderer getGameRenderer() {
         return this.renderer;
     }
 
@@ -1025,7 +1030,7 @@ public class main {
         SaveGame loadGame = new SaveGame();
         if (loadGame.loadGame(saveFileName)) {
             // First, build the level to populate entities
-            mainInstance.buildLevel(loadGame.getGameStateData().currentLevelIndex);
+            mainInstance.buildLevel(loadGame.getGameStateData().currentLevelIndex, true);
 
             // Then apply the loaded state to restore positions
             loadGame.applyLoadedState(mainInstance);
@@ -1118,7 +1123,7 @@ public class main {
         if (nearest != null && nearest.getType().equals("door")) {
             levels.get(nearest.getTargetLevel()).getPlayerEntityFromLevel().setPosition(nearest.getTargetX(),
                     nearest.getTargetY());
-            buildLevel(nearest.getTargetLevel());
+            buildLevel(nearest.getTargetLevel(), true);
             player.setPosition(nearest.getTargetX(), nearest.getTargetY());
             playerX = nearest.getTargetX();
             playerY = nearest.getTargetY();
@@ -1155,6 +1160,14 @@ public class main {
         for (int i = 0; i < playerResponses.size(); i++) {
             if (i == selectedResponse - 1 && responses.length > 0) {
                 Response r = playerResponses.get(i);
+                if (r.getNextNode().getNpcAction() != null) {
+                    closeMessage();
+                    messageBoxOptionsDisplayed = false;
+                    currentResponseOptions = null;
+                    currentTree = r.getNextNode();
+                    displayMessage(r.getNextNode().getNpcText());
+                    handleNPCActions(r.getNextNode().getNpcAction(), npc);
+                }
                 if (currentTree.getResponses().isEmpty()) {
                     System.out.println("End of conversation reached.");
                     displayMessage(currentTree.getNpcText());
@@ -1169,6 +1182,7 @@ public class main {
                     currentResponseOptions = null;
                     currentTree = r.getNextNode();
                     displayMessage(r.getNextNode().getNpcText());
+                    System.out.println(r.getNextNode().toString());
                     if (r.getNextNode().getNpcAction() != null) {
                         handleNPCActions(r.getNextNode().getNpcAction(), npc);
                     }
@@ -1179,6 +1193,7 @@ public class main {
     }
 
     private void handleNPCActions(String action, Entity npc) {
+        System.out.println("entity with name " + npc.getName() + " wants to run action " + action);
         if (action.startsWith("move_to")) {
             int start = action.indexOf('(');
             int end = action.indexOf(')');
@@ -1210,7 +1225,7 @@ public class main {
             if (start == -1 || end == -1 || end <= start + 1)
                 return;
             int level = Integer.parseInt(action.substring(start + 1, end));
-            buildLevel(level);
+            buildLevel(level, true);
             closeMessage();
         } else if (action.startsWith("exit_game")) {
             cleanup();
@@ -1221,29 +1236,48 @@ public class main {
             if (start == -1 || end == -1 || end <= start + 1)
                 return;
             String minigame = action.substring(start + 1, end);
-            if(minigame.equals("school")){
+            if (minigame.equals("school")) {
                 setCurrentGameState(GameState.SCHOOLMINIGAME);
-            } else if(minigame.equals("hospital")){
+            } else if (minigame.equals("hospital")) {
                 setCurrentGameState(GameState.HOSPITALMINIGAME);
-            } else if(minigame.equals("business")){
+            } else if (minigame.equals("business")) {
                 setCurrentGameState(GameState.BUSINESSMINIGAME);
             } else {
-                System.out.println("entity with name: " + npc.getName() + " wants to load invalid minigame: " + minigame);
+                System.out
+                        .println("entity with name: " + npc.getName() + " wants to load invalid minigame: " + minigame);
             }
         } else if (action.startsWith("change_player_level_with_player_position_from_old_level")) {
             int oldPlayerPosX = playerX;
-            int oldPlayerPosY = playerY; 
+            int oldPlayerPosY = playerY;
+            System.out.println(playerX);
+            System.out.println(playerY);
             int start = action.indexOf('(');
             int end = action.indexOf(')');
             if (start == -1 || end == -1 || end <= start + 1)
                 return;
             int level = Integer.parseInt(action.substring(start + 1, end));
-            buildLevel(level);
-            closeMessage();
+            levels.get(level).getPlayerEntityFromLevel().setPosition(oldPlayerPosX, oldPlayerPosY);
+            playerX = oldPlayerPosX;
+            playerY = oldPlayerPosY;
+            buildLevel(level, false);
+            System.out.println("level built");
             playerX = oldPlayerPosX;
             playerY = oldPlayerPosY;
             entities.get(0).setPosition(oldPlayerPosX, oldPlayerPosY);
-            
+            playerX = oldPlayerPosX;
+            playerY = oldPlayerPosY;
+            closeMessage();
+        } else if (action.startsWith("create_door")) {
+            int start = action.indexOf('(');
+            int end = action.indexOf(')');
+            if (start == -1 || end == -1 || end <= start + 1)
+                return;
+            String door = action.substring(start + 1, end);
+            String[] values = door.split(",");
+            Door newDoor = new Door(Integer.parseInt(values[0]), Integer.parseInt(values[1]), Integer.parseInt(values[2]), Integer.parseInt(values[3]), Integer.parseInt(values[4]), RESOURCE_PATH + "\\textures\\Dimensional_Portal.png");
+            List<Door> doorsList = new ArrayList<>();
+            doorsList.add(newDoor);
+            createDoors(doorsList);
         }
     }
 
@@ -1258,7 +1292,7 @@ public class main {
         }
     }
 
-    public void playSound(String soundPath){
+    public void playSound(String soundPath) {
         try {
             WavPlayer soundPlayer = new WavPlayer(RESOURCE_PATH + "\\audio\\" + soundPath + ".wav", soundPlayerVolume);
             soundPlayer.setName("soundPlayerThread" + (int) (Math.random() * 100));

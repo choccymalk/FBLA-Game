@@ -131,14 +131,17 @@ public class GameRenderer {
                 renderer2D.flushBatch(); // Finish 2D before ImGui
                 drawImGui();
                 schoolMiniGame.render(winW, winH);
+                break;
             case HOSPITALMINIGAME:
                 renderer2D.draw2D(hospitalMiniGameBackground, 0, 0, winW, winH);
                 renderer2D.flushBatch(); // Finish 2D before ImGui
                 drawImGui();
                 hospitalMiniGame.render(winW, winH);
+                break;
             case BUSINESSMINIGAME:
                 drawImGui();
                 businessMiniGame.render(winW, winH);
+                break;
         }
     }
 

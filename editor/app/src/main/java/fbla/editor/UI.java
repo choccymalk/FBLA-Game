@@ -65,7 +65,7 @@ public class UI {
     // UI state
     private ImString selectedEntityType = new ImString("npc");
     private ImString entityName = new ImString("placeholder");
-    private ImString entityImage = new ImString("npc.png");
+    private ImString entityImage = new ImString("npc.png", 4096);
     private ImFloat entityX = new ImFloat(0);
     private ImFloat entityY = new ImFloat(0);
     private int selectedEntityIndex = -1;

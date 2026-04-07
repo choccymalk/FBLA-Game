@@ -51,7 +51,7 @@ public class MessageBox {
                 }
             }
         } catch (Exception e) {
-            System.out.println(e);
+            //System.out.println(e);
             if (ImGui.button("Close (E)", 100, 30)) {
                 game.closeMessage();
             }

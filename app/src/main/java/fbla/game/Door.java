@@ -23,6 +23,15 @@ public class Door {
 
     private transient int textureId;
 
+    public Door(int x, int y, int targetX, int targetY, int targetLevel, String imagePath){
+        this.x = x;
+        this.y = y;
+        this.targetX = targetX;
+        this.targetY = targetY;
+        this.imagePath = imagePath;
+        this.targetLevel = targetLevel;
+    }
+
     // Getters:
     public int getX() {
         return x;
@@ -55,4 +64,5 @@ public class Door {
     public String getImagePath(){
         return imagePath;
     }
+
 }

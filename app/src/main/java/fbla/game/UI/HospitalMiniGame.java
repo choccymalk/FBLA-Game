@@ -31,9 +31,9 @@ public class HospitalMiniGame {
     public HospitalMiniGame(main game, ImGuiImplGl3 imguiGl3, GameRenderer renderer) {
         this.game = game;
         this.imguiGl3 = imguiGl3;
-        this.scheduledItem1 = "Evan B., 1-2 P.M.";
-        this.scheduledItem2 = "John A., 2-3 P.M.";
-        this.scheduledItem3 = "George P., 3-4 P.M.";
+        this.scheduledItem1 = "Evan B.\n1-2 P.M.";
+        this.scheduledItem2 = "John A.,\n2-3 P.M.";
+        this.scheduledItem3 = "George P.\n3-4 P.M.";
         this.textBoxTex = renderer.loadTexture(game.RESOURCE_PATH + "\\textures\\SpeechBox.png");
     }
     // TODO: change cursor positions
@@ -56,8 +56,8 @@ public class HospitalMiniGame {
                         | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoDecoration);
 
         if (showScheduledItem1) {
-            ImGui.setCursorPosX(469f);
-            ImGui.setCursorPosY(550f);
+            ImGui.setCursorPosX(906f);
+            ImGui.setCursorPosY(179f);
             ImGui.text(scheduledItem1);
             if (ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
                 // Pass the identifier of the image (e.g., path or string ID)
@@ -68,8 +68,8 @@ public class HospitalMiniGame {
         }
 
         if (showScheduledItem2) {
-            ImGui.setCursorPosX(264f);
-            ImGui.setCursorPosY(540f);
+            ImGui.setCursorPosX(906f);
+            ImGui.setCursorPosY(282f);
             ImGui.text(scheduledItem2);
             if (ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
                 // Pass the identifier of the image (e.g., path or string ID)
@@ -80,9 +80,9 @@ public class HospitalMiniGame {
         }
 
         if (showScheduledItem3) {
-            ImGui.setCursorPosX(938f);
-            ImGui.setCursorPosY(533f);
-            ImGui.text(scheduledItem2);
+            ImGui.setCursorPosX(906f);
+            ImGui.setCursorPosY(376f);
+            ImGui.text(scheduledItem3);
             if (ImGui.beginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID)) {
                 // Pass the identifier of the image (e.g., path or string ID)
                 ImGui.setDragDropPayload("DND_TEXT_TYPE", scheduledItem3, ImGuiCond.None);
@@ -92,45 +92,10 @@ public class HospitalMiniGame {
         }
 
         if (showDropZone1) {
-            ImGui.setCursorPosX(180f);
-            ImGui.setCursorPosY(60f);
+            ImGui.setCursorPosX(326f);
+            ImGui.setCursorPosY(238f);
             ImGui.pushStyleColor(ImGuiCol.Button, 0x00FFFFFF);
-            ImGui.button(" ", 220, 346);
-            if (ImGui.beginDragDropTarget()) {
-                String payload = ImGui.acceptDragDropPayload("DND_TEXT_TYPE", String.class);
-                // String payload = ImGui.acceptDragDropPayload("DND_TEXT_TYPE", String.class);
-                if (payload != null) {
-                    // Handle dropped image (payload contains myTextureId)
-                    System.out.println("Item dropped!");
-                    System.out.println(payload);
-                    if (payload.equals(scheduledItem1)) {
-                        playerScore++;
-                        System.out.println("player got one point");
-                        showScheduledItem1 = false;
-                    } else if (payload.equals(scheduledItem2)) {
-                        showScheduledItem2 = false;
-                    } else if (payload.equals(scheduledItem3)) {
-                        showScheduledItem3 = false;
-                    } else {
-                        System.out.println("drop zone 1 is in an unfortunate state");
-                    }
-                    showDropZone1 = false;
-                    itemDropZone1 = payload;
-                }
-                ImGui.endDragDropTarget();
-            }
-            ImGui.popStyleColor();
-        } else {
-            ImGui.setCursorPosX(180f);
-            ImGui.setCursorPosY(60f);
-            ImGui.text(scheduledItem1);
-        }
-
-        if (showDropZone2) {
-            ImGui.setCursorPosX(505f);
-            ImGui.setCursorPosY(60f);
-            ImGui.pushStyleColor(ImGuiCol.Button, 0x00FFFFFF);
-            ImGui.button(" ", 220, 346);
+            ImGui.button(" ", 397, 115);
             if (ImGui.beginDragDropTarget()) {
                 String payload = ImGui.acceptDragDropPayload("DND_TEXT_TYPE", String.class);
                 // String payload = ImGui.acceptDragDropPayload("DND_TEXT_TYPE", String.class);
@@ -147,6 +112,41 @@ public class HospitalMiniGame {
                     } else if (payload.equals(scheduledItem3)) {
                         showScheduledItem3 = false;
                     } else {
+                        System.out.println("drop zone 1 is in an unfortunate state");
+                    }
+                    showDropZone1 = false;
+                    itemDropZone1 = payload;
+                }
+                ImGui.endDragDropTarget();
+            }
+            ImGui.popStyleColor();
+        } else {
+            ImGui.setCursorPosX(332f);
+            ImGui.setCursorPosY(245f);
+            ImGui.text(itemDropZone1);
+        }
+
+        if (showDropZone2) {
+            ImGui.setCursorPosX(326f);
+            ImGui.setCursorPosY(368f);
+            ImGui.pushStyleColor(ImGuiCol.Button, 0x00FFFFFF);
+            ImGui.button(" ", 397, 115);
+            if (ImGui.beginDragDropTarget()) {
+                String payload = ImGui.acceptDragDropPayload("DND_TEXT_TYPE", String.class);
+                // String payload = ImGui.acceptDragDropPayload("DND_TEXT_TYPE", String.class);
+                if (payload != null) {
+                    // Handle dropped image (payload contains myTextureId)
+                    System.out.println("Item dropped!");
+                    System.out.println(payload);
+                    if (payload.equals(scheduledItem3)) {
+                        playerScore++;
+                        System.out.println("player got one point");
+                        showScheduledItem3 = false;
+                    } else if (payload.equals(scheduledItem1)) {
+                        showScheduledItem1 = false;
+                    } else if (payload.equals(scheduledItem2)) {
+                        showScheduledItem2 = false;
+                    } else {
                         System.out.println("drop zone 2 is in an unfortunate state");
                     }
                     showDropZone2 = false;
@@ -156,16 +156,16 @@ public class HospitalMiniGame {
             }
             ImGui.popStyleColor();
         } else {
-            ImGui.setCursorPosX(505f);
-            ImGui.setCursorPosY(60f);
-            ImGui.text(scheduledItem2);
+            ImGui.setCursorPosX(332f);
+            ImGui.setCursorPosY(376f);
+            ImGui.text(itemDropZone2);
         }
 
         if (showDropZone3) {
-            ImGui.setCursorPosX(834f);
-            ImGui.setCursorPosY(60f);
+            ImGui.setCursorPosX(326f);
+            ImGui.setCursorPosY(496f);
             ImGui.pushStyleColor(ImGuiCol.Button, 0x00FFFFFF);
-            ImGui.button(" ", 220, 346);
+            ImGui.button(" ", 397, 115);
             if (ImGui.beginDragDropTarget()) {
                 String payload = ImGui.acceptDragDropPayload("DND_TEXT_TYPE", String.class);
                 // String payload = ImGui.acceptDragDropPayload("DND_TEXT_TYPE", String.class);
@@ -191,9 +191,9 @@ public class HospitalMiniGame {
             }
             ImGui.popStyleColor();
         } else {
-            ImGui.setCursorPosX(834f);
-            ImGui.setCursorPosY(60f);
-            ImGui.text(scheduledItem3);
+            ImGui.setCursorPosX(332f);
+            ImGui.setCursorPosY(510f);
+            ImGui.text(itemDropZone3);
         }
 
         if (!showDropZone1 && !showDropZone2 && !showDropZone3) {
@@ -212,6 +212,13 @@ public class HospitalMiniGame {
             ImGui.popStyleColor();
             ImGui.popStyleColor();
         }
+
+        ImGui.setCursorPos(226, 279);
+        ImGui.text("1-2 P.M.");
+        ImGui.setCursorPos(226, 412);
+        ImGui.text("2-3 P.M.");
+        ImGui.setCursorPos(226, 547);
+        ImGui.text("3-4 P.M.");
 
         ImGui.end();
         ImGui.popStyleColor();
